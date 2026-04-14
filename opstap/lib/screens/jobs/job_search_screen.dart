@@ -59,7 +59,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
       salaryRange: '€4.500 – €5.500',
       postedAgo: '2 dagen geleden',
       matchScore: 92,
-      logoColor: const Color(0xFF0056B3),
+      logoColor: const Color(0xFF3E3CB6),
     ),
     JobListing(
       id: '2',
@@ -149,7 +149,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
         ),
         title: Text(
           'Vacatures',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -184,9 +184,9 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                       prefixIcon: const Icon(Icons.search_rounded,
                           color: OpstapColors.onSurfaceVariant, size: 20),
                       filled: true,
-                      fillColor: OpstapColors.surfaceContainerLow,
+                      fillColor: OpstapColors.surfaceContainerLowest,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -236,7 +236,8 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                     padding: EdgeInsets.fromLTRB(
                         16, 0, 16, selected.isEmpty ? 16 : 88),
                     itemCount: filtered.length,
-                    separatorBuilder: (context, _) => const SizedBox(height: 10),
+                    separatorBuilder: (context, _) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       final job = filtered[i];
                       return _JobCard(
@@ -304,7 +305,7 @@ class _FilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: OpstapColors.primary,
           borderRadius: BorderRadius.circular(20),
@@ -335,10 +336,11 @@ class _ActiveFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: OpstapColors.secondaryContainer.withValues(alpha: 0.5),
+        color: OpstapColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: OpstapColors.outlineVariant, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -381,20 +383,22 @@ class _JobCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? OpstapColors.secondaryContainer.withValues(alpha: 0.3)
+              ? OpstapColors.tertiaryContainer.withValues(alpha: 0.25)
               : OpstapColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? OpstapColors.primary : Colors.transparent,
-            width: 1.5,
+            color: isSelected
+                ? OpstapColors.tertiaryContainer
+                : Colors.transparent,
+            width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1A1C1C).withValues(alpha: 0.05),
-              blurRadius: 12,
+              color: const Color(0xFF1C1A2E).withValues(alpha: 0.05),
+              blurRadius: 14,
               offset: const Offset(0, 4),
             ),
           ],
@@ -407,16 +411,16 @@ class _JobCard extends StatelessWidget {
               children: [
                 // Company logo
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: job.logoColor,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
                     child: Text(
                       job.company[0],
-                      style: GoogleFonts.manrope(
+                      style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Colors.white),
@@ -430,11 +434,11 @@ class _JobCard extends StatelessWidget {
                     children: [
                       Text(
                         job.title,
-                        style: GoogleFonts.manrope(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: OpstapColors.onSurface,
-                          letterSpacing: -0.01 * 14,
+                          letterSpacing: -0.2,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -511,16 +515,16 @@ class _MatchChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: OpstapColors.tertiaryContainer,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        '$score% match',
+        '$score%',
         style: GoogleFonts.inter(
           fontSize: 11,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: OpstapColors.onTertiaryContainer,
         ),
       ),
@@ -545,7 +549,7 @@ class _ApplyButton extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [OpstapColors.primary, OpstapColors.primaryContainer],
         ),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: OpstapColors.primary.withValues(alpha: 0.35),
@@ -556,10 +560,10 @@ class _ApplyButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(30),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(30),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(

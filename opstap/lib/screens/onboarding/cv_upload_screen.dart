@@ -13,7 +13,7 @@ class CvUploadScreen extends StatefulWidget {
 
 class _CvUploadScreenState extends State<CvUploadScreen> {
   String? _selectedFileName;
-  int _retentionDays = 30; // default
+  int _retentionDays = 30;
 
   bool get _fileSelected => _selectedFileName != null;
 
@@ -40,7 +40,7 @@ class _CvUploadScreenState extends State<CvUploadScreen> {
         ),
         title: Text(
           'CV uploaden',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -107,18 +107,26 @@ class _UploadZone extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
         decoration: BoxDecoration(
           color: _hasFile
-              ? OpstapColors.secondaryContainer.withValues(alpha: 0.3)
-              : OpstapColors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(20),
+              ? OpstapColors.secondaryContainer.withValues(alpha: 0.35)
+              : OpstapColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: _hasFile
                 ? OpstapColors.primary
                 : OpstapColors.outlineVariant,
             width: 1.5,
-            // Dashed border via custom painter below
           ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1C1A2E).withValues(alpha: 0.05),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: _hasFile ? _FileSelected(fileName: selectedFileName!, onClear: onClear) : _EmptyState(),
+        child: _hasFile
+            ? _FileSelected(fileName: selectedFileName!, onClear: onClear)
+            : _EmptyState(),
       ),
     );
   }
@@ -131,22 +139,22 @@ class _EmptyState extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 64,
-          height: 64,
+          width: 68,
+          height: 68,
           decoration: BoxDecoration(
             color: OpstapColors.secondaryContainer,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: const Icon(
             Icons.upload_file_rounded,
-            size: 32,
+            size: 34,
             color: OpstapColors.primary,
           ),
         ),
         const SizedBox(height: 16),
         Text(
           'Tik om je CV te uploaden',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -182,7 +190,7 @@ class _FileSelected extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             color: OpstapColors.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(Icons.description_rounded,
               size: 26, color: OpstapColors.primary),
@@ -244,11 +252,11 @@ class _RetentionSelector extends StatelessWidget {
       children: [
         Text(
           'Bewaartermijn',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
-            letterSpacing: -0.01 * 16,
+            letterSpacing: -0.2,
           ),
         ),
         const SizedBox(height: 12),
@@ -261,14 +269,20 @@ class _RetentionSelector extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   margin: EdgeInsets.only(
-                    right: days == _options.last ? 0 : 8,
+                    right: days == _options.last ? 0 : 10,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? OpstapColors.primary
-                        : OpstapColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(12),
+                        : OpstapColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected
+                          ? OpstapColors.primary
+                          : OpstapColors.outlineVariant,
+                      width: 1.5,
+                    ),
                   ),
                   child: Text(
                     '$days dagen',
@@ -334,7 +348,7 @@ class _BottomBar extends StatelessWidget {
                         end: Alignment.bottomRight,
                         colors: [
                           OpstapColors.primary,
-                          OpstapColors.primaryContainer
+                          OpstapColors.primaryContainer,
                         ],
                       )
                     : const LinearGradient(
@@ -343,7 +357,7 @@ class _BottomBar extends StatelessWidget {
                           OpstapColors.surfaceContainerHigh,
                         ],
                       ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 boxShadow: fileSelected
                     ? [
                         BoxShadow(
@@ -356,10 +370,10 @@ class _BottomBar extends StatelessWidget {
               ),
               child: Material(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 child: InkWell(
                   onTap: fileSelected ? onUpload : null,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(30),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Row(
