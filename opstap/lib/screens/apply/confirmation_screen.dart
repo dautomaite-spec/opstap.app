@@ -30,7 +30,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _scaleAnim = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
+    _scaleAnim =
+        CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
   }
@@ -59,7 +60,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                 Center(
                   child: ScaleTransition(
                     scale: _scaleAnim,
-                    child: _SuccessIcon(),
+                    child: const _SuccessIcon(),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -67,11 +68,11 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                 Text(
                   'Gefeliciteerd!',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.manrope(
+                  style: GoogleFonts.poppins(
                     fontSize: 32,
                     fontWeight: FontWeight.w700,
                     color: OpstapColors.onSurface,
-                    letterSpacing: -0.02 * 32,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -91,8 +92,15 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
-                    color: OpstapColors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
+                    color: OpstapColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1C1A2E).withValues(alpha: 0.05),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     children: widget.appliedJobs.map((job) {
@@ -101,20 +109,20 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
+                                horizontal: 16, vertical: 14),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 36,
-                                  height: 36,
+                                  width: 38,
+                                  height: 38,
                                   decoration: BoxDecoration(
                                     color: job.logoColor,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Center(
                                     child: Text(
                                       job.company[0],
-                                      style: GoogleFonts.manrope(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,
@@ -140,21 +148,23 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                         job.company,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
-                                          color: OpstapColors.onSurfaceVariant,
+                                          color:
+                                              OpstapColors.onSurfaceVariant,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 const Icon(Icons.check_circle_rounded,
-                                    size: 18, color: Color(0xFF2E7D32)),
+                                    size: 20, color: Color(0xFF2E7D32)),
                               ],
                             ),
                           ),
                           if (!isLast)
                             Divider(
                               height: 1,
-                              indent: 62,
+                              indent: 66,
+                              endIndent: 16,
                               color: OpstapColors.outlineVariant
                                   .withValues(alpha: 0.4),
                             ),
@@ -192,35 +202,81 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
 }
 
 class _SuccessIcon extends StatelessWidget {
+  const _SuccessIcon();
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Outer glow ring
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: OpstapColors.primary.withValues(alpha: 0.08),
-          ),
-        ),
-        // Inner circle
-        Container(
-          width: 88,
-          height: 88,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [OpstapColors.primary, OpstapColors.primaryContainer],
+    return SizedBox(
+      width: 148,
+      height: 148,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Yellow decorative circle — top right
+          Positioned(
+            top: 4,
+            right: 10,
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: OpstapColors.tertiaryContainer,
+              ),
             ),
           ),
-          child: const Icon(Icons.check_rounded, color: Colors.white, size: 44),
-        ),
-      ],
+          // Pink decorative circle — bottom left
+          Positioned(
+            bottom: 10,
+            left: 6,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: OpstapColors.pinkAccent,
+              ),
+            ),
+          ),
+          // Peach decorative circle — bottom right
+          Positioned(
+            bottom: 18,
+            right: 4,
+            child: Container(
+              width: 14,
+              height: 14,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: OpstapColors.warmAccent,
+              ),
+            ),
+          ),
+          // Outer glow ring
+          Container(
+            width: 112,
+            height: 112,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: OpstapColors.primary.withValues(alpha: 0.10),
+            ),
+          ),
+          // Inner gradient circle
+          Container(
+            width: 84,
+            height: 84,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [OpstapColors.primary, OpstapColors.primaryContainer],
+              ),
+            ),
+            child: const Icon(Icons.check_rounded,
+                color: Colors.white, size: 42),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -233,11 +289,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.manrope(
+      style: GoogleFonts.poppins(
         fontSize: 15,
         fontWeight: FontWeight.w600,
         color: OpstapColors.onSurface,
-        letterSpacing: -0.01 * 15,
+        letterSpacing: -0.2,
       ),
     );
   }
@@ -260,10 +316,10 @@ class _NextStepCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: OpstapColors.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -273,7 +329,7 @@ class _NextStepCard extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: OpstapColors.secondaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, color: OpstapColors.primary, size: 22),
               ),
@@ -284,8 +340,8 @@ class _NextStepCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: OpstapColors.onSurface,
                       ),

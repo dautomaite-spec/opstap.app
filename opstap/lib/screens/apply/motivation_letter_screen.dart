@@ -66,7 +66,7 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
         ),
         title: Text(
           'Motivatiebrief',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -84,7 +84,8 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: widget.jobs.length,
-                separatorBuilder: (context, _) => const SizedBox(width: 8),
+                separatorBuilder: (context, _) =>
+                    const SizedBox(width: 8),
                 itemBuilder: (_, i) {
                   final isActive = i == _activeIndex;
                   final j = widget.jobs[i];
@@ -93,12 +94,18 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                          horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: isActive
                             ? OpstapColors.primary
-                            : OpstapColors.surfaceContainerHigh,
+                            : OpstapColors.surfaceContainerLowest,
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isActive
+                              ? OpstapColors.primary
+                              : OpstapColors.outlineVariant,
+                          width: 1.5,
+                        ),
                       ),
                       child: Text(
                         j.company,
@@ -121,11 +128,11 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 '${job.company} — ${job.title}',
-                style: GoogleFonts.manrope(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: OpstapColors.onSurface,
-                  letterSpacing: -0.01 * 15,
+                  letterSpacing: -0.2,
                 ),
               ),
             ),
@@ -137,12 +144,12 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: OpstapColors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
                         color:
-                            const Color(0xFF1A1C1C).withValues(alpha: 0.05),
-                        blurRadius: 12,
+                            const Color(0xFF1C1A2E).withValues(alpha: 0.06),
+                        blurRadius: 14,
                         offset: const Offset(0, 4),
                       ),
                     ],
@@ -173,10 +180,20 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                         child: Row(
                           children: [
-                            const Icon(Icons.auto_awesome_rounded,
-                                size: 12,
-                                color: OpstapColors.onSurfaceVariant),
-                            const SizedBox(width: 4),
+                            Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: OpstapColors.secondaryContainer,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 11,
+                                color: OpstapColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               'Gegenereerd door AI · aanpasbaar',
                               style: GoogleFonts.inter(
@@ -197,13 +214,18 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Material(
-                color: OpstapColors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(12),
+                color: OpstapColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(20),
                 child: InkWell(
                   onTap: _regenerate,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: OpstapColors.outlineVariant, width: 1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -260,7 +282,7 @@ class _BottomBar extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [OpstapColors.primary, OpstapColors.primaryContainer],
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
               color: OpstapColors.primary.withValues(alpha: 0.25),
@@ -271,10 +293,10 @@ class _BottomBar extends StatelessWidget {
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           child: InkWell(
             onTap: onSend,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(30),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Row(

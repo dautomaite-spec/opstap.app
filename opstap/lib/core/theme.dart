@@ -1,60 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Opstap Design System — "Career Architect"
-// Sourced from Google Stitch design: projects/4148466425856813163
+// Opstap Design System — "Joyful Career"
+// Reference: Human input/Application Design Ideas.jpeg
+// Background: lavender · Cards: white · Primary: indigo · Active: yellow
 abstract class OpstapColors {
-  static const primary = Color(0xFF003F87);
-  static const primaryContainer = Color(0xFF0056B3);
+  // Primary — deep indigo-violet
+  static const primary = Color(0xFF3E3CB6);
+  static const primaryContainer = Color(0xFF5653CA);
   static const onPrimary = Color(0xFFFFFFFF);
-  static const secondary = Color(0xFF4C5E84);
-  static const secondaryContainer = Color(0xFFBFD2FD);
-  static const onSecondary = Color(0xFFFFFFFF);
-  static const tertiary = Color(0xFF722B00);
-  static const tertiaryContainer = Color(0xFF983C00);
-  static const onTertiary = Color(0xFFFFFFFF);
-  static const onTertiaryContainer = Color(0xFFFFC2A7);
-  static const error = Color(0xFFBA1A1A);
-  static const surface = Color(0xFFF9F9F9);
-  static const surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const surfaceContainerLow = Color(0xFFF3F3F4);
-  static const surfaceContainer = Color(0xFFEEEEEE);
-  static const surfaceContainerHigh = Color(0xFFE8E8E8);
-  static const surfaceContainerHighest = Color(0xFFE2E2E2);
-  static const surfaceDim = Color(0xFFDADADA);
-  static const onSurface = Color(0xFF1A1C1C);
-  static const onSurfaceVariant = Color(0xFF424752);
-  static const outline = Color(0xFF727784);
-  static const outlineVariant = Color(0xFFC2C6D4);
-  static const inverseSurface = Color(0xFF2F3131);
-  static const inverseOnSurface = Color(0xFFF0F1F1);
-  static const inversePrimary = Color(0xFFACC7FF);
 
-  // Gradient used for hero sections and primary buttons
+  // Secondary — muted purple-gray (used for chips, skill tags)
+  static const secondary = Color(0xFF6B6887);
+  static const secondaryContainer = Color(0xFFE8E4FA);
+  static const onSecondary = Color(0xFFFFFFFF);
+  static const onSecondaryContainer = Color(0xFF3E3B62);
+
+  // Tertiary → Yellow: active/selected states, match score chips
+  static const tertiary = Color(0xFF8B5000);
+  static const tertiaryContainer = Color(0xFFFFD55A);
+  static const onTertiary = Color(0xFFFFFFFF);
+  static const onTertiaryContainer = Color(0xFF1C1A2E);
+
+  // Error
+  static const error = Color(0xFFBA1A1A);
+
+  // Surfaces — lavender hierarchy
+  static const surface = Color(0xFFEAE7F5);
+  static const surfaceContainerLowest = Color(0xFFFFFFFF);
+  static const surfaceContainerLow = Color(0xFFF4F2FB);
+  static const surfaceContainer = Color(0xFFEEEBF7);
+  static const surfaceContainerHigh = Color(0xFFE5E2F2);
+  static const surfaceContainerHighest = Color(0xFFDDD9EC);
+  static const surfaceDim = Color(0xFFD1CDE8);
+
+  // Content
+  static const onSurface = Color(0xFF1C1A2E);
+  static const onSurfaceVariant = Color(0xFF6B6880);
+
+  // Borders
+  static const outline = Color(0xFFA8A4BC);
+  static const outlineVariant = Color(0xFFCCCAE0);
+
+  // Inverse
+  static const inverseSurface = Color(0xFF302F44);
+  static const inverseOnSurface = Color(0xFFF2EFF8);
+  static const inversePrimary = Color(0xFFBEB9FF);
+
+  // Extended accents — decorative circles, hero highlights
+  static const warmAccent = Color(0xFFF8D8B0);
+  static const pinkAccent = Color(0xFFFFAAC4);
+
+  // Gradient shorthand
   static const heroGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    transform: GradientRotation(135 * 3.14159 / 180),
     colors: [primary, primaryContainer],
   );
 }
 
 abstract class OpstapTextStyles {
-  static TextStyle displayLg(BuildContext context) => GoogleFonts.manrope(
-        fontSize: 32,
+  static TextStyle displayLg(BuildContext context) => GoogleFonts.poppins(
+        fontSize: 34,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.02 * 32,
+        letterSpacing: -0.5,
         color: OpstapColors.onSurface,
       );
 
-  static TextStyle headlineMd(BuildContext context) => GoogleFonts.manrope(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.02 * 24,
+  static TextStyle headlineMd(BuildContext context) => GoogleFonts.poppins(
+        fontSize: 26,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
         color: OpstapColors.onSurface,
       );
 
-  static TextStyle titleMd(BuildContext context) => GoogleFonts.manrope(
+  static TextStyle titleMd(BuildContext context) => GoogleFonts.poppins(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: OpstapColors.onSurface,
@@ -87,11 +107,11 @@ ThemeData opstapTheme() {
       primary: OpstapColors.primary,
       onPrimary: OpstapColors.onPrimary,
       primaryContainer: OpstapColors.primaryContainer,
-      onPrimaryContainer: Color(0xFFBBD0FF),
+      onPrimaryContainer: Color(0xFFBEB9FF),
       secondary: OpstapColors.secondary,
       onSecondary: OpstapColors.onSecondary,
       secondaryContainer: OpstapColors.secondaryContainer,
-      onSecondaryContainer: Color(0xFF475A7F),
+      onSecondaryContainer: OpstapColors.onSecondaryContainer,
       tertiary: OpstapColors.tertiary,
       onTertiary: OpstapColors.onTertiary,
       tertiaryContainer: OpstapColors.tertiaryContainer,

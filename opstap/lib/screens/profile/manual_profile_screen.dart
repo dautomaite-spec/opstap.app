@@ -19,6 +19,7 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
 
   // Job preferences
   final _functieController = TextEditingController();
+  bool _openVoorAlles = false;  // "Open to anything"
   String _dienstverband = 'Beide';
   String _beschikbaarheid = 'Direct';
   RangeValues _salaris = const RangeValues(2500, 4000);
@@ -28,7 +29,7 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
 
   bool get _canSave =>
       _naamController.text.trim().isNotEmpty &&
-      _functieController.text.trim().isNotEmpty;
+      (_openVoorAlles || _functieController.text.trim().isNotEmpty);
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
         ),
         title: Text(
           'Profiel invullen',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -89,9 +90,13 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                       title: 'Persoonlijk',
                       child: Column(
                         children: [
-                          _Field(label: 'Naam', controller: _naamController),
+                          _Field(
+                              label: 'Naam',
+                              controller: _naamController),
                           const SizedBox(height: 10),
-                          _Field(label: 'Locatie', controller: _locatieController),
+                          _Field(
+                              label: 'Locatie',
+                              controller: _locatieController),
                           const SizedBox(height: 10),
                           _Field(
                             label: 'Telefoonnummer',
@@ -107,10 +112,72 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Field(
-                            label: 'Functietitel',
-                            controller: _functieController,
-                            hint: 'bijv. Software Developer',
+                          // Functietitel field + "Open voor alles" toggle
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 150),
+                            opacity: _openVoorAlles ? 0.4 : 1.0,
+                            child: IgnorePointer(
+                              ignoring: _openVoorAlles,
+                              child: _Field(
+                                label: 'Functietitel',
+                                controller: _functieController,
+                                hint: 'bijv. Software Developer',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          // "Open voor alles" chip toggle
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _openVoorAlles = !_openVoorAlles;
+                                if (_openVoorAlles) {
+                                  _functieController.clear();
+                                }
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _openVoorAlles
+                                    ? OpstapColors.tertiaryContainer
+                                    : OpstapColors.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _openVoorAlles
+                                      ? OpstapColors.tertiaryContainer
+                                      : OpstapColors.outlineVariant,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _openVoorAlles
+                                        ? Icons.check_circle_rounded
+                                        : Icons.public_rounded,
+                                    size: 16,
+                                    color: _openVoorAlles
+                                        ? OpstapColors.onTertiaryContainer
+                                        : OpstapColors.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Open voor alles',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: _openVoorAlles
+                                          ? OpstapColors.onTertiaryContainer
+                                          : OpstapColors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 18),
                           _FieldLabel('Dienstverband'),
@@ -125,7 +192,11 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                           _FieldLabel('Beschikbaarheid'),
                           const SizedBox(height: 8),
                           _ChipSelector(
-                            options: const ['Direct', '1 maand', '3 maanden'],
+                            options: const [
+                              'Direct',
+                              '1 maand',
+                              '3 maanden'
+                            ],
                             selected: _beschikbaarheid,
                             onChanged: (v) =>
                                 setState(() => _beschikbaarheid = v),
@@ -159,7 +230,8 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                       child: _SkillsWrap(
                         skills: _skills,
                         onAdd: () => _showAddSkillDialog(),
-                        onRemove: (s) => setState(() => _skills.remove(s)),
+                        onRemove: (s) =>
+                            setState(() => _skills.remove(s)),
                       ),
                     ),
                   ],
@@ -179,18 +251,24 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: OpstapColors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
         title: Text('Vaardigheid toevoegen',
-            style: GoogleFonts.manrope(fontWeight: FontWeight.w600, fontSize: 16)),
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600, fontSize: 16)),
         content: TextField(
           controller: controller,
           autofocus: true,
+          style: GoogleFonts.inter(
+              fontSize: 14, color: OpstapColors.onSurface),
           decoration: InputDecoration(
             hintText: 'bijv. Excel',
-            hintStyle: GoogleFonts.inter(color: OpstapColors.onSurfaceVariant),
+            hintStyle:
+                GoogleFonts.inter(color: OpstapColors.onSurfaceVariant),
             filled: true,
             fillColor: OpstapColors.surfaceContainerLow,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
           ),
@@ -199,7 +277,8 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Annuleren',
-                style: GoogleFonts.inter(color: OpstapColors.onSurfaceVariant)),
+                style: GoogleFonts.inter(
+                    color: OpstapColors.onSurfaceVariant)),
           ),
           TextButton(
             onPressed: () {
@@ -235,19 +314,26 @@ class _FormSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
-            letterSpacing: -0.01 * 15,
+            letterSpacing: -0.2,
           ),
         ),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: OpstapColors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(14),
+            color: OpstapColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1C1A2E).withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -304,13 +390,13 @@ class _Field extends StatelessWidget {
         hintStyle: GoogleFonts.inter(
             fontSize: 13, color: OpstapColors.onSurfaceVariant),
         filled: true,
-        fillColor: OpstapColors.surfaceContainerLowest,
+        fillColor: OpstapColors.surfaceContainerLow,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide:
               const BorderSide(color: OpstapColors.primary, width: 1.5),
         ),
@@ -340,8 +426,8 @@ class _ChipSelector extends StatelessWidget {
       children: options.map((option) {
         final isSelected = option == selected;
         return Padding(
-          padding: EdgeInsets.only(
-              right: option == options.last ? 0 : 8),
+          padding:
+              EdgeInsets.only(right: option == options.last ? 0 : 8),
           child: GestureDetector(
             onTap: () => onChanged(option),
             child: AnimatedContainer(
@@ -396,7 +482,7 @@ class _SkillsWrap extends StatelessWidget {
                   style: GoogleFonts.inter(
                       fontSize: 12, color: OpstapColors.primary)),
               backgroundColor:
-                  OpstapColors.secondaryContainer.withValues(alpha: 0.5),
+                  OpstapColors.secondaryContainer.withValues(alpha: 0.6),
               deleteIconColor: OpstapColors.primary,
               onDeleted: () => onRemove(skill),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -409,7 +495,7 @@ class _SkillsWrap extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: OpstapColors.primary)),
-          backgroundColor: OpstapColors.surfaceContainerLowest,
+          backgroundColor: OpstapColors.surfaceContainerLow,
           onPressed: onAdd,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           visualDensity: VisualDensity.compact,
@@ -448,13 +534,16 @@ class _BottomBar extends StatelessWidget {
                 ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [OpstapColors.primary, OpstapColors.primaryContainer],
+                    colors: [
+                      OpstapColors.primary,
+                      OpstapColors.primaryContainer,
+                    ],
                   )
                 : const LinearGradient(colors: [
                     OpstapColors.surfaceContainerHigh,
-                    OpstapColors.surfaceContainerHigh
+                    OpstapColors.surfaceContainerHigh,
                   ]),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: canSave
                 ? [
                     BoxShadow(
@@ -467,10 +556,10 @@ class _BottomBar extends StatelessWidget {
           ),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(30),
             child: InkWell(
               onTap: canSave ? onSaved : null,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(30),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
@@ -478,8 +567,7 @@ class _BottomBar extends StatelessWidget {
                   children: [
                     Icon(Icons.save_rounded,
                         size: 18,
-                        color:
-                            canSave ? Colors.white : OpstapColors.outline),
+                        color: canSave ? Colors.white : OpstapColors.outline),
                     const SizedBox(width: 8),
                     Text(
                       'Profiel opslaan',

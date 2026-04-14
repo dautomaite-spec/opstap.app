@@ -59,7 +59,7 @@ class _HeroSection extends StatelessWidget {
               // Logo
               Text(
                 'Opstap',
-                style: GoogleFonts.manrope(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -70,22 +70,22 @@ class _HeroSection extends StatelessWidget {
               // Headline
               Text(
                 'Jouw volgende\nstap begint hier.',
-                style: GoogleFonts.manrope(
+                style: GoogleFonts.poppins(
                   fontSize: 34,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
-                  letterSpacing: -0.02 * 34,
+                  letterSpacing: -0.5,
                   height: 1.1,
                 ),
               ),
               const SizedBox(height: 14),
               // Subtitle
               Text(
-                'De slimste manier om je carrière\nnaar een hoger niveau te tillen.',
+                'Slimmer solliciteren.\nJij aan het stuur.',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withValues(alpha: 0.82),
                   height: 1.55,
                 ),
               ),
@@ -93,7 +93,7 @@ class _HeroSection extends StatelessWidget {
             ],
           ),
         ),
-        // Decorative geometric pattern (career path lines)
+        // Organic circles decoration
         Positioned.fill(
           child: ClipRRect(
             borderRadius: const BorderRadius.only(
@@ -101,7 +101,7 @@ class _HeroSection extends StatelessWidget {
               bottomRight: Radius.circular(28),
             ),
             child: CustomPaint(
-              painter: _GeometricPatternPainter(),
+              painter: _OrganicCirclesPainter(),
             ),
           ),
         ),
@@ -110,45 +110,39 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
-class _GeometricPatternPainter extends CustomPainter {
+class _OrganicCirclesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // Overlapping circles suggesting upward movement
+    // Large white — upper right, partially off-canvas
     canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.15),
-      size.width * 0.35,
-      paint,
+      Offset(size.width * 1.08, size.height * 0.08),
+      size.width * 0.45,
+      Paint()..color = Colors.white.withValues(alpha: 0.10),
     );
+    // Mid white — right edge
     canvas.drawCircle(
-      Offset(size.width * 0.75, size.height * 0.6),
-      size.width * 0.25,
-      paint,
+      Offset(size.width * 0.88, size.height * 0.62),
+      size.width * 0.26,
+      Paint()..color = Colors.white.withValues(alpha: 0.07),
     );
+    // Yellow accent — upper left, partially off-canvas
     canvas.drawCircle(
-      Offset(size.width * 0.95, size.height * 0.5),
-      size.width * 0.4,
-      paint,
+      Offset(size.width * -0.06, size.height * 0.22),
+      size.width * 0.26,
+      Paint()..color = const Color(0xFFFFD55A).withValues(alpha: 0.30),
     );
-
-    // Diagonal lines suggesting progress/path
-    final linePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.06)
-      ..strokeWidth = 1.0;
-
-    for (int i = 0; i < 6; i++) {
-      final offset = i * size.width * 0.18;
-      canvas.drawLine(
-        Offset(size.width * 0.4 + offset, 0),
-        Offset(size.width * 0.4 + offset - size.height * 0.5,
-            size.height),
-        linePaint,
-      );
-    }
+    // Pink accent — lower right
+    canvas.drawCircle(
+      Offset(size.width * 0.94, size.height * 0.88),
+      size.width * 0.18,
+      Paint()..color = const Color(0xFFFFAAC4).withValues(alpha: 0.38),
+    );
+    // Peach accent — lower left
+    canvas.drawCircle(
+      Offset(size.width * 0.08, size.height * 0.92),
+      size.width * 0.12,
+      Paint()..color = const Color(0xFFF8D8B0).withValues(alpha: 0.40),
+    );
   }
 
   @override
@@ -165,17 +159,17 @@ class _BodySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Feature chips
-          _FeatureChipsRow(),
+          // Benefits
+          _BenefitsList(),
           const SizedBox(height: 32),
           // CTA header
           Text(
             'Hoe wil je beginnen?',
-            style: GoogleFonts.manrope(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: OpstapColors.onSurface,
-              letterSpacing: -0.02 * 20,
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 6),
@@ -262,45 +256,109 @@ class _BodySection extends StatelessWidget {
   }
 }
 
-class _FeatureChipsRow extends StatelessWidget {
-  final _features = const [
-    (Icons.description_outlined, 'CV uploaden'),
-    (Icons.search_rounded, 'Vacatures'),
-    (Icons.send_rounded, 'Auto-solliciteren'),
+class _BenefitsList extends StatelessWidget {
+  static const _benefits = [
+    (
+      Icons.visibility_off_rounded,
+      'Jij bepaalt wie jouw CV ziet',
+      'Je deelt je gegevens alleen met werkgevers die jij kiest — nooit automatisch.',
+    ),
+    (
+      Icons.auto_awesome_rounded,
+      'Op maat gemaakte motivatiebrieven',
+      'AI schrijft voor elke vacature een unieke, gepersonaliseerde brief in het Nederlands.',
+    ),
+    (
+      Icons.search_rounded,
+      'Vacatures van alle grote NL-boards',
+      'Indeed, LinkedIn, Jobbird en Nationale Vacaturebank in één overzicht.',
+    ),
+    (
+      Icons.send_rounded,
+      'Solliciteer op meerdere vacatures tegelijk',
+      'Selecteer vacatures en solliciteer met één druk op de knop.',
+    ),
+    (
+      Icons.lock_rounded,
+      'Jouw data wordt niet gedeeld met derden',
+      'Je gegevens blijven van jou. Altijd inzichtelijk, altijd verwijderbaar.',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: _features.map((f) {
-        return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(
-              right: f == _features.last ? 0 : 8,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            decoration: BoxDecoration(
-              color: OpstapColors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Icon(f.$1, size: 20, color: OpstapColors.primary),
-                const SizedBox(height: 5),
-                Text(
-                  f.$2,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: OpstapColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: OpstapColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1C1A2E).withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-        );
-      }).toList(),
+        ],
+      ),
+      child: Column(
+        children: _benefits.map((b) {
+          final isLast = b == _benefits.last;
+          return Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: OpstapColors.secondaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(b.$1,
+                          size: 18, color: OpstapColors.primary),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.$2,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: OpstapColors.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            b.$3,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: OpstapColors.onSurfaceVariant,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!isLast)
+                Divider(
+                  height: 1,
+                  indent: 68,
+                  endIndent: 16,
+                  color: OpstapColors.outlineVariant.withValues(alpha: 0.5),
+                ),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -327,7 +385,7 @@ class _GradientButton extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [OpstapColors.primary, OpstapColors.primaryContainer],
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: OpstapColors.primary.withValues(alpha: 0.28),
@@ -338,10 +396,10 @@ class _GradientButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(30),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
             child: Row(
@@ -380,11 +438,11 @@ class _SecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: OpstapColors.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(12),
+      color: OpstapColors.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(30),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(30),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
           child: Row(
@@ -416,7 +474,7 @@ class _FooterSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
       child: Text(
-        'Door verder te gaan ga je akkoord met ons\nPrivacybeleid en de AVG-regels.',
+        'Door verder te gaan ga je akkoord met ons\nPrivacybeleid.',
         textAlign: TextAlign.center,
         style: GoogleFonts.inter(
           fontSize: 11,

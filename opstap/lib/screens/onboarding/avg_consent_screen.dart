@@ -3,10 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 
 class AvgConsentScreen extends StatefulWidget {
-  /// Called when the user accepts all consent items.
   final VoidCallback onAccepted;
-
-  /// Called when the user declines.
   final VoidCallback onDeclined;
 
   const AvgConsentScreen({
@@ -70,7 +67,7 @@ class _AvgConsentScreenState extends State<AvgConsentScreen> {
                           setState(() => _consentAiProcessing = v ?? false),
                       title: 'Verwerking door AI',
                       subtitle:
-                          'Ik begrijp dat mijn CV verwerkt wordt door de Claude API (Anthropic) voor profielextractie. Mijn gegevens worden niet gebruikt voor AI-training.',
+                          'Ik begrijp dat mijn CV verwerkt wordt door de Claude API voor profielextractie. Mijn gegevens worden niet gebruikt voor AI-training.',
                     ),
                     const SizedBox(height: 10),
                     _ConsentTile(
@@ -79,7 +76,7 @@ class _AvgConsentScreenState extends State<AvgConsentScreen> {
                           setState(() => _consentAutoDelete = v ?? false),
                       title: 'Automatisch verwijderen',
                       subtitle:
-                          'Ik ga akkoord dat mijn CV automatisch wordt verwijderd na mijn gekozen bewaartermijn (standaard 30 dagen). Ik kan mijn gegevens altijd eerder zelf verwijderen.',
+                          'Ik ga akkoord dat mijn CV automatisch wordt verwijderd na mijn gekozen bewaartermijn. Ik kan mijn gegevens altijd eerder verwijderen.',
                     ),
                     const SizedBox(height: 24),
                     _PrivacyNote(),
@@ -108,26 +105,26 @@ class _Header extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 48,
-          height: 48,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
             color: OpstapColors.secondaryContainer,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: const Icon(
             Icons.shield_rounded,
             color: OpstapColors.primary,
-            size: 26,
+            size: 28,
           ),
         ),
         const SizedBox(height: 16),
         Text(
           'Jouw privacy,\nonze verantwoordelijkheid.',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 26,
             fontWeight: FontWeight.w700,
             color: OpstapColors.onSurface,
-            letterSpacing: -0.02 * 26,
+            letterSpacing: -0.3,
             height: 1.15,
           ),
         ),
@@ -162,7 +159,7 @@ class _PrivacyPoints extends StatelessWidget {
     (
       Icons.delete_forever_rounded,
       'Zelf verwijderen',
-      'Je kunt je gegevens op elk moment verwijderen via Instellingen → Privacy.'
+      'Je kunt je gegevens op elk moment verwijderen via Instellingen.'
     ),
     (
       Icons.visibility_rounded,
@@ -180,8 +177,15 @@ class _PrivacyPoints extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: OpstapColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
+        color: OpstapColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1C1A2E).withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
@@ -194,7 +198,15 @@ class _PrivacyPoints extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(p.$1, size: 20, color: OpstapColors.primary),
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: OpstapColors.secondaryContainer,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(p.$1, size: 18, color: OpstapColors.primary),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -202,7 +214,7 @@ class _PrivacyPoints extends StatelessWidget {
                         children: [
                           Text(
                             p.$2,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: OpstapColors.onSurface,
@@ -226,6 +238,7 @@ class _PrivacyPoints extends StatelessWidget {
               if (!isLast)
                 Divider(
                   height: 1,
+                  indent: 48,
                   color: OpstapColors.outlineVariant.withValues(alpha: 0.5),
                 ),
             ],
@@ -246,11 +259,11 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.manrope(
+      style: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: OpstapColors.onSurface,
-        letterSpacing: -0.01 * 16,
+        letterSpacing: -0.2,
       ),
     );
   }
@@ -275,16 +288,16 @@ class _ConsentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: value
-              ? OpstapColors.secondaryContainer.withValues(alpha: 0.45)
-              : OpstapColors.surfaceContainer,
-          borderRadius: BorderRadius.circular(12),
+              ? OpstapColors.secondaryContainer.withValues(alpha: 0.55)
+              : OpstapColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: value ? OpstapColors.primary : Colors.transparent,
+            color: value ? OpstapColors.primary : OpstapColors.outlineVariant,
             width: 1.5,
           ),
         ),
@@ -305,7 +318,7 @@ class _ConsentTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: OpstapColors.onSurface,
@@ -388,7 +401,7 @@ class _BottomBar extends StatelessWidget {
                         end: Alignment.bottomRight,
                         colors: [
                           OpstapColors.primary,
-                          OpstapColors.primaryContainer
+                          OpstapColors.primaryContainer,
                         ],
                       )
                     : const LinearGradient(
@@ -397,7 +410,7 @@ class _BottomBar extends StatelessWidget {
                           OpstapColors.surfaceContainerHigh,
                         ],
                       ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 boxShadow: allAccepted
                     ? [
                         BoxShadow(
@@ -410,10 +423,10 @@ class _BottomBar extends StatelessWidget {
               ),
               child: Material(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 child: InkWell(
                   onTap: allAccepted ? onAccepted : null,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(30),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Row(
@@ -422,8 +435,9 @@ class _BottomBar extends StatelessWidget {
                         Icon(
                           Icons.check_rounded,
                           size: 18,
-                          color:
-                              allAccepted ? Colors.white : OpstapColors.outline,
+                          color: allAccepted
+                              ? Colors.white
+                              : OpstapColors.outline,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -444,7 +458,6 @@ class _BottomBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          // Decline button
           TextButton(
             onPressed: onDeclined,
             child: Text(

@@ -1,0 +1,6 @@
+# Claude Code / MCP config — contains API keys, never commit
+.mcp.json
+
+# Environment files
+.env
+.env.*
