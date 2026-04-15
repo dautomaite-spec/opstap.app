@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     app_secret_key: str = "change-me"
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    # SendGrid
+    sendgrid_api_key: str = ""
+    sendgrid_from_email: str = "sollicitaties@opstap.nl"
+    sendgrid_from_name: str = "Opstap"
+
     # CV storage
     cv_max_size_mb: int = 10
     cv_default_retention_days: int = 30

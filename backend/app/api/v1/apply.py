@@ -10,6 +10,7 @@ from app.schemas.application import (
     ApplicationOut,
 )
 from app.services.letter_generator import generate_letter
+from app.services.email_sender import send_application_email, ApplicationEmail
 
 router = APIRouter(prefix="/apply", tags=["apply"])
 
@@ -20,17 +21,19 @@ async def generate_motivation_letter(
     user_id: str,  # TODO: JWT dep
     supabase=Depends(get_supabase),
 ):
-    # Fetch job
     job_result = supabase.table("jobs").select("*").eq("id", str(body.job_id)).single().execute()
     if not job_result.data:
         raise HTTPException(status_code=404, detail="Job not found")
     job = job_result.data
 
-    # Fetch profile
     profile_result = supabase.table("profiles").select("*").eq("id", str(body.profile_id)).single().execute()
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = profile_result.data
+
+    # Merge any custom notes from the user into extra_info for the generator
+    if body.custom_notes:
+        profile = {**profile, "extra_info": f"{profile.get('extra_info', '')}\n{body.custom_notes}".strip()}
 
     letter = await generate_letter(
         job_title=job["title"],
@@ -52,15 +55,42 @@ async def send_application(
     user_id: str,  # TODO: JWT dep
     supabase=Depends(get_supabase),
 ):
-    # Fetch job for metadata
-    job_result = supabase.table("jobs").select("title,company,url").eq("id", str(body.job_id)).single().execute()
+    # Fetch job for metadata + contact email
+    job_result = supabase.table("jobs").select("title,company,url,contact_email").eq("id", str(body.job_id)).single().execute()
     if not job_result.data:
         raise HTTPException(status_code=404, detail="Job not found")
     job = job_result.data
 
-    # TODO: actual email/form submission (Phase 2 continuation)
-    # For now, log as "pending"
+    # Fetch user profile for reply-to details
+    profile_result = supabase.table("profiles").select("naam,email").eq("user_id", user_id).single().execute()
+    if not profile_result.data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    profile = profile_result.data
+
     now = datetime.now(timezone.utc)
+    status = "pending"
+    sent_at = None
+
+    if body.send_method == "email":
+        contact_email = job.get("contact_email")
+        if not contact_email:
+            raise HTTPException(
+                status_code=422,
+                detail="No contact email available for this job. Use send_method='form' instead.",
+            )
+
+        success = await send_application_email(ApplicationEmail(
+            to_email=contact_email,
+            to_name=job["company"],
+            reply_to_email=profile.get("email", ""),
+            reply_to_name=profile.get("naam", ""),
+            job_title=job["title"],
+            company=job["company"],
+            letter_body=body.letter_nl,
+        ))
+        status = "sent" if success else "failed"
+        sent_at = now.isoformat() if success else None
+
     row = {
         "id": str(uuid4()),
         "job_id": str(body.job_id),
@@ -69,7 +99,8 @@ async def send_application(
         "job_title": job["title"],
         "letter_nl": body.letter_nl,
         "send_method": body.send_method,
-        "status": "pending",
+        "status": status,
+        "sent_at": sent_at,
         "created_at": now.isoformat(),
     }
     result = supabase.table("applications").insert(row).execute()
