@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 
 class ManualProfileScreen extends StatefulWidget {
-  final VoidCallback onSaved;
+  final VoidCallback? onSaved;
 
-  const ManualProfileScreen({super.key, required this.onSaved});
+  const ManualProfileScreen({super.key, this.onSaved});
 
   @override
   State<ManualProfileScreen> createState() => _ManualProfileScreenState();
@@ -166,7 +167,7 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                 ),
               ),
             ),
-            _BottomBar(canSave: _canSave, onSaved: widget.onSaved),
+            _BottomBar(canSave: _canSave, onSaved: widget.onSaved ?? () => context.go('/jobs')),
           ],
         ),
       ),

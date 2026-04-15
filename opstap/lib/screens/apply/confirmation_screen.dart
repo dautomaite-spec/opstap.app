@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../jobs/job_search_screen.dart';
 
 class ConfirmationScreen extends StatefulWidget {
   final List<JobListing> appliedJobs;
-  final VoidCallback onSearchMore;
+  final VoidCallback? onSearchMore;
 
   const ConfirmationScreen({
     super.key,
-    required this.appliedJobs,
-    required this.onSearchMore,
+    this.appliedJobs = const [],
+    this.onSearchMore,
   });
 
   @override
@@ -171,7 +172,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                   icon: Icons.search_rounded,
                   title: 'Meer vacatures zoeken',
                   subtitle: 'Vind nog meer passende vacatures',
-                  onTap: widget.onSearchMore,
+                  onTap: widget.onSearchMore ?? () => context.go('/jobs'),
                 ),
                 const SizedBox(height: 10),
                 _NextStepCard(

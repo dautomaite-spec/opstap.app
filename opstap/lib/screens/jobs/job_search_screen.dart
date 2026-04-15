@@ -35,9 +35,9 @@ class JobListing {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 class JobSearchScreen extends StatefulWidget {
-  final ValueChanged<List<JobListing>> onApply;
+  final ValueChanged<List<JobListing>>? onApply;
 
-  const JobSearchScreen({super.key, required this.onApply});
+  const JobSearchScreen({super.key, this.onApply});
 
   @override
   State<JobSearchScreen> createState() => _JobSearchScreenState();
@@ -260,7 +260,7 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                 child: _ApplyButton(
                   count: selected.length,
                   onPressed: () {
-                    widget.onApply(selected);
+                    widget.onApply?.call(selected);
                     Navigator.push(
                       context,
                       MaterialPageRoute(

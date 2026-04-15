@@ -1,0 +1,47 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../screens/onboarding/welcome_screen.dart';
+import '../screens/onboarding/avg_consent_screen.dart';
+import '../screens/onboarding/cv_upload_screen.dart';
+import '../screens/profile/manual_profile_screen.dart';
+import '../screens/profile/extracted_profile_screen.dart';
+import '../screens/jobs/job_search_screen.dart';
+import '../screens/apply/motivation_letter_screen.dart';
+import '../screens/apply/confirmation_screen.dart';
+import '../screens/auth/login_screen.dart';
+import '../screens/auth/register_screen.dart';
+
+final routerProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: '/',
+    redirect: (context, state) {
+      final session = Supabase.instance.client.auth.currentSession;
+      final isLoggedIn = session != null;
+      final onAuthRoute =
+          state.matchedLocation == '/login' || state.matchedLocation == '/register';
+
+      // Unauthenticated users going to protected routes → login
+      final protectedRoutes = ['/profile', '/jobs', '/apply', '/confirm'];
+      final goingProtected =
+          protectedRoutes.any((r) => state.matchedLocation.startsWith(r));
+
+      if (!isLoggedIn && goingProtected) return '/login';
+      if (isLoggedIn && onAuthRoute) return '/';
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/', builder: (_, __) => const WelcomeScreen()),
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: '/avg-consent', builder: (_, __) => const AvgConsentScreen()),
+      GoRoute(path: '/cv-upload', builder: (_, __) => const CvUploadScreen()),
+      GoRoute(path: '/profile/manual', builder: (_, __) => const ManualProfileScreen()),
+      GoRoute(path: '/profile/extracted', builder: (_, __) => const ExtractedProfileScreen()),
+      GoRoute(path: '/jobs', builder: (_, __) => const JobSearchScreen()),
+      GoRoute(path: '/apply', builder: (_, __) => const MotivationLetterScreen()),
+      GoRoute(path: '/confirm', builder: (_, __) => const ConfirmationScreen()),
+    ],
+  );
+});

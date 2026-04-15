@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../jobs/job_search_screen.dart';
 
 class MotivationLetterScreen extends StatefulWidget {
   final List<JobListing> jobs;
-  final VoidCallback onSent;
+  final VoidCallback? onSent;
 
   const MotivationLetterScreen({
     super.key,
-    required this.jobs,
-    required this.onSent,
+    this.jobs = const [],
+    this.onSent,
   });
 
   @override
@@ -227,7 +228,7 @@ class _MotivationLetterScreenState extends State<MotivationLetterScreen> {
             // Send button
             _BottomBar(
               jobCount: widget.jobs.length,
-              onSend: widget.onSent,
+              onSend: widget.onSent ?? () => context.go('/confirm'),
             ),
           ],
         ),

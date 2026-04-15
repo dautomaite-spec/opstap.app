@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 
 class CvUploadScreen extends StatefulWidget {
-  final VoidCallback onUploaded;
+  final VoidCallback? onUploaded;
 
-  const CvUploadScreen({super.key, required this.onUploaded});
+  const CvUploadScreen({super.key, this.onUploaded});
 
   @override
   State<CvUploadScreen> createState() => _CvUploadScreenState();
@@ -73,7 +74,7 @@ class _CvUploadScreenState extends State<CvUploadScreen> {
             ),
             _BottomBar(
               fileSelected: _fileSelected,
-              onUpload: widget.onUploaded,
+              onUpload: widget.onUploaded ?? () => context.go('/profile/extracted'),
             ),
           ],
         ),

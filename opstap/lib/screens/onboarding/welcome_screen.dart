@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme.dart';
-import 'avg_consent_screen.dart';
-import 'cv_upload_screen.dart';
-import '../profile/extracted_profile_screen.dart';
-import '../profile/manual_profile_screen.dart';
-import '../jobs/job_search_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -192,43 +189,12 @@ class _BodySection extends StatelessWidget {
             label: 'CV uploaden',
             icon: Icons.upload_file_rounded,
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AvgConsentScreen(
-                    onAccepted: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CvUploadScreen(
-                            onUploaded: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ExtractedProfileScreen(
-                                    onConfirmed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => JobSearchScreen(
-                                            onApply: (_) {},
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    onDeclined: () => Navigator.pop(context),
-                  ),
-                ),
-              );
+              final session = Supabase.instance.client.auth.currentSession;
+              if (session == null) {
+                context.push('/login');
+              } else {
+                context.push('/avg-consent');
+              }
             },
           ),
           const SizedBox(height: 12),
@@ -237,23 +203,12 @@ class _BodySection extends StatelessWidget {
             label: 'Handmatig invullen',
             icon: Icons.edit_note_rounded,
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ManualProfileScreen(
-                    onSaved: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => JobSearchScreen(
-                            onApply: (_) {},
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
+              final session = Supabase.instance.client.auth.currentSession;
+              if (session == null) {
+                context.push('/login');
+              } else {
+                context.push('/profile/manual');
+              }
             },
           ),
         ],
