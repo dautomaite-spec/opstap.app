@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
+import '../../services/providers.dart';
 import '../apply/motivation_letter_screen.dart';
 import '../apply/confirmation_screen.dart';
 
@@ -30,100 +32,68 @@ class JobListing {
     required this.logoColor,
     this.saved = false,
   });
+
+  factory JobListing.fromJson(Map<String, dynamic> j) {
+    // Derive a consistent logo colour from the company name
+    final colours = [
+      const Color(0xFF0056B3), const Color(0xFFE65100),
+      const Color(0xFF2E7D32), const Color(0xFF6A1B9A),
+      const Color(0xFF00695C), const Color(0xFFB71C1C),
+      const Color(0xFF1565C0), const Color(0xFF4A148C),
+    ];
+    final idx = (j['company'] as String).codeUnits.fold(0, (a, b) => a + b) %
+        colours.length;
+
+    return JobListing(
+      id: j['id']?.toString() ?? '',
+      title: j['title'] ?? '',
+      company: j['company'] ?? '',
+      location: j['location'] ?? '',
+      contract: j['contract_type'] ?? 'Onbekend',
+      salaryRange: j['salary_range'] ?? '',
+      postedAgo: _relativeTime(j['scraped_at']),
+      matchScore: (j['match_score'] as int?) ?? 0,
+      logoColor: colours[idx],
+    );
+  }
+
+  static String _relativeTime(dynamic iso) {
+    if (iso == null) return '';
+    try {
+      final dt = DateTime.parse(iso as String);
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 60) return 'Zojuist';
+      if (diff.inHours < 24) return '${diff.inHours} uur geleden';
+      if (diff.inDays == 1) return 'Gisteren';
+      if (diff.inDays < 7) return '${diff.inDays} dagen geleden';
+      return '${(diff.inDays / 7).floor()} week geleden';
+    } catch (_) {
+      return '';
+    }
+  }
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-class JobSearchScreen extends StatefulWidget {
+class JobSearchScreen extends ConsumerStatefulWidget {
   final ValueChanged<List<JobListing>>? onApply;
 
   const JobSearchScreen({super.key, this.onApply});
 
   @override
-  State<JobSearchScreen> createState() => _JobSearchScreenState();
+  ConsumerState<JobSearchScreen> createState() => _JobSearchScreenState();
 }
 
-class _JobSearchScreenState extends State<JobSearchScreen> {
+class _JobSearchScreenState extends ConsumerState<JobSearchScreen> {
   final _searchController = TextEditingController();
   final _selectedIds = <String>{};
 
-  final _activeFilters = ['Amsterdam', 'Fulltime', '€3.000+'];
-
-  final _jobs = [
-    JobListing(
-      id: '1',
-      title: 'Senior Frontend Developer',
-      company: 'Coolblue',
-      location: 'Amsterdam',
-      contract: 'Fulltime',
-      salaryRange: '€4.500 – €5.500',
-      postedAgo: '2 dagen geleden',
-      matchScore: 92,
-      logoColor: const Color(0xFF0056B3),
-    ),
-    JobListing(
-      id: '2',
-      title: 'UX Designer',
-      company: 'Bol.com',
-      location: 'Utrecht',
-      contract: 'Fulltime',
-      salaryRange: '€3.800 – €4.800',
-      postedAgo: '3 dagen geleden',
-      matchScore: 88,
-      logoColor: const Color(0xFFE65100),
-    ),
-    JobListing(
-      id: '3',
-      title: 'Product Manager',
-      company: 'Adyen',
-      location: 'Amsterdam',
-      contract: 'Fulltime',
-      salaryRange: '€5.000 – €6.500',
-      postedAgo: '5 dagen geleden',
-      matchScore: 85,
-      logoColor: const Color(0xFF2E7D32),
-    ),
-    JobListing(
-      id: '4',
-      title: 'Backend Developer',
-      company: 'Picnic',
-      location: 'Amsterdam',
-      contract: 'Fulltime',
-      salaryRange: '€4.000 – €5.200',
-      postedAgo: '1 week geleden',
-      matchScore: 79,
-      logoColor: const Color(0xFF6A1B9A),
-    ),
-    JobListing(
-      id: '5',
-      title: 'Data Analyst',
-      company: 'NS',
-      location: 'Utrecht',
-      contract: 'Parttime',
-      salaryRange: '€3.200 – €4.000',
-      postedAgo: '1 week geleden',
-      matchScore: 74,
-      logoColor: const Color(0xFF00695C),
-    ),
-  ];
-
-  List<JobListing> get _filtered {
-    final query = _searchController.text.toLowerCase();
-    if (query.isEmpty) return _jobs;
-    return _jobs
-        .where((j) =>
-            j.title.toLowerCase().contains(query) ||
-            j.company.toLowerCase().contains(query))
-        .toList();
+  @override
+  void initState() {
+    super.initState();
+    // Trigger initial search using profile's job preference if available
+    WidgetsBinding.instance.addPostFrameCallback((_) => _triggerSearch());
   }
-
-  void _toggleSelect(String id) =>
-      setState(() => _selectedIds.contains(id)
-          ? _selectedIds.remove(id)
-          : _selectedIds.add(id));
-
-  void _removeFilter(String filter) =>
-      setState(() => _activeFilters.remove(filter));
 
   @override
   void dispose() {
@@ -131,11 +101,19 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
     super.dispose();
   }
 
+  void _triggerSearch() {
+    final q = _searchController.text.trim();
+    ref.read(jobSearchParamsProvider.notifier).state =
+        JobSearchParams(keywords: q);
+  }
+
+  void _toggleSelect(String id) => setState(() => _selectedIds.contains(id)
+      ? _selectedIds.remove(id)
+      : _selectedIds.add(id));
+
   @override
   Widget build(BuildContext context) {
-    final filtered = _filtered;
-    final selected =
-        _jobs.where((j) => _selectedIds.contains(j.id)).toList();
+    final jobsAsync = ref.watch(jobsProvider);
 
     return Scaffold(
       backgroundColor: OpstapColors.surface,
@@ -149,139 +127,174 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
         ),
         title: Text(
           'Vacatures',
-          style: GoogleFonts.manrope(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: OpstapColors.onSurface,
-          ),
+          style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: OpstapColors.onSurface),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune_rounded, color: OpstapColors.primary),
-            onPressed: () {},
+            icon: const Icon(Icons.refresh_rounded,
+                color: OpstapColors.primary),
+            onPressed: () => ref.invalidate(jobsProvider),
           ),
         ],
       ),
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search bar
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (_) => setState(() {}),
-                    style: GoogleFonts.inter(
-                        fontSize: 14, color: OpstapColors.onSurface),
-                    decoration: InputDecoration(
-                      hintText: 'Zoek functie of bedrijf...',
-                      hintStyle: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: OpstapColors.onSurfaceVariant),
-                      prefixIcon: const Icon(Icons.search_rounded,
-                          color: OpstapColors.onSurfaceVariant, size: 20),
-                      filled: true,
-                      fillColor: OpstapColors.surfaceContainerLow,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                onSubmitted: (_) => _triggerSearch(),
+                textInputAction: TextInputAction.search,
+                style: GoogleFonts.inter(
+                    fontSize: 14, color: OpstapColors.onSurface),
+                decoration: InputDecoration(
+                  hintText: 'Zoek functie of stad...',
+                  hintStyle: GoogleFonts.inter(
+                      fontSize: 14, color: OpstapColors.onSurfaceVariant),
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: OpstapColors.onSurfaceVariant, size: 20),
+                  suffixIcon: jobsAsync.isLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: OpstapColors.primary),
+                          ),
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: OpstapColors.surfaceContainerLow,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
                   ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
                 ),
-                // Filter chips
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+
+            // Body — loading / error / list
+            Expanded(
+              child: jobsAsync.when(
+                loading: () => const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _FilterChip(
-                        label: 'Filters',
-                        icon: Icons.tune_rounded,
-                        onTap: () {},
-                      ),
-                      const SizedBox(width: 8),
-                      ..._activeFilters.map((f) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _ActiveFilterChip(
-                              label: f,
-                              onRemove: () => _removeFilter(f),
-                            ),
-                          )),
+                      CircularProgressIndicator(color: OpstapColors.primary),
+                      SizedBox(height: 16),
+                      Text('Vacatures ophalen…'),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                // Result count
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    '${filtered.length} vacatures gevonden',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: OpstapColors.onSurfaceVariant,
-                    ),
-                  ),
+                error: (err, _) => _ErrorState(
+                  onRetry: () => ref.invalidate(jobsProvider),
                 ),
-                const SizedBox(height: 8),
-                // Job list
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.fromLTRB(
-                        16, 0, 16, selected.isEmpty ? 16 : 88),
-                    itemCount: filtered.length,
-                    separatorBuilder: (context, _) => const SizedBox(height: 10),
-                    itemBuilder: (_, i) {
-                      final job = filtered[i];
-                      return _JobCard(
-                        job: job,
-                        isSelected: _selectedIds.contains(job.id),
-                        onTap: () => _toggleSelect(job.id),
-                        onSave: () =>
-                            setState(() => job.saved = !job.saved),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            // Floating apply button
-            if (selected.isNotEmpty)
-              Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
-                child: _ApplyButton(
-                  count: selected.length,
-                  onPressed: () {
-                    widget.onApply?.call(selected);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MotivationLetterScreen(
-                          jobs: selected,
-                          onSent: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ConfirmationScreen(
-                                appliedJobs: selected,
-                                onSearchMore: () => Navigator.popUntil(
-                                    context, (r) => r.isFirst),
-                              ),
+                data: (raw) {
+                  final jobs =
+                      raw.map(JobListing.fromJson).toList();
+
+                  // Client-side text filter on top of API results
+                  final query = _searchController.text.toLowerCase();
+                  final filtered = query.isEmpty
+                      ? jobs
+                      : jobs
+                          .where((j) =>
+                              j.title.toLowerCase().contains(query) ||
+                              j.company.toLowerCase().contains(query))
+                          .toList();
+
+                  final selected = jobs
+                      .where((j) => _selectedIds.contains(j.id))
+                      .toList();
+
+                  if (filtered.isEmpty) {
+                    return _EmptyState(
+                        onRetry: () => ref.invalidate(jobsProvider));
+                  }
+
+                  return Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              '${filtered.length} vacatures gevonden',
+                              style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: OpstapColors.onSurfaceVariant),
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: ListView.separated(
+                              padding: EdgeInsets.fromLTRB(
+                                  16, 0, 16, selected.isEmpty ? 16 : 96),
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: (_, i) {
+                                final job = filtered[i];
+                                return _JobCard(
+                                  job: job,
+                                  isSelected:
+                                      _selectedIds.contains(job.id),
+                                  onTap: () => _toggleSelect(job.id),
+                                  onSave: () =>
+                                      setState(() => job.saved = !job.saved),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
+                      if (selected.isNotEmpty)
+                        Positioned(
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
+                          child: _ApplyButton(
+                            count: selected.length,
+                            onPressed: () {
+                              widget.onApply?.call(selected);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MotivationLetterScreen(
+                                    jobs: selected,
+                                    onSent: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ConfirmationScreen(
+                                          appliedJobs: selected,
+                                          onSearchMore: () =>
+                                              Navigator.popUntil(
+                                                  context, (r) => r.isFirst),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
+            ),
           ],
         ),
       ),
@@ -289,36 +302,45 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
   }
 }
 
-// ─── Filter chips ─────────────────────────────────────────────────────────────
+// ─── Error / empty states ─────────────────────────────────────────────────────
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _FilterChip(
-      {required this.label, required this.icon, required this.onTap});
+class _ErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorState({required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: OpstapColors.primary,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: Colors.white),
-            const SizedBox(width: 6),
-            Text(label,
+            const Icon(Icons.wifi_off_rounded,
+                size: 48, color: OpstapColors.onSurfaceVariant),
+            const SizedBox(height: 16),
+            Text('Kan geen vacatures laden',
+                style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: OpstapColors.onSurface)),
+            const SizedBox(height: 8),
+            Text('Controleer je verbinding en probeer opnieuw.',
                 style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white)),
+                    fontSize: 13, color: OpstapColors.onSurfaceVariant),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Opnieuw proberen'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: OpstapColors.primary,
+                side: const BorderSide(color: OpstapColors.primary),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+              ),
+            ),
           ],
         ),
       ),
@@ -326,33 +348,33 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _ActiveFilterChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onRemove;
-
-  const _ActiveFilterChip({required this.label, required this.onRemove});
+class _EmptyState extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _EmptyState({required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: OpstapColors.secondaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(label,
+          const Icon(Icons.search_off_rounded,
+              size: 48, color: OpstapColors.onSurfaceVariant),
+          const SizedBox(height: 16),
+          Text('Geen vacatures gevonden',
+              style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: OpstapColors.onSurface)),
+          const SizedBox(height: 8),
+          Text('Pas je zoekopdracht aan of probeer opnieuw.',
               style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: OpstapColors.primary)),
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onRemove,
-            child: const Icon(Icons.close_rounded,
-                size: 14, color: OpstapColors.primary),
+                  fontSize: 13, color: OpstapColors.onSurfaceVariant)),
+          const SizedBox(height: 24),
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Opnieuw zoeken'),
           ),
         ],
       ),
@@ -388,7 +410,8 @@ class _JobCard extends StatelessWidget {
               : OpstapColors.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? OpstapColors.primary : Colors.transparent,
+            color:
+                isSelected ? OpstapColors.primary : Colors.transparent,
             width: 1.5,
           ),
           boxShadow: [
@@ -405,7 +428,6 @@ class _JobCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Company logo
                 Container(
                   width: 42,
                   height: 42,
@@ -415,8 +437,8 @@ class _JobCard extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      job.company[0],
-                      style: GoogleFonts.manrope(
+                      job.company.isNotEmpty ? job.company[0] : '?',
+                      style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Colors.white),
@@ -428,27 +450,21 @@ class _JobCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        job.title,
-                        style: GoogleFonts.manrope(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: OpstapColors.onSurface,
-                          letterSpacing: -0.01 * 14,
-                        ),
-                      ),
+                      Text(job.title,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: OpstapColors.onSurface,
+                          )),
                       const SizedBox(height: 2),
-                      Text(
-                        job.company,
-                        style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: OpstapColors.onSurfaceVariant),
-                      ),
+                      Text(job.company,
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: OpstapColors.onSurfaceVariant)),
                     ],
                   ),
                 ),
-                // Match score chip
-                _MatchChip(score: job.matchScore),
+                if (job.matchScore > 0) _MatchChip(score: job.matchScore),
               ],
             ),
             const SizedBox(height: 10),
@@ -458,31 +474,31 @@ class _JobCard extends StatelessWidget {
                     size: 13, color: OpstapColors.onSurfaceVariant),
                 const SizedBox(width: 3),
                 Text(
-                  '${job.location} · ${job.contract}',
+                  [job.location, job.contract]
+                      .where((s) => s.isNotEmpty)
+                      .join(' · '),
                   style: GoogleFonts.inter(
-                      fontSize: 12, color: OpstapColors.onSurfaceVariant),
+                      fontSize: 12,
+                      color: OpstapColors.onSurfaceVariant),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Text(
-                  job.salaryRange,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: OpstapColors.onSurface,
-                  ),
-                ),
+                if (job.salaryRange.isNotEmpty)
+                  Text(job.salaryRange,
+                      style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: OpstapColors.onSurface)),
                 const Spacer(),
-                Text(
-                  job.postedAgo,
-                  style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: OpstapColors.onSurfaceVariant),
-                ),
-                const SizedBox(width: 4),
+                if (job.postedAgo.isNotEmpty)
+                  Text(job.postedAgo,
+                      style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: OpstapColors.onSurfaceVariant)),
+                const SizedBox(width: 6),
                 GestureDetector(
                   onTap: onSave,
                   child: Icon(
@@ -513,16 +529,15 @@ class _MatchChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: OpstapColors.tertiaryContainer,
+        color: OpstapColors.secondaryContainer,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        '$score% match',
+        '$score%',
         style: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: OpstapColors.onTertiaryContainer,
-        ),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: OpstapColors.primary),
       ),
     );
   }
@@ -540,12 +555,8 @@ class _ApplyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [OpstapColors.primary, OpstapColors.primaryContainer],
-        ),
-        borderRadius: BorderRadius.circular(14),
+        gradient: OpstapColors.heroGradient,
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: OpstapColors.primary.withValues(alpha: 0.35),
@@ -556,10 +567,10 @@ class _ApplyButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(30),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(30),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
@@ -569,11 +580,10 @@ class _ApplyButton extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Solliciteer op $count ${count == 1 ? 'vacature' : 'vacatures'}',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                  style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
                 ),
               ],
             ),
