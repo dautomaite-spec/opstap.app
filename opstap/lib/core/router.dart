@@ -12,6 +12,7 @@ import '../screens/apply/motivation_letter_screen.dart';
 import '../screens/apply/confirmation_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/settings/settings_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -42,6 +43,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/jobs', builder: (_, __) => const JobSearchScreen()),
       GoRoute(path: '/apply', builder: (_, __) => const MotivationLetterScreen()),
       GoRoute(path: '/confirm', builder: (_, __) => const ConfirmationScreen()),
+      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
     ],
   );
 });

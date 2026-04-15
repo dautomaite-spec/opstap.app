@@ -1,5 +1,5 @@
 # Opstap — Planning Document
-> Last updated: 2026-04-14 (CV storage decision added)
+> Last updated: 2026-04-15 (Phase 2 backend + Flutter wiring complete)
 
 ---
 
@@ -278,14 +278,15 @@ Opstap App
 - [ ] Dev rules
 
 ### Phase 2 — Building (next)
-- [ ] Backend setup (FastAPI + Supabase)
-- [ ] Flutter project scaffold
-- [ ] Auth flow
-- [ ] CV upload + profile extraction
-- [ ] Job scraping (Indeed NL first)
-- [ ] Motivation letter generation
-- [ ] Auto-apply (email first, then forms)
-- [ ] Basic UI — all screens
+- [x] Backend setup (FastAPI + Supabase)
+- [x] Flutter project scaffold
+- [x] Auth flow (Login + Register screens, Supabase auth, go_router guards)
+- [x] CV upload + profile extraction (file_picker, retention selector, ApiClient)
+- [x] Job scraping (Jobbird RSS + Nationale Vacaturebank RSS)
+- [x] Motivation letter generation (Claude API, Dutch prompt, banned-phrases list)
+- [x] Auto-apply (SendGrid email, Reply-To pattern)
+- [x] Basic UI — all 10 screens wired to real API + Riverpod providers
+- [x] Settings screen (account, privacy/data deletion, notifications, about)
 
 ### Phase 3 — Polish & Launch
 - [ ] Testing (unit + integration + manual)
