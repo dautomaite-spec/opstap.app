@@ -62,9 +62,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return 'Dit e-mailadres is al in gebruik. Probeer in te loggen.';
     }
     if (message.toLowerCase().contains('password')) {
-      return 'Wachtwoord moet minimaal 6 tekens bevatten.';
+      return 'Wachtwoord voldoet niet aan de vereisten.';
     }
     return 'Er is iets misgegaan. Probeer het opnieuw.';
+  }
+
+  static String? _validatePassword(String? v) {
+    if (v == null || v.isEmpty) return 'Vul een wachtwoord in';
+    if (v.length < 10) return 'Minimaal 10 tekens';
+    if (!v.contains(RegExp(r'[A-Z]'))) return 'Minimaal één hoofdletter (A–Z)';
+    if (!v.contains(RegExp(r'[0-9]'))) return 'Minimaal één cijfer (0–9)';
+    if (!v.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]')))
+      return 'Minimaal één speciaal teken (!@#\$%...)';
+    return null;
+  }
+
+  static int _passwordStrength(String v) {
+    if (v.isEmpty) return 0;
+    int score = 0;
+    if (v.length >= 10) score++;
+    if (v.length >= 14) score++;
+    if (v.contains(RegExp(r'[A-Z]'))) score++;
+    if (v.contains(RegExp(r'[0-9]'))) score++;
+    if (v.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]'))) score++;
+    return score; // 0–5
   }
 
   @override
@@ -104,6 +125,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             onTogglePassword: () => setState(() => _obscurePassword = !_obscurePassword),
             onToggleConfirm: () => setState(() => _obscureConfirm = !_obscureConfirm),
             errorMessage: _errorMessage,
+            passwordValidator: _validatePassword,
+            passwordStrength: _passwordStrength(_passwordController.text),
+            onPasswordChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 16),
           _AvgCheckbox(
@@ -157,6 +181,9 @@ class _RegisterForm extends StatelessWidget {
     required this.obscureConfirm,
     required this.onTogglePassword,
     required this.onToggleConfirm,
+    required this.passwordValidator,
+    required this.passwordStrength,
+    required this.onPasswordChanged,
     this.errorMessage,
   });
 
@@ -168,6 +195,9 @@ class _RegisterForm extends StatelessWidget {
   final bool obscureConfirm;
   final VoidCallback onTogglePassword;
   final VoidCallback onToggleConfirm;
+  final String? Function(String?) passwordValidator;
+  final int passwordStrength; // 0–5
+  final ValueChanged<String> onPasswordChanged;
   final String? errorMessage;
 
   @override
@@ -205,8 +235,9 @@ class _RegisterForm extends StatelessWidget {
               controller: passwordController,
               obscureText: obscurePassword,
               textInputAction: TextInputAction.next,
+              onChanged: onPasswordChanged,
               decoration: _inputDecoration('Wachtwoord', Icons.lock_outline_rounded).copyWith(
-                helperText: 'Minimaal 8 tekens',
+                helperText: 'Min. 10 tekens, hoofdletter, cijfer, speciaal teken',
                 suffixIcon: IconButton(
                   icon: Icon(
                     obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
@@ -215,12 +246,10 @@ class _RegisterForm extends StatelessWidget {
                   onPressed: onTogglePassword,
                 ),
               ),
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Vul een wachtwoord in';
-                if (v.length < 8) return 'Wachtwoord moet minimaal 8 tekens bevatten';
-                return null;
-              },
+              validator: passwordValidator,
             ),
+            const SizedBox(height: 8),
+            _PasswordStrengthBar(strength: passwordStrength),
             const SizedBox(height: 16),
             TextFormField(
               controller: confirmController,
@@ -407,6 +436,53 @@ class _LoginLink extends StatelessWidget {
               color: OpstapColors.primary,
               fontWeight: FontWeight.w600,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PasswordStrengthBar extends StatelessWidget {
+  final int strength; // 0–5
+
+  const _PasswordStrengthBar({required this.strength});
+
+  @override
+  Widget build(BuildContext context) {
+    if (strength == 0) return const SizedBox.shrink();
+
+    final (label, color) = switch (strength) {
+      1 || 2 => ('Zwak', const Color(0xFFE53935)),
+      3 => ('Matig', const Color(0xFFF57C00)),
+      4 => ('Sterk', const Color(0xFF388E3C)),
+      _ => ('Zeer sterk', const Color(0xFF1B5E20)),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: List.generate(5, (i) {
+            return Expanded(
+              child: Container(
+                height: 4,
+                margin: EdgeInsets.only(right: i < 4 ? 4 : 0),
+                decoration: BoxDecoration(
+                  color: i < strength ? color : OpstapColors.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: color,
           ),
         ),
       ],
