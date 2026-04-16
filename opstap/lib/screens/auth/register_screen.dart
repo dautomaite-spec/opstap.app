@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme.dart';
+import 'login_screen.dart' show _OrDivider, _GoogleButton;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
+  bool _loadingGoogle = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _avgAccepted = false;
@@ -30,6 +32,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
+  }
+
+  Future<void> _registerWithGoogle() async {
+    setState(() {
+      _loadingGoogle = true;
+      _errorMessage = null;
+    });
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'http://localhost:55555',
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Google aanmelden mislukt. Probeer het opnieuw.');
+      }
+    } finally {
+      if (mounted) setState(() => _loadingGoogle = false);
+    }
   }
 
   Future<void> _register() async {
@@ -136,6 +157,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           const SizedBox(height: 24),
           _RegisterButton(loading: _loading, onPressed: _register),
+          const SizedBox(height: 16),
+          _OrDivider(),
+          const SizedBox(height: 16),
+          _GoogleButton(loading: _loadingGoogle, onPressed: _registerWithGoogle),
           const SizedBox(height: 16),
           _LoginLink(),
           const SizedBox(height: 32),

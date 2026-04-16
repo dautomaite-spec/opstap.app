@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
+  bool _loadingGoogle = false;
   bool _obscurePassword = true;
   String? _errorMessage;
 
@@ -44,6 +45,26 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _errorMessage = _translateError(e.message));
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    setState(() {
+      _loadingGoogle = true;
+      _errorMessage = null;
+    });
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'http://localhost:55555',
+      );
+      // OAuth opens a browser tab — session is picked up via deep link / redirect
+    } catch (_) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Google inloggen mislukt. Probeer het opnieuw.');
+      }
+    } finally {
+      if (mounted) setState(() => _loadingGoogle = false);
     }
   }
 
@@ -82,6 +103,10 @@ class _LoginScreenState extends State<LoginScreen> {
               _LoginButton(loading: _loading, onPressed: _login),
               const SizedBox(height: 16),
               _ForgotPassword(),
+              const SizedBox(height: 16),
+              _OrDivider(),
+              const SizedBox(height: 16),
+              _GoogleButton(loading: _loadingGoogle, onPressed: _loginWithGoogle),
               const SizedBox(height: 32),
               _RegisterLink(),
               const SizedBox(height: 32),
@@ -340,6 +365,79 @@ class _RegisterLink extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _OrDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(child: Divider(color: OpstapColors.outlineVariant)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            'of',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: OpstapColors.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const Expanded(child: Divider(color: OpstapColors.outlineVariant)),
+      ],
+    );
+  }
+}
+
+class _GoogleButton extends StatelessWidget {
+  final bool loading;
+  final VoidCallback onPressed;
+  const _GoogleButton({required this.loading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: OutlinedButton(
+        onPressed: loading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: OpstapColors.surfaceContainerLowest,
+          side: const BorderSide(color: OpstapColors.outlineVariant),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        ),
+        child: loading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: OpstapColors.primary),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Google 'G' logo using coloured text
+                  Text(
+                    'G',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF4285F4),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Doorgaan met Google',
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: OpstapColors.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
