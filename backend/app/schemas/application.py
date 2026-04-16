@@ -7,6 +7,7 @@ class MotivationLetterRequest(BaseModel):
     job_id: UUID4
     profile_id: UUID4
     custom_notes: Optional[str] = None  # extra context from user
+    writing_style: Optional[str] = "formeel"  # formeel / informeel / luchtig / grappig
 
 
 class MotivationLetterOut(BaseModel):

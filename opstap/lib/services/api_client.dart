@@ -115,6 +115,7 @@ class ApiClient {
     required String jobId,
     required String profileId,
     String? customNotes,
+    String writingStyle = 'formeel',
   }) async {
     final res = await http.post(
       Uri.parse('$_base/api/v1/apply/letter?user_id=$_userId'),
@@ -123,6 +124,7 @@ class ApiClient {
         'job_id': jobId,
         'profile_id': profileId,
         if (customNotes != null) 'custom_notes': customNotes,
+        'writing_style': writingStyle,
       }),
     );
     _check(res);

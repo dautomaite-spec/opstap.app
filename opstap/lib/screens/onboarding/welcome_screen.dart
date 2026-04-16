@@ -11,205 +11,190 @@ class WelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: OpstapColors.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _HeroSection(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: _BodySection(),
-              ),
-            ),
-            _FooterSection(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Hero ────────────────────────────────────────────────────────────────────
-
-class _HeroSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Gradient background
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(28, 44, 28, 44),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [OpstapColors.primary, OpstapColors.primaryContainer],
-            ),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(28),
-              bottomRight: Radius.circular(28),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Logo
-              Text(
-                'Opstap',
-                style: GoogleFonts.manrope(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 36),
-              // Headline
-              Text(
-                'Jouw volgende\nstap begint hier.',
-                style: GoogleFonts.manrope(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.02 * 34,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 14),
-              // Subtitle
-              Text(
-                'De slimste manier om je carrière\nnaar een hoger niveau te tillen.',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  height: 1.55,
-                ),
-              ),
-              const SizedBox(height: 4),
-            ],
-          ),
-        ),
-        // Decorative geometric pattern (career path lines)
-        Positioned.fill(
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(28),
-              bottomRight: Radius.circular(28),
-            ),
-            child: CustomPaint(
-              painter: _GeometricPatternPainter(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GeometricPatternPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // Overlapping circles suggesting upward movement
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.15),
-      size.width * 0.35,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.75, size.height * 0.6),
-      size.width * 0.25,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.95, size.height * 0.5),
-      size.width * 0.4,
-      paint,
-    );
-
-    // Diagonal lines suggesting progress/path
-    final linePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.06)
-      ..strokeWidth = 1.0;
-
-    for (int i = 0; i < 6; i++) {
-      final offset = i * size.width * 0.18;
-      canvas.drawLine(
-        Offset(size.width * 0.4 + offset, 0),
-        Offset(size.width * 0.4 + offset - size.height * 0.5,
-            size.height),
-        linePaint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// ─── Body ─────────────────────────────────────────────────────────────────────
-
-class _BodySection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Stack(
         children: [
-          // Feature chips
-          _FeatureChipsRow(),
-          const SizedBox(height: 32),
-          // CTA header
-          Text(
-            'Hoe wil je beginnen?',
-            style: GoogleFonts.manrope(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: OpstapColors.onSurface,
-              letterSpacing: -0.02 * 20,
+          // ── Decorative circles ──────────────────────────────────────────
+          // Top-right: large indigo
+          Positioned(
+            top: -40,
+            right: -40,
+            child: _Circle(size: 160, color: OpstapColors.primary),
+          ),
+          // Top-right: small yellow
+          Positioned(
+            top: 60,
+            right: 80,
+            child: _Circle(size: 52, color: OpstapColors.accent),
+          ),
+          // Bottom-left: medium pink
+          Positioned(
+            bottom: 120,
+            left: -30,
+            child: _Circle(size: 100, color: OpstapColors.tertiary),
+          ),
+          // Bottom-left: small indigo
+          Positioned(
+            bottom: 80,
+            left: 60,
+            child: _Circle(size: 36, color: OpstapColors.primary),
+          ),
+
+          // ── Content ─────────────────────────────────────────────────────
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo bar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: Text(
+                    'Opstap',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: OpstapColors.onSurface,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Headline
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Welkom,\nVind jouw\ndroomjob!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: OpstapColors.onSurface,
+                      height: 1.15,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'De slimste manier om je carrière\nnaar een hoger niveau te tillen.',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: OpstapColors.onSurfaceVariant,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Feature chips row
+                SizedBox(
+                  height: 80,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    children: const [
+                      _FeatureChip(icon: Icons.description_outlined, label: 'CV uploaden'),
+                      SizedBox(width: 12),
+                      _FeatureChip(icon: Icons.search_rounded, label: 'Vacatures'),
+                      SizedBox(width: 12),
+                      _FeatureChip(icon: Icons.send_rounded, label: 'Auto-solliciteren'),
+                    ],
+                  ),
+                ),
+
+                const Spacer(),
+
+                // CTA card
+                Container(
+                  margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: OpstapColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: OpstapColors.primary.withValues(alpha: 0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Hoe wil je beginnen?',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: OpstapColors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Je kunt altijd stoppen of van aanpak wisselen.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: OpstapColors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Primary button — indigo pill
+                      _PrimaryButton(
+                        label: 'CV uploaden',
+                        icon: Icons.upload_file_rounded,
+                        onPressed: () {
+                          final session =
+                              Supabase.instance.client.auth.currentSession;
+                          if (session == null) {
+                            context.push('/login');
+                          } else {
+                            context.push('/avg-consent');
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Secondary button — outline pill
+                      _OutlineButton(
+                        label: 'Handmatig invullen',
+                        icon: Icons.edit_note_rounded,
+                        onPressed: () {
+                          final session =
+                              Supabase.instance.client.auth.currentSession;
+                          if (session == null) {
+                            context.push('/login');
+                          } else {
+                            context.push('/profile/manual');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Footer
+                Center(
+                  child: Text(
+                    'Door verder te gaan ga je akkoord met ons Privacybeleid.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: OpstapColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+              ],
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Je kunt altijd stoppen of van aanpak wisselen.',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: OpstapColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Primary button
-          _GradientButton(
-            label: 'CV uploaden',
-            icon: Icons.upload_file_rounded,
-            onPressed: () {
-              final session = Supabase.instance.client.auth.currentSession;
-              if (session == null) {
-                context.push('/login');
-              } else {
-                context.push('/avg-consent');
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-          // Secondary button
-          _SecondaryButton(
-            label: 'Handmatig invullen',
-            icon: Icons.edit_note_rounded,
-            onPressed: () {
-              final session = Supabase.instance.client.auth.currentSession;
-              if (session == null) {
-                context.push('/login');
-              } else {
-                context.push('/profile/manual');
-              }
-            },
           ),
         ],
       ),
@@ -217,166 +202,117 @@ class _BodySection extends StatelessWidget {
   }
 }
 
-class _FeatureChipsRow extends StatelessWidget {
-  final _features = const [
-    (Icons.description_outlined, 'CV uploaden'),
-    (Icons.search_rounded, 'Vacatures'),
-    (Icons.send_rounded, 'Auto-solliciteren'),
-  ];
+// ─── Decorative circle ────────────────────────────────────────────────────────
+
+class _Circle extends StatelessWidget {
+  final double size;
+  final Color color;
+  const _Circle({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: _features.map((f) {
-        return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(
-              right: f == _features.last ? 0 : 8,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            decoration: BoxDecoration(
-              color: OpstapColors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Icon(f.$1, size: 20, color: OpstapColors.primary),
-                const SizedBox(height: 5),
-                Text(
-                  f.$2,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: OpstapColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+}
+
+// ─── Feature chip ─────────────────────────────────────────────────────────────
+
+class _FeatureChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _FeatureChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: OpstapColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: OpstapColors.primary.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 22, color: OpstapColors.primary),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: OpstapColors.onSurfaceVariant,
             ),
           ),
-        );
-      }).toList(),
+        ],
+      ),
     );
   }
 }
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 
-class _GradientButton extends StatelessWidget {
+class _PrimaryButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onPressed;
-
-  const _GradientButton({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-  });
+  const _PrimaryButton(
+      {required this.label, required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [OpstapColors.primary, OpstapColors.primaryContainer],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: OpstapColors.primary.withValues(alpha: 0.28),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: OpstapColors.primary,
+          foregroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          elevation: 0,
+          textStyle:
+              GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 }
 
-class _SecondaryButton extends StatelessWidget {
+class _OutlineButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onPressed;
-
-  const _SecondaryButton({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-  });
+  const _OutlineButton(
+      {required this.label, required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: OpstapColors.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: OpstapColors.primary, size: 20),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: OpstapColors.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Footer ───────────────────────────────────────────────────────────────────
-
-class _FooterSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-      child: Text(
-        'Door verder te gaan ga je akkoord met ons\nPrivacybeleid en de AVG-regels.',
-        textAlign: TextAlign.center,
-        style: GoogleFonts.inter(
-          fontSize: 11,
-          color: OpstapColors.onSurfaceVariant,
-          height: 1.6,
+    return SizedBox(
+      height: 52,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: OpstapColors.primary,
+          side: const BorderSide(color: OpstapColors.outlineVariant, width: 1.5),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          textStyle:
+              GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500),
         ),
       ),
     );

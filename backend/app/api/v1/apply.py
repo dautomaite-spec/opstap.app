@@ -40,6 +40,7 @@ async def generate_motivation_letter(
         company=job["company"],
         job_description=job.get("description_snippet") or "",
         profile=profile,
+        writing_style=body.writing_style or "formeel",
     )
 
     return MotivationLetterOut(

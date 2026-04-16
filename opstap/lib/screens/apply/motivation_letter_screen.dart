@@ -26,6 +26,16 @@ class _MotivationLetterScreenState
     extends ConsumerState<MotivationLetterScreen> {
   int _activeIndex = 0;
 
+  // writing style — shared across all jobs
+  String _writingStyle = 'formeel';
+
+  static const _styles = [
+    ('formeel', 'Formeel'),
+    ('informeel', 'Informeel'),
+    ('luchtig', 'Luchtig'),
+    ('grappig', 'Grappig'),
+  ];
+
   // letter text per job id
   final Map<String, TextEditingController> _controllers = {};
   // loading state per job id
@@ -74,6 +84,7 @@ class _MotivationLetterScreenState
       final result = await ApiClient.instance.generateLetter(
         jobId: job.id,
         profileId: profileId,
+        writingStyle: _writingStyle,
       );
       if (mounted) {
         _controllers[job.id]?.text =
@@ -232,7 +243,52 @@ class _MotivationLetterScreenState
                     color: OpstapColors.onSurface),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+
+            // Writing style selector
+            SizedBox(
+              height: 36,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _styles.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (_, i) {
+                  final (value, label) = _styles[i];
+                  final isActive = _writingStyle == value;
+                  return GestureDetector(
+                    onTap: () => setState(() => _writingStyle = value),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? OpstapColors.primary
+                            : OpstapColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isActive
+                              ? OpstapColors.primary
+                              : OpstapColors.outlineVariant,
+                        ),
+                      ),
+                      child: Text(
+                        label,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isActive
+                              ? Colors.white
+                              : OpstapColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
 
             // Letter card
             Expanded(
@@ -317,7 +373,9 @@ class _MotivationLetterScreenState
                 child: OutlinedButton.icon(
                   onPressed: () => _generateForJob(job),
                   icon: const Icon(Icons.refresh_rounded, size: 16),
-                  label: const Text('Regenereer brief'),
+                  label: Text(
+                    'Herschrijf brief · ${_styles.firstWhere((s) => s.$1 == _writingStyle).$2}',
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: OpstapColors.primary,
                     side: const BorderSide(color: OpstapColors.outlineVariant),
