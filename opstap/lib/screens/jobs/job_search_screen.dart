@@ -171,7 +171,7 @@ class _JobSearchScreenState extends ConsumerState<JobSearchScreen> {
                         )
                       : null,
                   filled: true,
-                  fillColor: OpstapColors.surfaceContainerLow,
+                  fillColor: OpstapColors.surfaceContainerLowest,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,

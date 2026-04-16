@@ -258,7 +258,7 @@ class _LoginForm extends StatelessWidget {
       labelText: label,
       prefixIcon: Icon(icon, color: OpstapColors.onSurfaceVariant, size: 20),
       filled: true,
-      fillColor: OpstapColors.surfaceContainerLow,
+      fillColor: OpstapColors.surfaceContainerLowest,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -328,9 +328,7 @@ class _ForgotPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () {
-        // TODO: implement password reset screen
-      },
+      onPressed: () => context.push('/forgot-password'),
       child: Text(
         'Wachtwoord vergeten?',
         style: GoogleFonts.inter(

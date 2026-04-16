@@ -3,6 +3,7 @@ from typing import Annotated
 from datetime import datetime, timedelta, timezone
 
 from app.core.supabase import get_supabase
+from app.core.auth import get_current_user_id
 from app.schemas.profile import ProfileCreate, ProfileUpdate, ProfileOut
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -13,7 +14,7 @@ CV_BUCKET = "cvs"
 @router.post("/", response_model=ProfileOut, status_code=201)
 async def create_profile(
     body: ProfileCreate,
-    user_id: str,  # TODO: replace with JWT dependency
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     data = body.model_dump()
@@ -26,7 +27,7 @@ async def create_profile(
 
 @router.get("/me", response_model=ProfileOut)
 async def get_profile(
-    user_id: str,  # TODO: JWT dep
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     result = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
@@ -38,7 +39,7 @@ async def get_profile(
 @router.patch("/me", response_model=ProfileOut)
 async def update_profile(
     body: ProfileUpdate,
-    user_id: str,
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     data = body.model_dump(exclude_unset=True)
@@ -53,9 +54,9 @@ async def update_profile(
 
 @router.post("/cv", status_code=200)
 async def upload_cv(
-    user_id: str,
     retention_days: Annotated[int, Form(ge=7, le=90)] = 30,
     file: UploadFile = File(...),
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     allowed = {"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
@@ -82,7 +83,7 @@ async def upload_cv(
 
 @router.delete("/cv", status_code=200)
 async def delete_cv(
-    user_id: str,
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     result = supabase.table("profiles").select("cv_path").eq("user_id", user_id).single().execute()

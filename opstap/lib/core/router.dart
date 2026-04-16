@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,21 +13,33 @@ import '../screens/apply/motivation_letter_screen.dart';
 import '../screens/apply/confirmation_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/settings/settings_screen.dart';
+
+// Notifier that rebuilds GoRouter whenever Supabase auth state changes
+class _AuthNotifier extends ChangeNotifier {
+  _AuthNotifier() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+      notifyListeners();
+    });
+  }
+}
+
+final _authNotifier = _AuthNotifier();
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: _authNotifier,
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final isLoggedIn = session != null;
-      final onAuthRoute =
-          state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final loc = state.matchedLocation;
 
-      // Unauthenticated users going to protected routes → login
-      final protectedRoutes = ['/profile', '/jobs', '/apply', '/confirm'];
-      final goingProtected =
-          protectedRoutes.any((r) => state.matchedLocation.startsWith(r));
+      final onAuthRoute =
+          loc == '/login' || loc == '/register' || loc == '/forgot-password';
+      final protectedRoutes = ['/profile', '/jobs', '/apply', '/confirm', '/settings'];
+      final goingProtected = protectedRoutes.any((r) => loc.startsWith(r));
 
       if (!isLoggedIn && goingProtected) return '/login';
       if (isLoggedIn && onAuthRoute) return '/';
@@ -36,6 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/', builder: (_, __) => const WelcomeScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/avg-consent', builder: (_, __) => const AvgConsentScreen()),
       GoRoute(path: '/cv-upload', builder: (_, __) => const CvUploadScreen()),
       GoRoute(path: '/profile/manual', builder: (_, __) => const ManualProfileScreen()),

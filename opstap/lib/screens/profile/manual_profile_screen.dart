@@ -352,7 +352,7 @@ class _ManualProfileScreenState extends ConsumerState<ManualProfileScreen> {
             hintStyle: GoogleFonts.inter(
                 color: OpstapColors.onSurfaceVariant),
             filled: true,
-            fillColor: OpstapColors.surfaceContainerLow,
+            fillColor: OpstapColors.surfaceContainerLowest,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -463,7 +463,7 @@ class _Field extends StatelessWidget {
         hintStyle: GoogleFonts.inter(
             fontSize: 13, color: OpstapColors.onSurfaceVariant),
         filled: true,
-        fillColor: OpstapColors.surfaceContainerLow,
+        fillColor: OpstapColors.surfaceContainerLowest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,

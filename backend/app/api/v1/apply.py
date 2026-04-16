@@ -3,6 +3,7 @@ from uuid import uuid4
 from datetime import datetime, timezone
 
 from app.core.supabase import get_supabase
+from app.core.auth import get_current_user_id
 from app.schemas.application import (
     MotivationLetterRequest,
     MotivationLetterOut,
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/apply", tags=["apply"])
 @router.post("/letter", response_model=MotivationLetterOut)
 async def generate_motivation_letter(
     body: MotivationLetterRequest,
-    user_id: str,  # TODO: JWT dep
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     job_result = supabase.table("jobs").select("*").eq("id", str(body.job_id)).single().execute()
@@ -31,7 +32,6 @@ async def generate_motivation_letter(
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = profile_result.data
 
-    # Merge any custom notes from the user into extra_info for the generator
     if body.custom_notes:
         profile = {**profile, "extra_info": f"{profile.get('extra_info', '')}\n{body.custom_notes}".strip()}
 
@@ -53,16 +53,14 @@ async def generate_motivation_letter(
 @router.post("/send", response_model=ApplicationOut, status_code=201)
 async def send_application(
     body: ApplicationCreate,
-    user_id: str,  # TODO: JWT dep
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    # Fetch job for metadata + contact email
     job_result = supabase.table("jobs").select("title,company,url,contact_email").eq("id", str(body.job_id)).single().execute()
     if not job_result.data:
         raise HTTPException(status_code=404, detail="Job not found")
     job = job_result.data
 
-    # Fetch user profile for reply-to details
     profile_result = supabase.table("profiles").select("naam,email").eq("user_id", user_id).single().execute()
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
@@ -113,7 +111,7 @@ async def send_application(
 
 @router.get("/history", response_model=list[ApplicationOut])
 async def application_history(
-    user_id: str,
+    user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     result = (

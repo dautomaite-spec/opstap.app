@@ -328,7 +328,7 @@ class _RegisterForm extends StatelessWidget {
       labelText: label,
       prefixIcon: Icon(icon, color: OpstapColors.onSurfaceVariant, size: 20),
       filled: true,
-      fillColor: OpstapColors.surfaceContainerLow,
+      fillColor: OpstapColors.surfaceContainerLowest,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
