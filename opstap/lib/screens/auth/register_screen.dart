@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme.dart';
-import 'login_screen.dart' show _OrDivider, _GoogleButton;
+import 'login_screen.dart' show _OrDivider, _GoogleButton, _oauthRedirect;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'http://localhost:55555',
+        redirectTo: _oauthRedirect,
       );
     } catch (_) {
       if (mounted) {

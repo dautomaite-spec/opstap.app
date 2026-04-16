@@ -1,9 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme.dart';
+
+// Returns the correct OAuth redirect URL depending on platform
+String get _oauthRedirect {
+  if (kIsWeb) {
+    // Use the app's current origin so Supabase redirects back here after auth
+    return Uri.base.origin;
+  }
+  return 'opstap://callback'; // deep link for mobile
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -56,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'http://localhost:55555',
+        redirectTo: _oauthRedirect,
       );
       // OAuth opens a browser tab — session is picked up via deep link / redirect
     } catch (_) {
