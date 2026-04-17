@@ -1,13 +1,15 @@
-from pydantic import BaseModel, UUID4
-from typing import Optional
+from pydantic import BaseModel, UUID4, Field
+from typing import Optional, Literal
 from datetime import datetime
+
+_WritingStyle = Literal["formeel", "informeel", "luchtig", "grappig"]
 
 
 class MotivationLetterRequest(BaseModel):
     job_id: UUID4
     profile_id: UUID4
-    custom_notes: Optional[str] = None  # extra context from user
-    writing_style: Optional[str] = "formeel"  # formeel / informeel / luchtig / grappig
+    custom_notes: Optional[str] = Field(None, max_length=500)
+    writing_style: _WritingStyle = "formeel"
 
 
 class MotivationLetterOut(BaseModel):

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
+import re
 
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
@@ -59,16 +60,29 @@ async def upload_cv(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    allowed = {"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
-    if file.content_type not in allowed:
+    allowed_mime = {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+    # Magic bytes: PDF starts with %PDF, DOCX is a ZIP (PK\x03\x04)
+    allowed_magic = (b"%PDF", b"PK\x03\x04")
+
+    if file.content_type not in allowed_mime:
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are accepted")
 
     content = await file.read()
+
+    if not any(content.startswith(magic) for magic in allowed_magic):
+        raise HTTPException(status_code=400, detail="File content does not match the declared type")
+
     max_bytes = 10 * 1024 * 1024
     if len(content) > max_bytes:
         raise HTTPException(status_code=400, detail="File too large (max 10 MB)")
 
-    path = f"{user_id}/{file.filename}"
+    # Sanitise filename — strip path separators and allow only safe characters
+    safe_name = re.sub(r"[^\w\-.]", "_", (file.filename or "cv"))
+    safe_name = safe_name.lstrip(".")[:100]  # no hidden files, max 100 chars
+    path = f"{user_id}/{safe_name}"
     supabase.storage.from_(CV_BUCKET).upload(path, content, {"content-type": file.content_type, "upsert": "true"})
 
     expires_at = (datetime.now(timezone.utc) + timedelta(days=retention_days)).isoformat()

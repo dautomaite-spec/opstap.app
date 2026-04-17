@@ -56,7 +56,11 @@ async def search_jobs(
 
 
 @router.get("/{job_id}", response_model=JobOut)
-async def get_job(job_id: str, supabase=Depends(get_supabase)):
+async def get_job(
+    job_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
     result = supabase.table("jobs").select("*").eq("id", job_id).single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Job not found")

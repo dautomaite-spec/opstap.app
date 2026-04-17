@@ -1,19 +1,19 @@
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, Field
 from typing import Optional
 from datetime import datetime
 
 
 class ProfileCreate(BaseModel):
-    naam: str
-    woonplaats: Optional[str] = None
-    functietitel: Optional[str] = None
+    naam: str = Field(..., max_length=120)
+    woonplaats: Optional[str] = Field(None, max_length=120)
+    functietitel: Optional[str] = Field(None, max_length=120)
     open_voor_alles: bool = False
-    beschikbaarheid: Optional[str] = None  # fulltime / parttime / both
-    uren_per_week: Optional[int] = None
-    salaris_min: Optional[int] = None
-    salaris_max: Optional[int] = None
-    werklocatie: Optional[str] = None  # on-site / hybrid / remote
-    extra_info: Optional[str] = None
+    beschikbaarheid: Optional[str] = Field(None, max_length=50)
+    uren_per_week: Optional[int] = Field(None, ge=1, le=80)
+    salaris_min: Optional[int] = Field(None, ge=0, le=50_000)
+    salaris_max: Optional[int] = Field(None, ge=0, le=50_000)
+    werklocatie: Optional[str] = Field(None, max_length=50)
+    extra_info: Optional[str] = Field(None, max_length=2000)
 
 
 class ProfileUpdate(ProfileCreate):

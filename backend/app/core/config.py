@@ -13,7 +13,6 @@ class Settings(BaseSettings):
 
     # App
     app_env: str = "development"
-    app_secret_key: str = "change-me"
     cors_origins: list[str] = ["http://localhost:3000"]
 
     # SendGrid

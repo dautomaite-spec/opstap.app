@@ -13,6 +13,7 @@ Design principles (based on what actually works for Dutch hiring managers):
 - Supports writing styles: formeel / informeel / luchtig / grappig
 """
 
+import re
 import anthropic
 from app.core.config import settings
 
@@ -182,12 +183,19 @@ async def generate_letter(
 
     profile_block = "\n".join(profile_lines) if profile_lines else "(geen aanvullende profielinfo)"
 
+    # Strip HTML tags and normalise whitespace from scraped content
+    # before inserting into the prompt — prevents RSS-borne prompt injection
+    def _sanitise(text: str, max_len: int) -> str:
+        text = re.sub(r"<[^>]+>", " ", text)          # strip HTML tags
+        text = re.sub(r"\s+", " ", text).strip()       # collapse whitespace
+        return text[:max_len]
+
     user_prompt = f"""
 VACATURE
-Functietitel: {job_title}
-Bedrijf: {company}
+Functietitel: {_sanitise(job_title, 120)}
+Bedrijf: {_sanitise(company, 120)}
 Vacatureomschrijving:
-{job_description[:1500]}
+{_sanitise(job_description, 1500)}
 
 PROFIEL SOLLICITANT
 {profile_block}
