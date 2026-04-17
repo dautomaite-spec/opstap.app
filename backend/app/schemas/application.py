@@ -14,6 +14,7 @@ class MotivationLetterOut(BaseModel):
     job_id: UUID4
     letter_nl: str  # Dutch motivation letter
     generated_at: datetime
+    regenerations_remaining: int  # how many more times this job's letter can be regenerated today
 
 
 class ApplicationCreate(BaseModel):

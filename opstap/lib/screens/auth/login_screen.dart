@@ -1,19 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme.dart';
-
-// Returns the correct OAuth redirect URL depending on platform
-String get _oauthRedirect {
-  if (kIsWeb) {
-    // Use the app's current origin so Supabase redirects back here after auth
-    return Uri.base.origin;
-  }
-  return 'opstap://callback'; // deep link for mobile
-}
+import 'auth_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -66,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: _oauthRedirect,
+        redirectTo: oauthRedirect,
       );
       // OAuth opens a browser tab — session is picked up via deep link / redirect
     } catch (_) {
@@ -114,9 +105,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               _ForgotPassword(),
               const SizedBox(height: 16),
-              _OrDivider(),
+              const OrDivider(),
               const SizedBox(height: 16),
-              _GoogleButton(loading: _loadingGoogle, onPressed: _loginWithGoogle),
+              GoogleSignInButton(loading: _loadingGoogle, onPressed: _loginWithGoogle),
               const SizedBox(height: 32),
               _RegisterLink(),
               const SizedBox(height: 32),
@@ -377,75 +368,3 @@ class _RegisterLink extends StatelessWidget {
   }
 }
 
-class _OrDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(child: Divider(color: OpstapColors.outlineVariant)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            'of',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: OpstapColors.onSurfaceVariant,
-            ),
-          ),
-        ),
-        const Expanded(child: Divider(color: OpstapColors.outlineVariant)),
-      ],
-    );
-  }
-}
-
-class _GoogleButton extends StatelessWidget {
-  final bool loading;
-  final VoidCallback onPressed;
-  const _GoogleButton({required this.loading, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      child: OutlinedButton(
-        onPressed: loading ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: OpstapColors.surfaceContainerLowest,
-          side: const BorderSide(color: OpstapColors.outlineVariant),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        ),
-        child: loading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: OpstapColors.primary),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Google 'G' logo using coloured text
-                  Text(
-                    'G',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF4285F4),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Doorgaan met Google',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: OpstapColors.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-}

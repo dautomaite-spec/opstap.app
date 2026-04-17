@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme.dart';
-import 'login_screen.dart' show _OrDivider, _GoogleButton, _oauthRedirect;
+import 'auth_widgets.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: _oauthRedirect,
+        redirectTo: oauthRedirect,
       );
     } catch (_) {
       if (mounted) {
@@ -93,8 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (v.length < 10) return 'Minimaal 10 tekens';
     if (!v.contains(RegExp(r'[A-Z]'))) return 'Minimaal één hoofdletter (A–Z)';
     if (!v.contains(RegExp(r'[0-9]'))) return 'Minimaal één cijfer (0–9)';
-    if (!v.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]')))
+    if (!v.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]'))) {
       return 'Minimaal één speciaal teken (!@#\$%...)';
+    }
     return null;
   }
 
@@ -158,9 +159,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 24),
           _RegisterButton(loading: _loading, onPressed: _register),
           const SizedBox(height: 16),
-          _OrDivider(),
+          const OrDivider(),
           const SizedBox(height: 16),
-          _GoogleButton(loading: _loadingGoogle, onPressed: _registerWithGoogle),
+          GoogleSignInButton(loading: _loadingGoogle, onPressed: _registerWithGoogle),
           const SizedBox(height: 16),
           _LoginLink(),
           const SizedBox(height: 32),

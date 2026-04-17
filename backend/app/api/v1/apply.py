@@ -4,6 +4,11 @@ from datetime import datetime, timezone
 
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
+from app.core.rate_limiter import (
+    check_and_increment_letter,
+    get_letter_usage,
+    APPLY_DAILY_LIMIT,
+)
 from app.schemas.application import (
     MotivationLetterRequest,
     MotivationLetterOut,
@@ -22,6 +27,11 @@ async def generate_motivation_letter(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
+    # ── Rate limiting ──────────────────────────────────────────────────────────
+    allowed, reason = check_and_increment_letter(user_id, str(body.job_id))
+    if not allowed:
+        raise HTTPException(status_code=429, detail=reason)
+
     job_result = supabase.table("jobs").select("*").eq("id", str(body.job_id)).single().execute()
     if not job_result.data:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -43,10 +53,12 @@ async def generate_motivation_letter(
         writing_style=body.writing_style or "formeel",
     )
 
+    quota = get_letter_usage(user_id, str(body.job_id))
     return MotivationLetterOut(
         job_id=body.job_id,
         letter_nl=letter,
         generated_at=datetime.now(timezone.utc),
+        regenerations_remaining=quota["job_remaining"],
     )
 
 
@@ -56,6 +68,22 @@ async def send_application(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
+    # ── Rate limiting: max APPLY_DAILY_LIMIT applications per day ─────────────
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    usage_result = (
+        supabase.table("applications")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .gte("created_at", today_start.isoformat())
+        .execute()
+    )
+    daily_count = usage_result.count or 0
+    if daily_count >= APPLY_DAILY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Je hebt het dagelijks limiet van {APPLY_DAILY_LIMIT} sollicitaties bereikt. Probeer morgen opnieuw.",
+        )
+
     job_result = supabase.table("jobs").select("title,company,url,contact_email").eq("id", str(body.job_id)).single().execute()
     if not job_result.data:
         raise HTTPException(status_code=404, detail="Job not found")
