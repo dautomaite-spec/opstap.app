@@ -1,60 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Opstap Design System — "Career Architect"
-// Sourced from Google Stitch design: projects/4148466425856813163
+// Opstap Design System — based on Style Guide (Application Design Ideas)
 abstract class OpstapColors {
-  static const primary = Color(0xFF003F87);
-  static const primaryContainer = Color(0xFF0056B3);
+  // Primary — deep indigo
+  static const primary = Color(0xFF3D3A8C);
+  static const primaryContainer = Color(0xFF5B57B5);
   static const onPrimary = Color(0xFFFFFFFF);
-  static const secondary = Color(0xFF4C5E84);
-  static const secondaryContainer = Color(0xFFBFD2FD);
-  static const onSecondary = Color(0xFFFFFFFF);
-  static const tertiary = Color(0xFF722B00);
-  static const tertiaryContainer = Color(0xFF983C00);
-  static const onTertiary = Color(0xFFFFFFFF);
-  static const onTertiaryContainer = Color(0xFFFFC2A7);
-  static const error = Color(0xFFBA1A1A);
-  static const surface = Color(0xFFF9F9F9);
-  static const surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const surfaceContainerLow = Color(0xFFF3F3F4);
-  static const surfaceContainer = Color(0xFFEEEEEE);
-  static const surfaceContainerHigh = Color(0xFFE8E8E8);
-  static const surfaceContainerHighest = Color(0xFFE2E2E2);
-  static const surfaceDim = Color(0xFFDADADA);
-  static const onSurface = Color(0xFF1A1C1C);
-  static const onSurfaceVariant = Color(0xFF424752);
-  static const outline = Color(0xFF727784);
-  static const outlineVariant = Color(0xFFC2C6D4);
-  static const inverseSurface = Color(0xFF2F3131);
-  static const inverseOnSurface = Color(0xFFF0F1F1);
-  static const inversePrimary = Color(0xFFACC7FF);
 
-  // Gradient used for hero sections and primary buttons
+  // Secondary — muted purple
+  static const secondary = Color(0xFF6B6B8A);
+  static const secondaryContainer = Color(0xFFEEE9F8);
+  static const onSecondary = Color(0xFFFFFFFF);
+
+  // Accent — warm yellow
+  static const accent = Color(0xFFF5C842);
+  static const onAccent = Color(0xFF1A1A2E);
+
+  // Tertiary — soft pink (decorative circles)
+  static const tertiary = Color(0xFFF48FB1);
+  static const tertiaryContainer = Color(0xFFFCE4EC);
+  static const onTertiary = Color(0xFFFFFFFF);
+  static const onTertiaryContainer = Color(0xFF880E4F);
+
+  // Surfaces
+  static const surface = Color(0xFFEEE9F8);           // lavender mist — page bg
+  static const surfaceContainerLowest = Color(0xFFFFFFFF);  // white cards
+  static const surfaceContainerLow = Color(0xFFFFF0E6);     // peach cards
+  static const surfaceContainer = Color(0xFFE8E3F4);
+  static const surfaceContainerHigh = Color(0xFFDED8F0);
+  static const surfaceContainerHighest = Color(0xFFD4CEEC);
+  static const surfaceDim = Color(0xFFC8C2E0);
+
+  // Text
+  static const onSurface = Color(0xFF1A1A2E);
+  static const onSurfaceVariant = Color(0xFF6B6B8A);
+
+  // Borders
+  static const outline = Color(0xFF9090AA);
+  static const outlineVariant = Color(0xFFD8D8E8);
+
+  // Inverse
+  static const inverseSurface = Color(0xFF1A1A2E);
+  static const inverseOnSurface = Color(0xFFEEE9F8);
+  static const inversePrimary = Color(0xFFB8B5FF);
+
+  // Error
+  static const error = Color(0xFFE53935);
+
+  // Gradient for hero sections and primary buttons
   static const heroGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    transform: GradientRotation(135 * 3.14159 / 180),
     colors: [primary, primaryContainer],
+  );
+
+  // Accent gradient (yellow, used sparingly for highlights)
+  static const accentGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF5C842), Color(0xFFFFD966)],
   );
 }
 
 abstract class OpstapTextStyles {
-  static TextStyle displayLg(BuildContext context) => GoogleFonts.manrope(
+  static TextStyle displayLg(BuildContext context) => GoogleFonts.poppins(
         fontSize: 32,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.02 * 32,
+        letterSpacing: -0.5,
         color: OpstapColors.onSurface,
       );
 
-  static TextStyle headlineMd(BuildContext context) => GoogleFonts.manrope(
+  static TextStyle headlineMd(BuildContext context) => GoogleFonts.poppins(
         fontSize: 24,
         fontWeight: FontWeight.w600,
-        letterSpacing: -0.02 * 24,
+        letterSpacing: -0.3,
         color: OpstapColors.onSurface,
       );
 
-  static TextStyle titleMd(BuildContext context) => GoogleFonts.manrope(
+  static TextStyle titleMd(BuildContext context) => GoogleFonts.poppins(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: OpstapColors.onSurface,
@@ -73,7 +97,7 @@ abstract class OpstapTextStyles {
       );
 
   static TextStyle labelMd(BuildContext context) => GoogleFonts.inter(
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: FontWeight.w500,
         color: OpstapColors.onSurface,
       );
@@ -87,11 +111,11 @@ ThemeData opstapTheme() {
       primary: OpstapColors.primary,
       onPrimary: OpstapColors.onPrimary,
       primaryContainer: OpstapColors.primaryContainer,
-      onPrimaryContainer: Color(0xFFBBD0FF),
+      onPrimaryContainer: Color(0xFFE0DEFF),
       secondary: OpstapColors.secondary,
       onSecondary: OpstapColors.onSecondary,
       secondaryContainer: OpstapColors.secondaryContainer,
-      onSecondaryContainer: Color(0xFF475A7F),
+      onSecondaryContainer: Color(0xFF3D3A8C),
       tertiary: OpstapColors.tertiary,
       onTertiary: OpstapColors.onTertiary,
       tertiaryContainer: OpstapColors.tertiaryContainer,
@@ -112,5 +136,65 @@ ThemeData opstapTheme() {
     textTheme: GoogleFonts.interTextTheme(),
     scaffoldBackgroundColor: OpstapColors.surface,
     splashFactory: InkSparkle.splashFactory,
+    cardTheme: CardThemeData(
+      color: OpstapColors.surfaceContainerLowest,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: OpstapColors.primary,
+        foregroundColor: OpstapColors.onPrimary,
+        minimumSize: const Size(double.infinity, 52),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        elevation: 0,
+        textStyle: GoogleFonts.poppins(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: OpstapColors.primary,
+        minimumSize: const Size(double.infinity, 52),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        side: const BorderSide(color: OpstapColors.outlineVariant),
+        textStyle: GoogleFonts.poppins(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: OpstapColors.surfaceContainerLowest,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: OpstapColors.outlineVariant),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: OpstapColors.outlineVariant),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: OpstapColors.primary, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: OpstapColors.surfaceContainerLowest,
+      selectedColor: OpstapColors.primary,
+      labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      side: const BorderSide(color: OpstapColors.outlineVariant),
+    ),
   );
 }

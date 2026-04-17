@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 
 class ExtractedProfileScreen extends StatefulWidget {
-  final VoidCallback onConfirmed;
+  final VoidCallback? onConfirmed;
 
-  const ExtractedProfileScreen({super.key, required this.onConfirmed});
+  const ExtractedProfileScreen({super.key, this.onConfirmed});
 
   @override
   State<ExtractedProfileScreen> createState() =>
@@ -142,7 +143,7 @@ class _ExtractedProfileScreenState extends State<ExtractedProfileScreen> {
                 ),
               ),
             ),
-            _BottomBar(onConfirmed: widget.onConfirmed),
+            _BottomBar(onConfirmed: widget.onConfirmed ?? () => context.go('/jobs')),
           ],
         ),
       ),

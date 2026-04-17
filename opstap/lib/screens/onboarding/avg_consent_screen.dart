@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 
 class AvgConsentScreen extends StatefulWidget {
-  /// Called when the user accepts all consent items.
-  final VoidCallback onAccepted;
-
-  /// Called when the user declines.
-  final VoidCallback onDeclined;
+  final VoidCallback? onAccepted;
+  final VoidCallback? onDeclined;
 
   const AvgConsentScreen({
     super.key,
-    required this.onAccepted,
-    required this.onDeclined,
+    this.onAccepted,
+    this.onDeclined,
   });
 
   @override
@@ -37,7 +35,7 @@ class _AvgConsentScreenState extends State<AvgConsentScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded,
               color: OpstapColors.onSurface),
-          onPressed: widget.onDeclined,
+          onPressed: widget.onDeclined ?? () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -89,8 +87,8 @@ class _AvgConsentScreenState extends State<AvgConsentScreen> {
             ),
             _BottomBar(
               allAccepted: _allAccepted,
-              onAccepted: widget.onAccepted,
-              onDeclined: widget.onDeclined,
+              onAccepted: widget.onAccepted ?? () => context.go('/cv-upload'),
+              onDeclined: widget.onDeclined ?? () => context.pop(),
             ),
           ],
         ),

@@ -1,0 +1,11 @@
+{
+  "defaultMode": "auto",
+  "permissions": {
+    "allow": [
+      "Bash(flutter *)",
+      "Bash(dart *)",
+      "Bash(npm *)",
+      "Bash(git *)"
+    ]
+  }
+}

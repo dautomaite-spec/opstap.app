@@ -74,6 +74,20 @@ Planning — see PLANNING.md for full details and progress checklist.
 6. Auto-delete after 90 days inactivity
 7. Every automated decision is visible and editable by the user
 
+## Agent auto-trigger rules
+
+These agents live in `.claude/agents/`. Run them automatically at the points below — do not wait to be asked.
+
+| Agent | Trigger |
+|---|---|
+| `/security` | After creating or modifying any backend endpoint (`backend/app/api/`) or auth flow |
+| `/avg-checker` | After any change touching user data, CV files, Supabase storage, or auth flows |
+| `/dutch-copy` | After finishing any Flutter screen — before marking it done |
+| `/stylist` | After generating or editing any Stitch screen |
+
+- If an agent reports a violation or score below 7/10, fix the issues before continuing.
+- Do not skip agents to save time — they exist because these errors have real consequences (legal, security, UX).
+
 ## What NOT to do
 - Do not use the name Kabir or reference the old Kabir project
 - Do not push directly to master

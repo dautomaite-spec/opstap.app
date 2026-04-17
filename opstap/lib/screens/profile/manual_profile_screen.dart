@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
+import '../../services/providers.dart';
 
-class ManualProfileScreen extends StatefulWidget {
-  final VoidCallback onSaved;
+class ManualProfileScreen extends ConsumerStatefulWidget {
+  final VoidCallback? onSaved;
 
-  const ManualProfileScreen({super.key, required this.onSaved});
+  const ManualProfileScreen({super.key, this.onSaved});
 
   @override
-  State<ManualProfileScreen> createState() => _ManualProfileScreenState();
+  ConsumerState<ManualProfileScreen> createState() =>
+      _ManualProfileScreenState();
 }
 
-class _ManualProfileScreenState extends State<ManualProfileScreen> {
+class _ManualProfileScreenState extends ConsumerState<ManualProfileScreen> {
   // Personal
   final _naamController = TextEditingController();
   final _locatieController = TextEditingController();
@@ -19,16 +23,22 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
 
   // Job preferences
   final _functieController = TextEditingController();
+  bool _openVoorAlles = false;
   String _dienstverband = 'Beide';
   String _beschikbaarheid = 'Direct';
   RangeValues _salaris = const RangeValues(2500, 4000);
+  String _werklocatie = 'Beide';
 
-  // Skills
+  // Extra
+  final _extraController = TextEditingController();
   final _skills = <String>['Communicatie'];
+
+  bool _saving = false;
+  String? _errorMessage;
 
   bool get _canSave =>
       _naamController.text.trim().isNotEmpty &&
-      _functieController.text.trim().isNotEmpty;
+      (_openVoorAlles || _functieController.text.trim().isNotEmpty);
 
   @override
   void initState() {
@@ -43,7 +53,44 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
     _locatieController.dispose();
     _telefoonController.dispose();
     _functieController.dispose();
+    _extraController.dispose();
     super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_canSave) return;
+    setState(() {
+      _saving = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ref.read(profileNotifierProvider.notifier).save({
+        'naam': _naamController.text.trim(),
+        'woonplaats': _locatieController.text.trim(),
+        'functietitel': _openVoorAlles ? null : _functieController.text.trim(),
+        'open_voor_alles': _openVoorAlles,
+        'beschikbaarheid': _dienstverband.toLowerCase(),
+        'werklocatie': _werklocatie.toLowerCase(),
+        'salaris_min': _salaris.start.toInt(),
+        'salaris_max': _salaris.end.toInt(),
+        'extra_info': [
+          if (_skills.isNotEmpty) 'Vaardigheden: ${_skills.join(', ')}',
+          if (_telefoonController.text.trim().isNotEmpty)
+            'Telefoon: ${_telefoonController.text.trim()}',
+          if (_extraController.text.trim().isNotEmpty)
+            _extraController.text.trim(),
+        ].join('\n'),
+      });
+
+      if (mounted) {
+        (widget.onSaved ?? () => context.go('/jobs'))();
+      }
+    } catch (e) {
+      setState(() => _errorMessage = 'Opslaan mislukt. Controleer je verbinding.');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -56,11 +103,11 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded,
               color: OpstapColors.onSurface),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
         title: Text(
           'Profiel invullen',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -79,19 +126,24 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                     Text(
                       'Vul je gegevens in. Je kunt alles later aanpassen.',
                       style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: OpstapColors.onSurfaceVariant,
-                        height: 1.5,
-                      ),
+                          fontSize: 13,
+                          color: OpstapColors.onSurfaceVariant,
+                          height: 1.5),
                     ),
                     const SizedBox(height: 24),
+
+                    // ── Personal ──
                     _FormSection(
                       title: 'Persoonlijk',
                       child: Column(
                         children: [
-                          _Field(label: 'Naam', controller: _naamController),
+                          _Field(
+                              label: 'Naam *',
+                              controller: _naamController),
                           const SizedBox(height: 10),
-                          _Field(label: 'Locatie', controller: _locatieController),
+                          _Field(
+                              label: 'Woonplaats',
+                              controller: _locatieController),
                           const SizedBox(height: 10),
                           _Field(
                             label: 'Telefoonnummer',
@@ -102,15 +154,68 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // ── Job preferences ──
                     _FormSection(
                       title: 'Wat zoek je?',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Field(
-                            label: 'Functietitel',
-                            controller: _functieController,
-                            hint: 'bijv. Software Developer',
+                          // Functietitel + open voor alles toggle
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: _openVoorAlles ? 0.4 : 1.0,
+                            child: IgnorePointer(
+                              ignoring: _openVoorAlles,
+                              child: _Field(
+                                label: 'Functietitel',
+                                controller: _functieController,
+                                hint: 'bijv. Software Developer',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () => setState(() {
+                              _openVoorAlles = !_openVoorAlles;
+                              if (_openVoorAlles) _functieController.clear();
+                            }),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _openVoorAlles
+                                    ? OpstapColors.secondaryContainer
+                                    : OpstapColors.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _openVoorAlles
+                                        ? Icons.check_circle_rounded
+                                        : Icons.radio_button_unchecked_rounded,
+                                    size: 18,
+                                    color: _openVoorAlles
+                                        ? OpstapColors.primary
+                                        : OpstapColors.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Open voor alles',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: _openVoorAlles
+                                          ? OpstapColors.primary
+                                          : OpstapColors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 18),
                           _FieldLabel('Dienstverband'),
@@ -120,6 +225,15 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                             selected: _dienstverband,
                             onChanged: (v) =>
                                 setState(() => _dienstverband = v),
+                          ),
+                          const SizedBox(height: 18),
+                          _FieldLabel('Werklocatie'),
+                          const SizedBox(height: 8),
+                          _ChipSelector(
+                            options: const ['Op locatie', 'Hybrid', 'Beide'],
+                            selected: _werklocatie,
+                            onChanged: (v) =>
+                                setState(() => _werklocatie = v),
                           ),
                           const SizedBox(height: 18),
                           _FieldLabel('Beschikbaarheid'),
@@ -134,7 +248,7 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                           _FieldLabel('Salarisindicatie'),
                           const SizedBox(height: 4),
                           Text(
-                            '€${_salaris.start.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]}.')} – €${_salaris.end.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]}.')} per maand',
+                            '€${_fmt(_salaris.start.toInt())} – €${_fmt(_salaris.end.toInt())} per maand',
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -154,24 +268,70 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // ── Skills ──
                     _FormSection(
                       title: 'Vaardigheden',
                       child: _SkillsWrap(
                         skills: _skills,
-                        onAdd: () => _showAddSkillDialog(),
+                        onAdd: _showAddSkillDialog,
                         onRemove: (s) => setState(() => _skills.remove(s)),
                       ),
                     ),
+                    const SizedBox(height: 16),
+
+                    // ── Extra info ──
+                    _FormSection(
+                      title: 'Extra informatie',
+                      child: _Field(
+                        label: 'Achtergrond, werkervaring, opmerkingen',
+                        controller: _extraController,
+                        maxLines: 4,
+                        hint:
+                            'bijv. 3 jaar ervaring als magazijnmedewerker, rijbewijs B, heftruck certificaat',
+                      ),
+                    ),
+
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFDAD6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: OpstapColors.error, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(_errorMessage!,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: OpstapColors.error)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
-            _BottomBar(canSave: _canSave, onSaved: widget.onSaved),
+            _BottomBar(
+              canSave: _canSave,
+              saving: _saving,
+              onSaved: _save,
+            ),
           ],
         ),
       ),
     );
   }
+
+  String _fmt(int n) =>
+      n.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]}.');
 
   void _showAddSkillDialog() {
     final controller = TextEditingController();
@@ -179,16 +339,20 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: OpstapColors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
         title: Text('Vaardigheid toevoegen',
-            style: GoogleFonts.manrope(fontWeight: FontWeight.w600, fontSize: 16)),
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600, fontSize: 16)),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(
             hintText: 'bijv. Excel',
-            hintStyle: GoogleFonts.inter(color: OpstapColors.onSurfaceVariant),
+            hintStyle: GoogleFonts.inter(
+                color: OpstapColors.onSurfaceVariant),
             filled: true,
-            fillColor: OpstapColors.surfaceContainerLow,
+            fillColor: OpstapColors.surfaceContainerLowest,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -199,14 +363,13 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Annuleren',
-                style: GoogleFonts.inter(color: OpstapColors.onSurfaceVariant)),
+                style: GoogleFonts.inter(
+                    color: OpstapColors.onSurfaceVariant)),
           ),
           TextButton(
             onPressed: () {
               final skill = controller.text.trim();
-              if (skill.isNotEmpty) {
-                setState(() => _skills.add(skill));
-              }
+              if (skill.isNotEmpty) setState(() => _skills.add(skill));
               Navigator.pop(ctx);
             },
             child: Text('Toevoegen',
@@ -220,12 +383,11 @@ class _ManualProfileScreenState extends State<ManualProfileScreen> {
   }
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
+// ─── Widgets ──────────────────────────────────────────────────────────────────
 
 class _FormSection extends StatelessWidget {
   final String title;
   final Widget child;
-
   const _FormSection({required this.title, required this.child});
 
   @override
@@ -233,21 +395,24 @@ class _FormSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: GoogleFonts.manrope(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: OpstapColors.onSurface,
-            letterSpacing: -0.01 * 15,
-          ),
-        ),
+        Text(title,
+            style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: OpstapColors.onSurface)),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: OpstapColors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(14),
+            color: OpstapColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: OpstapColors.onSurface.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -256,38 +421,30 @@ class _FormSection extends StatelessWidget {
   }
 }
 
-// ─── Field label ──────────────────────────────────────────────────────────────
-
 class _FieldLabel extends StatelessWidget {
   final String text;
   const _FieldLabel(this.text);
-
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
+  Widget build(BuildContext context) => Text(text,
       style: GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: OpstapColors.onSurfaceVariant,
-      ),
-    );
-  }
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: OpstapColors.onSurfaceVariant));
 }
-
-// ─── Text field ───────────────────────────────────────────────────────────────
 
 class _Field extends StatelessWidget {
   final String label;
   final String? hint;
   final TextEditingController controller;
   final TextInputType keyboardType;
+  final int maxLines;
 
   const _Field({
     required this.label,
     required this.controller,
     this.hint,
     this.keyboardType = TextInputType.text,
+    this.maxLines = 1,
   });
 
   @override
@@ -295,10 +452,12 @@ class _Field extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      maxLines: maxLines,
       style: GoogleFonts.inter(fontSize: 14, color: OpstapColors.onSurface),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        alignLabelWithHint: maxLines > 1,
         labelStyle: GoogleFonts.inter(
             fontSize: 12, color: OpstapColors.onSurfaceVariant),
         hintStyle: GoogleFonts.inter(
@@ -321,48 +480,43 @@ class _Field extends StatelessWidget {
   }
 }
 
-// ─── Chip selector ────────────────────────────────────────────────────────────
-
 class _ChipSelector extends StatelessWidget {
   final List<String> options;
   final String selected;
   final ValueChanged<String> onChanged;
 
-  const _ChipSelector({
-    required this.options,
-    required this.selected,
-    required this.onChanged,
-  });
+  const _ChipSelector(
+      {required this.options,
+      required this.selected,
+      required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: options.map((option) {
         final isSelected = option == selected;
-        return Padding(
-          padding: EdgeInsets.only(
-              right: option == options.last ? 0 : 8),
-          child: GestureDetector(
-            onTap: () => onChanged(option),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
+        return GestureDetector(
+          onTap: () => onChanged(option),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? OpstapColors.primary
+                  : OpstapColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              option,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
                 color: isSelected
-                    ? OpstapColors.primary
-                    : OpstapColors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                option,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? Colors.white
-                      : OpstapColors.onSurfaceVariant,
-                ),
+                    ? Colors.white
+                    : OpstapColors.onSurfaceVariant,
               ),
             ),
           ),
@@ -372,18 +526,15 @@ class _ChipSelector extends StatelessWidget {
   }
 }
 
-// ─── Skills wrap ──────────────────────────────────────────────────────────────
-
 class _SkillsWrap extends StatelessWidget {
   final List<String> skills;
   final VoidCallback onAdd;
   final ValueChanged<String> onRemove;
 
-  const _SkillsWrap({
-    required this.skills,
-    required this.onAdd,
-    required this.onRemove,
-  });
+  const _SkillsWrap(
+      {required this.skills,
+      required this.onAdd,
+      required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -413,85 +564,83 @@ class _SkillsWrap extends StatelessWidget {
           onPressed: onAdd,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           visualDensity: VisualDensity.compact,
-          side: const BorderSide(color: OpstapColors.outlineVariant, width: 1),
+          side: const BorderSide(
+              color: OpstapColors.outlineVariant, width: 1),
         ),
       ],
     );
   }
 }
 
-// ─── Bottom bar ───────────────────────────────────────────────────────────────
-
 class _BottomBar extends StatelessWidget {
   final bool canSave;
+  final bool saving;
   final VoidCallback onSaved;
 
-  const _BottomBar({required this.canSave, required this.onSaved});
+  const _BottomBar(
+      {required this.canSave,
+      required this.saving,
+      required this.onSaved});
 
   @override
   Widget build(BuildContext context) {
+    final active = canSave && !saving;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
       decoration: BoxDecoration(
         color: OpstapColors.surface,
         border: Border(
-          top: BorderSide(
-              color: OpstapColors.outlineVariant.withValues(alpha: 0.5)),
-        ),
+            top: BorderSide(
+                color: OpstapColors.outlineVariant.withValues(alpha: 0.5))),
       ),
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
-        opacity: canSave ? 1.0 : 0.45,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: canSave
-                ? const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [OpstapColors.primary, OpstapColors.primaryContainer],
-                  )
-                : const LinearGradient(colors: [
-                    OpstapColors.surfaceContainerHigh,
-                    OpstapColors.surfaceContainerHigh
-                  ]),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: canSave
-                ? [
-                    BoxShadow(
-                      color: OpstapColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+        opacity: active ? 1.0 : 0.45,
+        child: SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: active
+                  ? OpstapColors.heroGradient
+                  : const LinearGradient(colors: [
+                      OpstapColors.surfaceContainerHigh,
+                      OpstapColors.surfaceContainerHigh
+                    ]),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: active
+                  ? [
+                      BoxShadow(
+                        color: OpstapColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      )
+                    ]
+                  : [],
+            ),
+            child: ElevatedButton(
+              onPressed: active ? onSaved : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
+              ),
+              child: saving
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2.5),
                     )
-                  ]
-                : [],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              onTap: canSave ? onSaved : null,
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.save_rounded,
-                        size: 18,
-                        color:
-                            canSave ? Colors.white : OpstapColors.outline),
-                    const SizedBox(width: 8),
-                    Text(
+                  : Text(
                       'Profiel opslaan',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: canSave ? Colors.white : OpstapColors.outline,
+                        color: active ? Colors.white : OpstapColors.outline,
                       ),
                     ),
-                  ],
-                ),
-              ),
             ),
           ),
         ),

@@ -1,0 +1,27 @@
+# Local tool files
+.last_build_id
+.mcp.json
+
+# Old scaffold
+flutter_application_1/
+
+# Environment / secrets
+backend/.env
+opstap/env.json
+
+# Python
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.venv/
+
+# Flutter
+opstap/.dart_tool/
+opstap/build/
+opstap/.flutter-plugins
+opstap/.flutter-plugins-dependencies
+
+# OS
+.DS_Store
+Thumbs.db

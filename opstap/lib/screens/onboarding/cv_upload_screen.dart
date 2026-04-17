@@ -1,29 +1,74 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/theme.dart';
+import '../../services/api_client.dart';
 
 class CvUploadScreen extends StatefulWidget {
-  final VoidCallback onUploaded;
+  final VoidCallback? onUploaded;
 
-  const CvUploadScreen({super.key, required this.onUploaded});
+  const CvUploadScreen({super.key, this.onUploaded});
 
   @override
   State<CvUploadScreen> createState() => _CvUploadScreenState();
 }
 
 class _CvUploadScreenState extends State<CvUploadScreen> {
-  String? _selectedFileName;
-  int _retentionDays = 30; // default
+  PlatformFile? _pickedFile;
+  int _retentionDays = 30;
+  bool _uploading = false;
+  String? _errorMessage;
 
-  bool get _fileSelected => _selectedFileName != null;
+  bool get _fileSelected => _pickedFile != null;
 
-  void _pickFile() {
-    // TODO: integrate file_picker package
-    setState(() => _selectedFileName = 'mijn_cv.pdf');
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'docx'],
+      withData: true,
+    );
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.first;
+      final maxBytes = 10 * 1024 * 1024;
+      if ((file.size) > maxBytes) {
+        setState(() => _errorMessage = 'Bestand is te groot. Maximaal 10 MB.');
+        return;
+      }
+      setState(() {
+        _pickedFile = file;
+        _errorMessage = null;
+      });
+    }
   }
 
-  void _clearFile() {
-    setState(() => _selectedFileName = null);
+  void _clearFile() => setState(() {
+        _pickedFile = null;
+        _errorMessage = null;
+      });
+
+  Future<void> _upload() async {
+    if (_pickedFile == null) return;
+    setState(() {
+      _uploading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ApiClient.instance.uploadCv(
+        fileBytes: _pickedFile!.bytes!,
+        fileName: _pickedFile!.name,
+        retentionDays: _retentionDays,
+      );
+      if (mounted) {
+        (widget.onUploaded ?? () => context.go('/profile/extracted'))();
+      }
+    } catch (e) {
+      setState(() => _errorMessage = 'Upload mislukt. Controleer je verbinding en probeer opnieuw.');
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   @override
@@ -34,13 +79,12 @@ class _CvUploadScreenState extends State<CvUploadScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded,
-              color: OpstapColors.onSurface),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_rounded, color: OpstapColors.onSurface),
+          onPressed: () => context.pop(),
         ),
         title: Text(
           'CV uploaden',
-          style: GoogleFonts.manrope(
+          style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: OpstapColors.onSurface,
@@ -57,15 +101,38 @@ class _CvUploadScreenState extends State<CvUploadScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _UploadZone(
-                      selectedFileName: _selectedFileName,
+                      pickedFile: _pickedFile,
                       onTap: _pickFile,
                       onClear: _clearFile,
                     ),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFDAD6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: OpstapColors.error, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: GoogleFonts.inter(
+                                    fontSize: 13, color: OpstapColors.error),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 32),
                     _RetentionSelector(
                       selected: _retentionDays,
-                      onChanged: (days) =>
-                          setState(() => _retentionDays = days),
+                      onChanged: (days) => setState(() => _retentionDays = days),
                     ),
                   ],
                 ),
@@ -73,7 +140,8 @@ class _CvUploadScreenState extends State<CvUploadScreen> {
             ),
             _BottomBar(
               fileSelected: _fileSelected,
-              onUpload: widget.onUploaded,
+              uploading: _uploading,
+              onUpload: _upload,
             ),
           ],
         ),
@@ -85,17 +153,17 @@ class _CvUploadScreenState extends State<CvUploadScreen> {
 // ─── Upload zone ──────────────────────────────────────────────────────────────
 
 class _UploadZone extends StatelessWidget {
-  final String? selectedFileName;
+  final PlatformFile? pickedFile;
   final VoidCallback onTap;
   final VoidCallback onClear;
 
   const _UploadZone({
-    required this.selectedFileName,
+    required this.pickedFile,
     required this.onTap,
     required this.onClear,
   });
 
-  bool get _hasFile => selectedFileName != null;
+  bool get _hasFile => pickedFile != null;
 
   @override
   Widget build(BuildContext context) {
@@ -111,14 +179,13 @@ class _UploadZone extends StatelessWidget {
               : OpstapColors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: _hasFile
-                ? OpstapColors.primary
-                : OpstapColors.outlineVariant,
+            color: _hasFile ? OpstapColors.primary : OpstapColors.outlineVariant,
             width: 1.5,
-            // Dashed border via custom painter below
           ),
         ),
-        child: _hasFile ? _FileSelected(fileName: selectedFileName!, onClear: onClear) : _EmptyState(),
+        child: _hasFile
+            ? _FileSelected(file: pickedFile!, onClear: onClear)
+            : _EmptyState(),
       ),
     );
   }
@@ -137,29 +204,23 @@ class _EmptyState extends StatelessWidget {
             color: OpstapColors.secondaryContainer,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(
-            Icons.upload_file_rounded,
-            size: 32,
-            color: OpstapColors.primary,
-          ),
+          child: const Icon(Icons.upload_file_rounded,
+              size: 32, color: OpstapColors.primary),
         ),
         const SizedBox(height: 16),
         Text(
           'Tik om je CV te uploaden',
-          style: GoogleFonts.manrope(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: OpstapColors.onSurface,
-          ),
+          style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: OpstapColors.onSurface),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
         Text(
           'PDF of Word-bestand, max. 10 MB',
           style: GoogleFonts.inter(
-            fontSize: 13,
-            color: OpstapColors.onSurfaceVariant,
-          ),
+              fontSize: 13, color: OpstapColors.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
       ],
@@ -168,10 +229,15 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _FileSelected extends StatelessWidget {
-  final String fileName;
+  final PlatformFile file;
   final VoidCallback onClear;
 
-  const _FileSelected({required this.fileName, required this.onClear});
+  const _FileSelected({required this.file, required this.onClear});
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,22 +259,19 @@ class _FileSelected extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                fileName,
+                file.name,
                 style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: OpstapColors.onSurface,
-                ),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: OpstapColors.onSurface),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
-                'Klaar om te uploaden',
+                _formatSize(file.size),
                 style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: OpstapColors.primary,
-                ),
+                    fontSize: 12, color: OpstapColors.primary),
               ),
             ],
           ),
@@ -230,10 +293,8 @@ class _RetentionSelector extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onChanged;
 
-  const _RetentionSelector({
-    required this.selected,
-    required this.onChanged,
-  });
+  const _RetentionSelector(
+      {required this.selected, required this.onChanged});
 
   static const _options = [7, 30, 90];
 
@@ -244,12 +305,16 @@ class _RetentionSelector extends StatelessWidget {
       children: [
         Text(
           'Bewaartermijn',
-          style: GoogleFonts.manrope(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: OpstapColors.onSurface,
-            letterSpacing: -0.01 * 16,
-          ),
+          style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: OpstapColors.onSurface),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Je CV wordt na deze periode automatisch verwijderd.',
+          style: GoogleFonts.inter(
+              fontSize: 13, color: OpstapColors.onSurfaceVariant),
         ),
         const SizedBox(height: 12),
         Row(
@@ -261,8 +326,7 @@ class _RetentionSelector extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   margin: EdgeInsets.only(
-                    right: days == _options.last ? 0 : 8,
-                  ),
+                      right: days == _options.last ? 0 : 8),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -286,15 +350,6 @@ class _RetentionSelector extends StatelessWidget {
             );
           }).toList(),
         ),
-        const SizedBox(height: 10),
-        Text(
-          'Je CV wordt automatisch verwijderd na deze periode.',
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: OpstapColors.onSurfaceVariant,
-            height: 1.5,
-          ),
-        ),
       ],
     );
   }
@@ -304,20 +359,25 @@ class _RetentionSelector extends StatelessWidget {
 
 class _BottomBar extends StatelessWidget {
   final bool fileSelected;
+  final bool uploading;
   final VoidCallback onUpload;
 
-  const _BottomBar({required this.fileSelected, required this.onUpload});
+  const _BottomBar({
+    required this.fileSelected,
+    required this.uploading,
+    required this.onUpload,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final active = fileSelected && !uploading;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
       decoration: BoxDecoration(
         color: OpstapColors.surface,
         border: Border(
           top: BorderSide(
-            color: OpstapColors.outlineVariant.withValues(alpha: 0.5),
-          ),
+              color: OpstapColors.outlineVariant.withValues(alpha: 0.5)),
         ),
       ),
       child: Column(
@@ -325,80 +385,66 @@ class _BottomBar extends StatelessWidget {
         children: [
           AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
-            opacity: fileSelected ? 1.0 : 0.45,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: fileSelected
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          OpstapColors.primary,
-                          OpstapColors.primaryContainer
-                        ],
-                      )
-                    : const LinearGradient(
-                        colors: [
+            opacity: active ? 1.0 : 0.45,
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: active
+                      ? OpstapColors.heroGradient
+                      : const LinearGradient(colors: [
                           OpstapColors.surfaceContainerHigh,
                           OpstapColors.surfaceContainerHigh,
-                        ],
-                      ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: fileSelected
-                    ? [
-                        BoxShadow(
-                          color: OpstapColors.primary.withValues(alpha: 0.25),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                        ]),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: OpstapColors.primary.withValues(alpha: 0.25),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          )
+                        ]
+                      : [],
+                ),
+                child: ElevatedButton(
+                  onPressed: active ? onUpload : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                  ),
+                  child: uploading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5),
                         )
-                      ]
-                    : [],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-                child: InkWell(
-                  onTap: fileSelected ? onUpload : null,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.upload_rounded,
-                          size: 18,
-                          color: fileSelected
-                              ? Colors.white
-                              : OpstapColors.outline,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
+                      : Text(
                           'CV uploaden',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: fileSelected
+                            color: active
                                 ? Colors.white
                                 : OpstapColors.outline,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             'Je kunt je CV op elk moment verwijderen via Instellingen.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 11,
-              color: OpstapColors.onSurfaceVariant,
-              height: 1.5,
-            ),
+                fontSize: 11,
+                color: OpstapColors.onSurfaceVariant,
+                height: 1.5),
           ),
         ],
       ),
