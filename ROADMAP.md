@@ -40,10 +40,10 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   ✅  Supabase OAuth redirect URLs configured
-  ⏳  Deploy backend → Railway                       ← in progress
-  ⬜  Add Railway URL to Supabase redirect list
-  ⬜  Update env.json → point Flutter at live backend
-  ⬜  Supabase RLS verified in production
+  ✅  Deploy backend → Railway
+  ✅  Add Railway URL to Supabase redirect list
+  ✅  Update env.json → point Flutter at live backend
+  ⏳  Supabase RLS verified in production            ← in progress
   ⬜  End-to-end test (register → upload → search → apply)
   ⬜  Privacy policy written + hosted at opstap.nl/privacy
   ⬜  Register opstap.nl domain
