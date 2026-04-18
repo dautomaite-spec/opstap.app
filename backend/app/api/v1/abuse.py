@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 
 from app.core.config import settings
+from app.core.rate_limiter import check_ip_flood
 from app.core.supabase import get_supabase
 
 logger = logging.getLogger(__name__)
@@ -45,13 +46,17 @@ class AbuseReport(BaseModel):
 
 @router.post("/report", status_code=201)
 async def report_abuse(body: AbuseReport, request: Request, supabase=Depends(get_supabase)):
+    ip = request.client.host if request.client else "unknown"
+    reporter_ip = request.client.host if request.client else "unknown"
+    if check_ip_flood(reporter_ip):
+        raise HTTPException(status_code=429, detail="Te veel meldingen van dit IP-adres. Probeer later opnieuw.")
+
     # Sanitize fields that could carry header injection
     safe_company = _HEADER_SAFE.sub("", body.reporter_company)
     safe_sender = _HEADER_SAFE.sub("", body.sender_email)
 
     now = datetime.now(timezone.utc).isoformat()
     report_id = str(uuid4())
-    reporter_ip = request.client.host if request.client else "unknown"
 
     report_row = {
         "id": report_id,
