@@ -43,8 +43,8 @@
   ✅  Deploy backend → Railway
   ✅  Add Railway URL to Supabase redirect list
   ✅  Update env.json → point Flutter at live backend
-  ⏳  Supabase RLS verified in production            ← in progress
-  ⬜  End-to-end test (register → upload → search → apply)
+  ✅  Supabase RLS verified in production
+  ⏳  End-to-end test (register → upload → search → apply) ← next
   ⬜  Privacy policy written + hosted at opstap.nl/privacy
   ⬜  Register opstap.nl domain
   ⬜  App icon (512×512)
