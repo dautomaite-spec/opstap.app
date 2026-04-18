@@ -84,9 +84,11 @@ These agents live in `.claude/agents/`. Run them automatically at the points bel
 | `/avg-checker` | After any change touching user data, CV files, Supabase storage, or auth flows |
 | `/dutch-copy` | After finishing any Flutter screen — before marking it done |
 | `/stylist` | After generating or editing any Stitch screen |
+| `/developer` | When deciding what to do next, choosing between approaches, or hitting a blocker |
 
 - If an agent reports a violation or score below 7/10, fix the issues before continuing.
 - Do not skip agents to save time — they exist because these errors have real consequences (legal, security, UX).
+- `/developer` answers navigation questions and unblocks work. If developer says skip, skip and continue to next step. Only surface to the user when both Claude and developer are fully stuck.
 
 ## What NOT to do
 - Do not use the name Kabir or reference the old Kabir project
