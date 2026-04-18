@@ -34,6 +34,34 @@ class ApplicationEmail:
     letter_body: str        # the 3-paragraph body from letter_generator
 
 
+_FOOTER_PLAIN = """\
+
+---
+Deze sollicitatie is verstuurd via Opstap (opstap.nl) — een platform dat werkzoekenden \
+helpt met geautomatiseerde sollicitaties in Nederland. De sollicitant is verantwoordelijk \
+voor de inhoud. Antwoorden gaan rechtstreeks naar de sollicitant.
+
+Beschouwt u dit als spam of misbruik? Meld het via opstap.nl/misbruik of mail naar \
+misbruik@opstap.nl. Wij handelen iedere melding binnen 24 uur af.
+"""
+
+_FOOTER_HTML = """\
+  <div class="footer">
+    <p>
+      Deze sollicitatie is verstuurd via <a href="https://opstap.nl">Opstap</a> &mdash;
+      een platform dat werkzoekenden helpt met geautomatiseerde sollicitaties in Nederland.
+      De sollicitant is verantwoordelijk voor de inhoud van deze brief.
+      Antwoorden gaan rechtstreeks naar de sollicitant.
+    </p>
+    <p>
+      Beschouwt u dit als spam of misbruik?
+      <a href="https://opstap.nl/misbruik">Meld het hier</a> of mail naar
+      <a href="mailto:misbruik@opstap.nl">misbruik@opstap.nl</a>.
+      Wij handelen iedere melding binnen 24 uur af.
+    </p>
+  </div>"""
+
+
 def _build_plain_text(email: ApplicationEmail) -> str:
     return f"""\
 Geachte heer/mevrouw,
@@ -43,7 +71,7 @@ Geachte heer/mevrouw,
 Met vriendelijke groet,
 {email.reply_to_name}
 {email.reply_to_email}
-"""
+{_FOOTER_PLAIN}"""
 
 
 def _build_html(email: ApplicationEmail) -> str:
@@ -78,10 +106,7 @@ def _build_html(email: ApplicationEmail) -> str:
     </p>
   </div>
 
-  <div class="footer">
-    Deze sollicitatie is verstuurd via <a href="https://opstap.nl">Opstap</a> &mdash;
-    de Nederlandse sollicitatie-assistent. Antwoorden gaan rechtstreeks naar de sollicitant.
-  </div>
+  {_FOOTER_HTML}
 </body>
 </html>
 """

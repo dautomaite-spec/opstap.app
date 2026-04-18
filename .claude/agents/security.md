@@ -52,6 +52,16 @@ Opstap stores sensitive personal data: CVs, email addresses, motivation letters,
 - LLM endpoints must have per-user rate limits (already implemented — verify they are enforced before the expensive call, not after)
 - Authentication endpoints (login, register, password reset) must have rate limiting to prevent brute force
 - File upload endpoints must limit file size and upload frequency
+- Per-company weekly application limit must be enforced (APPLY_PER_COMPANY_WEEKLY_LIMIT = 1 per 7 days)
+- `is_suspended` flag must be checked before any email is sent
+
+### 9. Email Abuse & Bounce Monitoring
+- **Bounce handling**: SendGrid bounce/spam webhooks must be wired to flag or suspend the sending user. A high bounce rate indicates invalid targets or spam behavior.
+- **Spam reports**: When a company reports an email as spam via `/api/v1/abuse/report`, the user's `abuse_report_count` must increment and auto-suspend at threshold (≥3 reports).
+- **Inspection rights**: Per the TOS abuse clause, Opstap may inspect motivation letters and emails of flagged users. Review the `abuse_reports` table in Supabase for pending reports.
+- **Auto-suspend review**: After auto-suspension, a human must review before reinstating. Flag any code that auto-reinstates users without manual approval.
+- **Malicious content in letters**: Claude-generated letters containing URLs, mailto links, or HTML injection attempts must be detected and blocked before sending.
+- **Email header injection**: Verify that `job_title`, `company`, and `reply_to_name` fields are sanitized before insertion into email headers — newline characters (`\r\n`) in these fields can allow header injection.
 
 ### 6. Data Exposure
 - API responses must not leak fields not needed by the caller (e.g. password hashes, internal IDs, other users' data)

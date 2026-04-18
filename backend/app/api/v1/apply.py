@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from uuid import uuid4
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
@@ -9,6 +9,8 @@ from app.core.rate_limiter import (
     get_letter_usage,
     APPLY_DAILY_LIMIT,
 )
+
+APPLY_PER_COMPANY_WEEKLY_LIMIT = 1  # max 1 application per company per user per 7 days
 from app.schemas.application import (
     MotivationLetterRequest,
     MotivationLetterOut,
@@ -89,10 +91,32 @@ async def send_application(
         raise HTTPException(status_code=404, detail="Job not found")
     job = job_result.data
 
-    profile_result = supabase.table("profiles").select("naam,email").eq("user_id", user_id).single().execute()
+    profile_result = supabase.table("profiles").select("naam,email,is_suspended").eq("user_id", user_id).single().execute()
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = profile_result.data
+
+    if profile.get("is_suspended"):
+        raise HTTPException(
+            status_code=403,
+            detail="Je account is geschorst wegens vermoeden van misbruik. Neem contact op via misbruik@opstap.nl.",
+        )
+
+    # ── Per-company weekly limit ───────────────────────────────────────────────
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    company_count_result = (
+        supabase.table("applications")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("company", job["company"])
+        .gte("created_at", week_ago)
+        .execute()
+    )
+    if (company_count_result.count or 0) >= APPLY_PER_COMPANY_WEEKLY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Je hebt deze week al gesolliciteerd bij {job['company']}. Wacht 7 dagen voor een nieuwe poging.",
+        )
 
     now = datetime.now(timezone.utc)
     status = "pending"
