@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
 
@@ -8,6 +8,7 @@ from app.core.rate_limiter import (
     check_and_increment_letter,
     get_letter_usage,
     APPLY_DAILY_LIMIT,
+    check_ip_flood,
 )
 
 APPLY_PER_COMPANY_WEEKLY_LIMIT = 1  # max 1 application per company per user per 7 days
@@ -66,10 +67,15 @@ async def generate_motivation_letter(
 
 @router.post("/send", response_model=ApplicationOut, status_code=201)
 async def send_application(
+    request: Request,
     body: ApplicationCreate,
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
+    # ── IP flood protection ────────────────────────────────────────────────────
+    ip = request.client.host if request.client else "unknown"
+    if check_ip_flood(ip):
+        raise HTTPException(status_code=429, detail="Te veel verzoeken. Probeer het later opnieuw.")
     # ── Rate limiting: max APPLY_DAILY_LIMIT applications per day ─────────────
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     usage_result = (
