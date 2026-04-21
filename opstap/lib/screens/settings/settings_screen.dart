@@ -57,7 +57,7 @@ class SettingsScreen extends ConsumerWidget {
             _InfoTile(
               icon: Icons.storage_rounded,
               label: 'CV-opslag',
-              subtitle: 'Jouw CV wordt versleuteld opgeslagen op EU-servers.',
+              subtitle: 'Je CV wordt versleuteld opgeslagen op EU-servers',
             ),
             const _Divider(),
             _ActionTile(
@@ -171,11 +171,11 @@ class SettingsScreen extends ConsumerWidget {
       await ApiClient.instance.deleteCv();
       ref.invalidate(profileNotifierProvider);
       if (context.mounted) {
-        _snack(context, 'CV verwijderd.', success: true);
+        _snack(context, 'CV verwijderd', success: true);
       }
-    } on ApiException catch (e) {
+    } on ApiException catch (_) {
       if (context.mounted) {
-        _snack(context, 'Mislukt (${e.statusCode}): ${e.detail}');
+        _snack(context, 'Verwijderen mislukt. Probeer het opnieuw');
       }
     }
   }
@@ -199,7 +199,7 @@ class SettingsScreen extends ConsumerWidget {
           '• Je profiel (naam, woonplaats, functievoorkeur)\n'
           '• Je CV-bestand (versleuteld, EU-servers)\n'
           '• Verzonden sollicitaties\n\n'
-          'Downloadbare export is beschikbaar in de volgende versie.',
+          'Snel beschikbaar: je kunt je gegevens straks downloaden als JSON',
           style: GoogleFonts.inter(fontSize: 13, height: 1.6),
         ),
         actions: [
@@ -226,15 +226,9 @@ class SettingsScreen extends ConsumerWidget {
     if (!ok || !context.mounted) return;
 
     try {
-      // Delete CV first
-      try {
-        await ApiClient.instance.deleteCv();
-      } catch (_) {}
-
-      // Delete Supabase auth user (triggers cascade delete via DB)
-      await Supabase.instance.client.auth.admin.deleteUser(
-        Supabase.instance.client.auth.currentUser!.id,
-      );
+      final res = await Supabase.instance.client.functions
+          .invoke('delete-account', method: HttpMethod.post);
+      if (res.status != 200) throw Exception('status ${res.status}');
       if (context.mounted) context.go('/');
     } catch (e) {
       if (context.mounted) {
@@ -549,7 +543,7 @@ class _SwitchTile extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: OpstapColors.primary,
+            activeThumbColor: OpstapColors.primary,
           ),
         ],
       ),

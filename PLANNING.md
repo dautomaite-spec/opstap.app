@@ -1,5 +1,5 @@
 # Opstap — Planning Document
-> Last updated: 2026-04-15 (Phase 2 backend + Flutter wiring complete)
+> Last updated: 2026-04-21 (Phase 3 in progress — infrastructure live, store assets next)
 
 ---
 
@@ -289,8 +289,19 @@ Opstap App
 - [x] Settings screen (account, privacy/data deletion, notifications, about)
 
 ### Phase 3 — Polish & Launch
-- [ ] Testing (unit + integration + manual)
-- [ ] App Store assets (icon, screenshots, description)
+- [x] Railway backend deployed — https://opstapapp-production.up.railway.app (/health ✅)
+- [x] Supabase migration 004 applied (writing_style + cv_expires_at columns)
+- [x] 4 Supabase Edge Functions deployed and ACTIVE (delete-account, warn-cv-expiry, cleanup-expired-cvs, purge-inactive)
+- [x] Supabase OAuth redirect URLs configured (7 URLs: localhost, opstap://, opstap.nl, Railway)
+- [x] Flutter `opstap/` web build wired to production backend
+- [x] ApplicationsScreen + MainShell + router `/app` route created
+- [x] Play Store listing copy written (Dutch) — cowork/04_play_store_copy.md
+- [x] Privacy policy written (AVG-compliant Dutch) — cowork/05_privacy_policy_nl.md
+- [x] App icon (512×512) — Canva, exported PNG
+- [x] Feature graphic (1024×500) — Canva, slogan "Meer kansen. Minder moeite."
+- [ ] Screenshots for Play Store (5× portrait, Pixel 6)
+- [x] CORS_ORIGINS set on Railway (localhost, opstap.nl, www.opstap.nl, Railway URL)
+- [ ] E2E test: register → upload CV → search → letter → apply
 - [ ] Play Store submission
 - [ ] Apple App Store submission
 - [ ] v2 planning
