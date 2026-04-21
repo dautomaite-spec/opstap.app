@@ -8,15 +8,11 @@ import '../screens/onboarding/avg_consent_screen.dart';
 import '../screens/onboarding/cv_upload_screen.dart';
 import '../screens/profile/manual_profile_screen.dart';
 import '../screens/profile/extracted_profile_screen.dart';
-import '../screens/jobs/job_search_screen.dart';
-import '../screens/apply/motivation_letter_screen.dart';
-import '../screens/apply/confirmation_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
-import '../screens/settings/settings_screen.dart';
+import '../screens/main_shell.dart';
 
-// Notifier that rebuilds GoRouter whenever Supabase auth state changes
 class _AuthNotifier extends ChangeNotifier {
   _AuthNotifier() {
     Supabase.instance.client.auth.onAuthStateChange.listen((_) {
@@ -36,28 +32,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = session != null;
       final loc = state.matchedLocation;
 
-      final onAuthRoute =
-          loc == '/login' || loc == '/register' || loc == '/forgot-password';
-      final protectedRoutes = ['/profile', '/jobs', '/apply', '/confirm', '/settings'];
-      final goingProtected = protectedRoutes.any((r) => loc.startsWith(r));
+      final onAuthRoute = loc == '/login' ||
+          loc == '/register' ||
+          loc == '/forgot-password';
+      final protectedPrefixes = ['/app', '/avg-consent', '/cv-upload', '/profile', '/apply', '/confirm'];
+      final goingProtected = protectedPrefixes.any((r) => loc.startsWith(r));
 
       if (!isLoggedIn && goingProtected) return '/login';
-      if (isLoggedIn && onAuthRoute) return '/';
+      if (isLoggedIn && onAuthRoute) return '/app';
       return null;
     },
     routes: [
+      // Public
       GoRoute(path: '/', builder: (_, __) => const WelcomeScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+
+      // Onboarding (auth required)
       GoRoute(path: '/avg-consent', builder: (_, __) => const AvgConsentScreen()),
       GoRoute(path: '/cv-upload', builder: (_, __) => const CvUploadScreen()),
       GoRoute(path: '/profile/manual', builder: (_, __) => const ManualProfileScreen()),
       GoRoute(path: '/profile/extracted', builder: (_, __) => const ExtractedProfileScreen()),
-      GoRoute(path: '/jobs', builder: (_, __) => const JobSearchScreen()),
-      GoRoute(path: '/apply', builder: (_, __) => const MotivationLetterScreen()),
-      GoRoute(path: '/confirm', builder: (_, __) => const ConfirmationScreen()),
-      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+
+      // Main shell — bottom nav (jobs / applications / settings)
+      GoRoute(path: '/app', builder: (_, __) => const MainShell()),
     ],
   );
 });
