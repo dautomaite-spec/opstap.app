@@ -19,8 +19,7 @@ In the "Redirect URLs" section, click "Add URL" and add each of these one by one
 5. `https://opstap.nl` (production web — add even if not live yet)
 6. `https://www.opstap.nl`
 
-After you get the Railway URL from the other task, also add:
-7. `<railway-url>` (the .railway.app URL from the deploy task)
+7. `https://opstapapp-production.up.railway.app` (Railway backend)
 
 ## Step 3 — Set Site URL
 In the "Site URL" field, check what is currently set. For now it should be:
