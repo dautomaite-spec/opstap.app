@@ -22,8 +22,8 @@ class MotivationLetterOut(BaseModel):
 class ApplicationCreate(BaseModel):
     job_id: UUID4
     profile_id: UUID4
-    letter_nl: str
-    send_method: str  # email / form
+    letter_nl: str = Field(..., min_length=50, max_length=6000)
+    send_method: Literal["email", "form"]  # reject arbitrary strings
 
 
 class ApplicationOut(BaseModel):

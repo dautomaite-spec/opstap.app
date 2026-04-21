@@ -25,33 +25,47 @@
   ✅  Forgot password flow
   ✅  CV upload (PDF/DOCX, AVG consent, retention selector)
   ✅  Manual profile setup
-  ✅  Job scraping (Jobbird + Nationale Vacaturebank RSS)
+  ✅  Job scraping (Jobbird Playwright + Nationale Vacaturebank RSS)
   ✅  AI motivation letter (Claude API, Dutch, 4 writing styles)
   ✅  Auto-apply via email (SendGrid, Reply-To pattern)
   ✅  All 10 screens wired to live API
   ✅  Settings screen (account, data deletion, privacy)
   ✅  LLM rate limiting (5/job, 10/day letters · 20/day applications)
+  ✅  Anti-spam guardrails (per-company weekly limit, abuse reporting, suspension)
+  ✅  IP flood protection (sliding window, 10 req/60s)
   ✅  Security hardening (path traversal, MIME, prompt injection, CORS)
-  ✅  Project agents (stylist, avg-checker, dutch-copy, security)
+  ✅  Project agents (stylist, avg-checker, dutch-copy, security, developer)
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   PHASE 3 — DEPLOY & LAUNCH                              📍 HERE NOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+  Backend — live on Railway (europe-west4, EU region)
   ✅  Supabase OAuth redirect URLs configured
-  ✅  Deploy backend → Railway
-  ✅  Add Railway URL to Supabase redirect list
-  ✅  Update env.json → point Flutter at live backend
-  ✅  Supabase RLS verified in production
-  ⏳  End-to-end test (register → upload → search → apply) ← next
-  ⬜  Privacy policy written + hosted at opstap.nl/privacy
+  ✅  Backend deployed → Railway (europe-west4, Dockerfile)
+  ✅  Railway URL added to Supabase redirect list
+  ✅  env.json → Flutter pointed at live backend
+  ✅  Supabase RLS verified in production (4 tables)
+  ✅  Migration 003: abuse_reports + is_suspended + abuse_report_count
+  ✅  ADMIN_API_KEY set in Railway variables
+  ✅  E2E verified: auth ✅ · profile ✅ · job search ✅ · apply/send ✅
+  ❌  Letter generation blocked — Anthropic account needs credits
+
+  Pre-launch blockers
+  ⬜  Add Anthropic credits (console.anthropic.com → Plans & Billing)
+  ⬜  Add SendGrid API key to Railway variables (currently empty → emails fail)
+  ⬜  Flutter app device testing — smoke test all 10 screens on Android
+  ⬜  AVG consent screen verified end-to-end on device
+
+  Store assets & submission
   ⬜  Register opstap.nl domain
-  ⬜  App icon (512×512)
-  ⬜  Feature graphic (1024×500)
-  ⬜  Screenshots (4–8, phone + tablet)
-  ⬜  Play Store listing copy (NL) — short + full description
-  ⬜  Google Play Console account ($25 one-time)
+  ⬜  Privacy policy written + hosted at opstap.nl/privacy
+  ⬜  App icon (512×512 PNG)
+  ⬜  Feature graphic (1024×500 PNG)
+  ⬜  Screenshots (4–8, phone + 7-inch tablet)
+  ⬜  Play Store listing copy (NL) — short description (80 chars) + full (4000)
+  ⬜  Google Play Console account ($25 one-time fee)
   ⬜  Play Store submission — Android
   ⬜  App Store submission — iOS (optional, $99/yr)
 

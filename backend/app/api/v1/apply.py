@@ -20,6 +20,10 @@ from app.schemas.application import (
 )
 from app.services.letter_generator import generate_letter
 from app.services.email_sender import send_application_email, ApplicationEmail
+from app.services.prompt_guard import (
+    PromptInjectionError,
+    sanitize_and_check_profile_text,
+)
 
 router = APIRouter(prefix="/apply", tags=["apply"])
 
@@ -40,21 +44,49 @@ async def generate_motivation_letter(
         raise HTTPException(status_code=404, detail="Job not found")
     job = job_result.data
 
-    profile_result = supabase.table("profiles").select("*").eq("id", str(body.profile_id)).single().execute()
+    profile_result = (
+        supabase.table("profiles")
+        .select("*")
+        .eq("id", str(body.profile_id))
+        .eq("user_id", user_id)          # ownership check — prevents cross-user data access
+        .single()
+        .execute()
+    )
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = profile_result.data
 
     if body.custom_notes:
+        # Injection-check custom_notes before merging into the profile that
+        # flows into the Claude prompt.  URLs are not expected in personal notes.
+        try:
+            sanitize_and_check_profile_text(body.custom_notes, "custom_notes", 500)
+        except PromptInjectionError:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Ongeldige invoer in 'Persoonlijke notities'. "
+                    "Verwijder eventuele instructies, links of HTML en probeer opnieuw."
+                ),
+            )
         profile = {**profile, "extra_info": f"{profile.get('extra_info', '')}\n{body.custom_notes}".strip()}
 
-    letter = await generate_letter(
-        job_title=job["title"],
-        company=job["company"],
-        job_description=job.get("description_snippet") or "",
-        profile=profile,
-        writing_style=body.writing_style or "formeel",
-    )
+    try:
+        letter = await generate_letter(
+            job_title=job["title"],
+            company=job["company"],
+            job_description=job.get("description_snippet") or "",
+            profile=profile,
+            writing_style=body.writing_style or "formeel",
+        )
+    except PromptInjectionError:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "De ingevoerde gegevens bevatten inhoud die niet verwerkt kan worden. "
+                "Controleer de vacature- en profielgegevens en probeer opnieuw."
+            ),
+        )
 
     quota = get_letter_usage(user_id, str(body.job_id))
     return MotivationLetterOut(

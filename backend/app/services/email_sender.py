@@ -10,6 +10,7 @@ This means replies from the company land directly in the user's inbox.
 The user's email is never exposed in the From field.
 """
 
+import html
 import logging
 from dataclasses import dataclass
 from sendgrid import SendGridAPIClient
@@ -75,9 +76,9 @@ Met vriendelijke groet,
 
 
 def _build_html(email: ApplicationEmail) -> str:
-    # Convert paragraphs to <p> tags
+    # Convert paragraphs to <p> tags — escape content to prevent HTML injection
     paragraphs = [p.strip() for p in email.letter_body.split("\n\n") if p.strip()]
-    body_html = "\n".join(f"<p>{p}</p>" for p in paragraphs)
+    body_html = "\n".join(f"<p>{html.escape(p)}</p>" for p in paragraphs)
 
     return f"""\
 <!DOCTYPE html>
@@ -101,8 +102,8 @@ def _build_html(email: ApplicationEmail) -> str:
   <div class="closing">
     <p>Met vriendelijke groet,</p>
     <p>
-      <strong>{email.reply_to_name}</strong><br>
-      <span class="signature">{email.reply_to_email}</span>
+      <strong>{html.escape(email.reply_to_name)}</strong><br>
+      <span class="signature">{html.escape(email.reply_to_email)}</span>
     </p>
   </div>
 
@@ -110,6 +111,11 @@ def _build_html(email: ApplicationEmail) -> str:
 </body>
 </html>
 """
+
+
+def _sanitize_header(value: str, max_len: int = 200) -> str:
+    """Strip characters that can break email headers and cap length."""
+    return value.replace("\r", "").replace("\n", "")[:max_len]
 
 
 async def send_application_email(email: ApplicationEmail) -> bool:
@@ -121,16 +127,21 @@ async def send_application_email(email: ApplicationEmail) -> bool:
         logger.warning("SENDGRID_API_KEY not set — skipping email send (dev mode)")
         return True  # don't fail in development
 
-    subject = f"Sollicitatie: {email.job_title} — {email.reply_to_name}"
+    safe_job_title = _sanitize_header(email.job_title)
+    safe_reply_name = _sanitize_header(email.reply_to_name)
+    safe_reply_email = _sanitize_header(email.reply_to_email)
+    safe_to_name = _sanitize_header(email.to_name)
+
+    subject = f"Sollicitatie: {safe_job_title} — {safe_reply_name}"
 
     message = Mail(
         from_email=From(settings.sendgrid_from_email, settings.sendgrid_from_name),
-        to_emails=To(email.to_email, email.to_name),
+        to_emails=To(email.to_email, safe_to_name),
         subject=Subject(subject),
         plain_text_content=PlainTextContent(_build_plain_text(email)),
         html_content=HtmlContent(_build_html(email)),
     )
-    message.reply_to = ReplyTo(email.reply_to_email, email.reply_to_name)
+    message.reply_to = ReplyTo(safe_reply_email, safe_reply_name)
 
     try:
         sg = SendGridAPIClient(settings.sendgrid_api_key)
