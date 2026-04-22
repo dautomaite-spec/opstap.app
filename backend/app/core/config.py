@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     app_secret_key: str  # required — no default, must be set in env
     admin_api_key: str = ""  # set in production to protect admin endpoints
     cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origin_regex: str | None = None
 
     # SendGrid
     sendgrid_api_key: str = ""

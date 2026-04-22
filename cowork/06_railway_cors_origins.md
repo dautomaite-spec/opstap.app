@@ -1,32 +1,43 @@
-# Cowork prompt — Set CORS_ORIGINS on Railway
+# Cowork prompt — Set CORS on Railway
 
 Copy everything below the line into Cowork.
 
 ---
 
-You are helping me configure an environment variable on Railway for the Opstap backend.
+You are helping me configure CORS environment variables on Railway for the Opstap backend.
 
 ## Context
-The FastAPI backend reads `CORS_ORIGINS` as a list. The default fallback is only `["http://localhost:3000"]`, which is too restrictive for production.
+The FastAPI backend has two CORS settings:
+- `CORS_ORIGINS` — exact origin list
+- `CORS_ORIGIN_REGEX` — regex for pattern-matched origins (e.g. any localhost port)
 
 ## Step 1 — Open Railway
 Go to your Railway project → select the **opstapapp** service → click **Variables**.
 
-## Step 2 — Set or update CORS_ORIGINS
-Add or update this variable:
+## Step 2 — Set CORS_ORIGINS
+Add or update:
 
 **Key:** `CORS_ORIGINS`  
 **Value:**
 ```
-["http://localhost:3000","http://localhost:*","https://opstap.nl","https://www.opstap.nl","https://opstapapp-production.up.railway.app"]
+["https://opstap.nl","https://www.opstap.nl","https://opstapapp-production.up.railway.app"]
 ```
 
-(Paste the value as a single line, no line breaks.)
+## Step 3 — Set CORS_ORIGIN_REGEX
+Add:
 
-## Step 3 — Redeploy
-After saving the variable, Railway will automatically redeploy. Wait for the deploy to finish (green status).
+**Key:** `CORS_ORIGIN_REGEX`  
+**Value:**
+```
+http://localhost:\d+
+```
 
-## Step 4 — Confirm
-Visit https://opstapapp-production.up.railway.app/health — it should return `{"status":"ok"}`.
+This allows any localhost port during development without hardcoding port numbers.
+
+## Step 4 — Redeploy
+Save both variables — Railway will redeploy automatically.
+
+## Step 5 — Confirm
+Visit https://opstapapp-production.up.railway.app/health — should return `{"status":"ok"}`.
 
 Done.

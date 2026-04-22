@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/env.dart';
 
@@ -68,6 +69,10 @@ class ApiClient {
         'file',
         fileBytes,
         filename: fileName,
+        contentType: fileName.toLowerCase().endsWith('.pdf')
+            ? MediaType('application', 'pdf')
+            : MediaType('application',
+                'vnd.openxmlformats-officedocument.wordprocessingml.document'),
       ));
     final streamed = await request.send();
     final res = await http.Response.fromStream(streamed);
