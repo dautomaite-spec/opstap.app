@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme.dart';
 import 'core/router.dart';
 import 'core/env.dart';
+import 'screens/onboarding/intro_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,15 +15,18 @@ void main() async {
     anonKey: Env.supabaseAnonKey,
   );
 
-  runApp(const ProviderScope(child: OpstapApp()));
+  final showIntro = !(await hasSeenIntro());
+
+  runApp(ProviderScope(child: OpstapApp(initialLocation: showIntro ? '/intro' : '/')));
 }
 
 class OpstapApp extends ConsumerWidget {
-  const OpstapApp({super.key});
+  final String initialLocation;
+  const OpstapApp({super.key, required this.initialLocation});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
+    final router = ref.watch(routerProvider(initialLocation));
     return MaterialApp.router(
       title: 'Opstap',
       debugShowCheckedModeBanner: false,

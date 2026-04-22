@@ -45,6 +45,7 @@
 | Multi-language | — | ✅ |
 | Ads + freemium system | — | ✅ |
 | Expand beyond NL | — | ✅ |
+| Paste any job URL → AI letter | — | ✅ |
 
 ---
 

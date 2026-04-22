@@ -63,7 +63,7 @@ class WelcomeScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'Welkom,\nVind jouw\ndroomjob!',
+                    'Meer kansen.\nMinder moeite.',
                     style: GoogleFonts.poppins(
                       fontSize: 36,
                       fontWeight: FontWeight.w700,
@@ -79,7 +79,7 @@ class WelcomeScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'De slimste manier om je carrière\nnaar een hoger niveau te tillen.',
+                    'Automatisch solliciteren op Nederlandse vacatures.\nJij beheert alles.',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: OpstapColors.onSurfaceVariant,
