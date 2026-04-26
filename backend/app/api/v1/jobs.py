@@ -27,7 +27,9 @@ async def search_jobs(
 
     raw = jobbird + nvb
     if not raw:
-        return []
+        # Scrapers returned nothing — fall back to cached jobs in DB for this user
+        existing = supabase.table("jobs").select("*").eq("scraped_for_user", user_id).limit(params.limit).execute()
+        return existing.data or []
 
     seen: set[str] = set()
     unique = []
