@@ -32,7 +32,7 @@ class _IntroScreenState extends State<IntroScreen> {
       icon: Icons.upload_file_rounded,
       title: 'Upload je CV',
       body:
-          'Laad je cv op of vul je profiel handmatig in. Opstap onthoudt alles — jij hoeft het maar één keer in te voeren.',
+          'Voeg je CV toe of vul je profiel handmatig in. Opstap onthoudt alles — jij hoeft het maar één keer in te voeren.',
     ),
     _IntroStep(
       icon: Icons.search_rounded,
