@@ -143,7 +143,7 @@ class _ExtractedProfileScreenState extends State<ExtractedProfileScreen> {
                 ),
               ),
             ),
-            _BottomBar(onConfirmed: widget.onConfirmed ?? () => context.go('/jobs')),
+            _BottomBar(onConfirmed: widget.onConfirmed ?? () => context.go('/app')),
           ],
         ),
       ),

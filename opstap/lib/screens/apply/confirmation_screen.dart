@@ -122,14 +122,14 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                   icon: Icons.search_rounded,
                   title: 'Meer vacatures zoeken',
                   subtitle: 'Vind nog meer passende vacatures',
-                  onTap: widget.onSearchMore ?? () => context.go('/jobs'),
+                  onTap: widget.onSearchMore ?? () => context.go('/app'),
                 ),
                 const SizedBox(height: 10),
                 _NextStepCard(
                   icon: Icons.assignment_rounded,
                   title: 'Jouw sollicitaties bekijken',
                   subtitle: 'Bekijk de status van je sollicitaties',
-                  onTap: () => context.go('/jobs'),
+                  onTap: () => context.go('/app'),
                 ),
                 const SizedBox(height: 10),
                 _NextStepCard(

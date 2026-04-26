@@ -84,7 +84,7 @@ class _ManualProfileScreenState extends ConsumerState<ManualProfileScreen> {
       });
 
       if (mounted) {
-        (widget.onSaved ?? () => context.go('/jobs'))();
+        (widget.onSaved ?? () => context.go('/app'))();
       }
     } catch (e) {
       setState(() => _errorMessage = 'Opslaan mislukt. Controleer je verbinding.');
