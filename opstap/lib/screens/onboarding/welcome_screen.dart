@@ -46,14 +46,20 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 // Logo bar
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                  child: Text(
-                    'Opstap',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: OpstapColors.onSurface,
-                    ),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 16, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Opstap',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: OpstapColors.onSurface,
+                        ),
+                      ),
+                      _AuthButton(),
+                    ],
                   ),
                 ),
 
@@ -198,6 +204,37 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Auth button (top-right of welcome screen) ───────────────────────────────
+
+class _AuthButton extends StatelessWidget {
+  const _AuthButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      return IconButton(
+        tooltip: 'Mijn account',
+        icon: const Icon(Icons.account_circle_rounded, size: 28),
+        color: OpstapColors.primary,
+        onPressed: () => context.push('/app'),
+      );
+    }
+    return FilledButton(
+      onPressed: () => context.push('/login'),
+      style: FilledButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: OpstapColors.primary,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+      child: const Text('Inloggen'),
     );
   }
 }
