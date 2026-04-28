@@ -217,11 +217,18 @@ class _AuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null) {
-      return IconButton(
-        tooltip: 'Mijn account',
-        icon: const Icon(Icons.account_circle_rounded, size: 28),
-        color: OpstapColors.primary,
-        onPressed: () => context.push('/app'),
+      return FilledButton.icon(
+        onPressed: () => context.push('/account'),
+        style: FilledButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: OpstapColors.primary,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          textStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        icon: const Icon(Icons.account_circle_rounded, size: 18),
+        label: const Text('Account'),
       );
     }
     return FilledButton(
