@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     sendgrid_from_email: str = "sollicitaties@opstap.nl"
     sendgrid_from_name: str = "Opstap"
 
+    # Adzuna job search API
+    adzuna_app_id: str = ""
+    adzuna_app_key: str = ""
+
     # CV storage
     cv_max_size_mb: int = 10
     cv_default_retention_days: int = 30
