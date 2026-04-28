@@ -46,23 +46,23 @@ final routerProvider = Provider.family<GoRouter, String>((ref, initialLocation) 
     },
     routes: [
       // Public
-      GoRoute(path: '/intro', builder: (_, __) => const IntroScreen()),
-      GoRoute(path: '/', builder: (_, __) => const WelcomeScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-      GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(path: '/intro', builder: (_, _) => const IntroScreen()),
+      GoRoute(path: '/', builder: (_, _) => const WelcomeScreen()),
+      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (_, _) => const RegisterScreen()),
+      GoRoute(path: '/forgot-password', builder: (_, _) => const ForgotPasswordScreen()),
 
       // Onboarding (auth required)
-      GoRoute(path: '/avg-consent', builder: (_, __) => const AvgConsentScreen()),
-      GoRoute(path: '/cv-upload', builder: (_, __) => const CvUploadScreen()),
-      GoRoute(path: '/profile/manual', builder: (_, __) => const ManualProfileScreen()),
-      GoRoute(path: '/profile/extracted', builder: (_, __) => const ExtractedProfileScreen()),
+      GoRoute(path: '/avg-consent', builder: (_, _) => const AvgConsentScreen()),
+      GoRoute(path: '/cv-upload', builder: (_, _) => const CvUploadScreen()),
+      GoRoute(path: '/profile/manual', builder: (_, _) => const ManualProfileScreen()),
+      GoRoute(path: '/profile/extracted', builder: (_, _) => const ExtractedProfileScreen()),
 
       // Account overview
-      GoRoute(path: '/account', builder: (_, __) => const AccountScreen()),
+      GoRoute(path: '/account', builder: (_, _) => const AccountScreen()),
 
       // Main shell — bottom nav (jobs / applications / settings)
-      GoRoute(path: '/app', builder: (_, __) => const MainShell()),
+      GoRoute(path: '/app', builder: (_, _) => const MainShell()),
     ],
   );
 });

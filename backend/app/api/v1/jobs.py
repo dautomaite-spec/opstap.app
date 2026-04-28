@@ -47,6 +47,8 @@ async def search_jobs(
             "source": j["source"],
             "url": j["url"],
             "description_snippet": j.get("description_snippet"),
+            "salary_range": j.get("salary_range"),
+            "contract_type": j.get("contract_type"),
             "scraped_at": j["scraped_at"],
             "scraped_for_user": user_id,
         }
@@ -54,7 +56,7 @@ async def search_jobs(
     ]
     supabase.table("jobs").upsert(rows, on_conflict="url").execute()
 
-    return unique[: params.limit]
+    return rows[: params.limit]
 
 
 @router.get("/{job_id}", response_model=JobOut)
