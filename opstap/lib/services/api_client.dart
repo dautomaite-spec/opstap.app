@@ -98,8 +98,8 @@ class ApiClient {
       Uri.parse('$_base/api/v1/jobs/search'),
       headers: _headers,
       body: jsonEncode({
-        if (keywords != null) 'keywords': keywords,
-        if (location != null) 'location': location,
+        'keywords': ?keywords,
+        'location': ?location,
         'limit': limit,
       }),
     );
@@ -122,7 +122,7 @@ class ApiClient {
       body: jsonEncode({
         'job_id': jobId,
         'profile_id': profileId,
-        if (customNotes != null) 'custom_notes': customNotes,
+        'custom_notes': ?customNotes,
         'writing_style': writingStyle,
       }),
     );
