@@ -301,7 +301,7 @@ Opstap App
 - [x] App icon (512×512) — Canva, exported PNG
 - [x] Feature graphic (1024×500) — Canva, slogan "Meer kansen. Minder moeite."
 - [ ] Screenshots for Play Store (5× portrait, Pixel 6)
-- [x] CORS_ORIGINS set on Railway (localhost, opstap.nl, www.opstap.nl, Railway URL)
+- [x] CORS_ORIGINS + CORS_ORIGIN_REGEX set on Railway (any localhost port + production URLs)
 - [ ] E2E test: register → upload CV → search → letter → apply
 - [ ] Play Store submission
 - [ ] Apple App Store submission
