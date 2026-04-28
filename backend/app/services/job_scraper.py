@@ -44,7 +44,7 @@ async def scrape_adzuna(keywords: str, location: str = "", limit: int = 20) -> l
                                     headers={"User-Agent": "Opstap/1.0 (+https://opstap.nl)"})
             resp.raise_for_status()
     except httpx.HTTPError as exc:
-        logger.warning("Adzuna API request failed: %s", exc)
+        logger.warning("Adzuna API request failed: %s", type(exc).__name__)
         return []
 
     try:

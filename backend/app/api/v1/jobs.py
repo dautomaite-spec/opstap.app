@@ -63,7 +63,7 @@ async def get_job(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    result = supabase.table("jobs").select("*").eq("id", job_id).single().execute()
+    result = supabase.table("jobs").select("*").eq("id", job_id).eq("scraped_for_user", user_id).single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Job not found")
     return result.data

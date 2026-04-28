@@ -1,4 +1,4 @@
-from pydantic import BaseModel, UUID4, HttpUrl
+from pydantic import BaseModel, UUID4, HttpUrl, Field
 from typing import Optional
 from datetime import datetime
 
@@ -8,7 +8,7 @@ class JobOut(BaseModel):
     title: str
     company: str
     location: str
-    source: str  # indeed_nl / jobbird / nationale_vacaturebank / linkedin_nl
+    source: str
     url: str
     description_snippet: Optional[str] = None
     salary_range: Optional[str] = None
@@ -20,9 +20,9 @@ class JobOut(BaseModel):
 
 
 class JobSearchParams(BaseModel):
-    keywords: Optional[str] = None
-    location: Optional[str] = None
+    keywords: Optional[str] = Field(None, max_length=200)
+    location: Optional[str] = Field(None, max_length=200)
     radius_km: int = 30
-    contract_type: Optional[str] = None  # fulltime / parttime / flex
+    contract_type: Optional[str] = None
     salary_min: Optional[int] = None
-    limit: int = 20
+    limit: int = Field(20, ge=1, le=100)
