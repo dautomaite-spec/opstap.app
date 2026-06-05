@@ -1,5 +1,11 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { login } from '@/app/actions/auth'
+
+export const metadata: Metadata = {
+  title: 'Inloggen — Opstap',
+  robots: { index: false, follow: false },
+}
 
 export default async function LoginPage({
   searchParams,

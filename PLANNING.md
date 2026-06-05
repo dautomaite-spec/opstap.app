@@ -325,22 +325,28 @@ Opstap App
 - [x] CORS_ORIGINS + CORS_ORIGIN_REGEX set on Railway (any localhost port + production URLs)
 - [x] E2E test: register → login → profile → job search → letter → apply ✅ (all steps pass)
 - [ ] Domain registered (opstap.nl preferred)
-- [ ] Website deployed to Vercel
+- [x] Website deployed to Vercel (https://opstap-app-j5ie.vercel.app)
 - [x] Next.js project scaffolded in `web/`
 - [x] Opstap color palette + Tailwind v4 configured
 - [x] Supabase auth wired (SSR, cookie-based)
 - [x] Railway API client typed
 - [x] Landing page built
-- [ ] Login page (`/login`)
-- [ ] Register page (`/register`)
-- [ ] Dashboard (`/dashboard`) — job search + apply + history
-- [ ] Settings / profile page
-- [ ] Privacy policy page (`/privacy`)
+- [x] Login page (`/login`)
+- [x] Register page (`/register`)
+- [x] Dashboard (`/dashboard`) — job search + apply + history
+- [x] Settings / profile page (`/dashboard/settings`)
+- [x] Privacy policy page (`/privacy`)
+- [x] OG image + social meta tags
+- [x] SEO foundations: sitemap.xml, robots.txt, JSON-LD structured data, canonical URLs
+- [x] E2E test suite (Playwright, 10/10 passing) + GitHub Actions CI
+- [x] Deployed to Vercel (https://opstap-app-j5ie.vercel.app)
 
 ### Traction milestone — 500 MAU
 > Unlock Play Store + App Store submissions once 500 unique monthly active users have completed at least one job search on the website.
 
-- [ ] Analytics wired (Plausible or similar, privacy-friendly)
+- [x] Analytics wired (Plausible — cookieless, GDPR-safe, domain pending)
+- [ ] Domain registered (opstap.nl) — manual, SIDN registrar
+- [ ] Plausible account activated (requires domain first)
 - [ ] 500 MAU reached → trigger app store submissions
 
 ### Phase 4 — App Store (deferred)
