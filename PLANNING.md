@@ -1,5 +1,26 @@
 # Opstap — Planning Document
-> Last updated: 2026-04-21 (Phase 3 in progress — infrastructure live, store assets next)
+> Last updated: 2026-06-05 (Strategic pivot: website first, app store deferred until traction milestone)
+
+---
+
+## 0. Strategy — Website First
+
+**Decision (2026-06-05):** Launch a web product before submitting to any app store.
+
+**Rationale:**
+- Faster iteration cycle — no review queue, deploy instantly
+- Validate demand and collect real users before investing in store listings
+- A live domain with real visitors strengthens Play Store / App Store submissions
+- SEO + content marketing possible on web, not possible in apps
+
+**App store milestone:**
+> Submit to Google Play and Apple App Store once the website reaches **500 unique monthly active users** (logged-in, completed at least one job search).
+
+**Current focus order:**
+1. ✅ Website — Next.js, deployed to Vercel, domain opstap.nl (or opstap.app)
+2. ⏳ Traction — 500 MAU milestone
+3. ⏸ Play Store submission — deferred
+4. ⏸ Apple App Store submission — deferred
 
 ---
 
@@ -300,9 +321,29 @@ Opstap App
 - [x] Privacy policy written (AVG-compliant Dutch) — cowork/05_privacy_policy_nl.md
 - [x] App icon (512×512) — Canva, exported PNG
 - [x] Feature graphic (1024×500) — Canva, slogan "Meer kansen. Minder moeite."
-- [ ] Screenshots for Play Store (5× portrait, Pixel 6)
+- [x] Screenshots for Play Store (5× portrait, Pixel 6) — store_01–05.png
 - [x] CORS_ORIGINS + CORS_ORIGIN_REGEX set on Railway (any localhost port + production URLs)
-- [ ] E2E test: register → upload CV → search → letter → apply
+- [x] E2E test: register → login → profile → job search → letter → apply ✅ (all steps pass)
+- [ ] Domain registered (opstap.nl preferred)
+- [ ] Website deployed to Vercel
+- [x] Next.js project scaffolded in `web/`
+- [x] Opstap color palette + Tailwind v4 configured
+- [x] Supabase auth wired (SSR, cookie-based)
+- [x] Railway API client typed
+- [x] Landing page built
+- [ ] Login page (`/login`)
+- [ ] Register page (`/register`)
+- [ ] Dashboard (`/dashboard`) — job search + apply + history
+- [ ] Settings / profile page
+- [ ] Privacy policy page (`/privacy`)
+
+### Traction milestone — 500 MAU
+> Unlock Play Store + App Store submissions once 500 unique monthly active users have completed at least one job search on the website.
+
+- [ ] Analytics wired (Plausible or similar, privacy-friendly)
+- [ ] 500 MAU reached → trigger app store submissions
+
+### Phase 4 — App Store (deferred)
 - [ ] Play Store submission
 - [ ] Apple App Store submission
 - [ ] v2 planning
