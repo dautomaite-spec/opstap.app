@@ -5,9 +5,29 @@ import './globals.css'
 
 const geist = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 
+const siteUrl = 'https://opstap.nl'
+
 export const metadata: Metadata = {
   title: 'Opstap — Meer kansen. Minder moeite.',
   description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    title: 'Opstap — Meer kansen. Minder moeite.',
+    description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+    url: siteUrl,
+    siteName: 'Opstap',
+    locale: 'nl_NL',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Opstap — Meer kansen. Minder moeite.',
+    description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
