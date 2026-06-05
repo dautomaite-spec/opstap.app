@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job, Application } from '@/lib/api'
@@ -133,7 +134,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 <option value="">Geen voorkeur</option>
                 <option value="op locatie">Op locatie</option>
                 <option value="hybride">Hybride</option>
-                <option value="remote">Thuis (remote)</option>
+                <option value="remote">Thuis werken</option>
               </select>
             </div>
             <button type="submit" className="py-2.5 rounded-xl text-sm font-semibold text-white mt-2 hover:opacity-90 transition" style={{ background: 'var(--color-indigo-primary)' }}>
@@ -299,6 +300,9 @@ function Shell({ userEmail, children }: { userEmail: string; children: React.Rea
         <span className="font-bold text-lg" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
         <div className="flex items-center gap-4">
           <span className="text-sm hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</span>
+          <Link href="/dashboard/settings" className="text-sm px-3 py-1.5 rounded-lg border transition hover:bg-gray-50" style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
+            Instellingen
+          </Link>
           <form action={logout}>
             <button type="submit" className="text-sm px-3 py-1.5 rounded-lg border transition hover:bg-gray-50" style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
               Uitloggen

@@ -30,6 +30,8 @@ export const api = {
     get: () => request<Profile>('GET', '/api/v1/profile/me'),
     create: (body: ProfileCreate) => request<Profile>('POST', '/api/v1/profile/', body),
     update: (body: Partial<ProfileCreate>) => request<Profile>('PATCH', '/api/v1/profile/me', body),
+    deleteCV: () => request<void>('DELETE', '/api/v1/profile/cv'),
+    deleteAccount: () => request<void>('DELETE', '/api/v1/profile/me'),
   },
   jobs: {
     search: (params: JobSearchParams) => request<Job[]>('POST', '/api/v1/jobs/search', params),
