@@ -28,5 +28,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
+    {
+      url: `${siteUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/blog/motivatiebrief-schrijven`,
+      lastModified: new Date('2025-06-01'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/blog/automatisch-solliciteren`,
+      lastModified: new Date('2025-06-03'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/blog/cv-tips-nederland`,
+      lastModified: new Date('2025-06-05'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
   ]
 }

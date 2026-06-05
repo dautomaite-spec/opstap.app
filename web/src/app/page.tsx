@@ -40,6 +40,9 @@ export default function Home() {
       <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto w-full">
         <span className="font-bold text-xl" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
         <div className="flex gap-3">
+          <Link href="/blog" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:bg-white" style={{ color: 'var(--color-text-muted)' }}>
+            Blog
+          </Link>
           <Link href="/login" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:bg-white" style={{ color: 'var(--color-indigo-primary)' }}>
             Inloggen
           </Link>
