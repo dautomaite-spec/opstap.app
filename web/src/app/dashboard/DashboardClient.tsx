@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job, Application } from '@/lib/api'
@@ -299,6 +300,9 @@ function Shell({ userEmail, children }: { userEmail: string; children: React.Rea
         <span className="font-bold text-lg" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
         <div className="flex items-center gap-4">
           <span className="text-sm hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</span>
+          <Link href="/dashboard/settings" className="text-sm px-3 py-1.5 rounded-lg border transition hover:bg-gray-50" style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
+            Instellingen
+          </Link>
           <form action={logout}>
             <button type="submit" className="text-sm px-3 py-1.5 rounded-lg border transition hover:bg-gray-50" style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
               Uitloggen
