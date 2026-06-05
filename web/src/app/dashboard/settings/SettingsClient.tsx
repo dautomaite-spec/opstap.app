@@ -103,7 +103,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           <h2 className="text-base font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</h2>
           {saveSuccess && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>
-              Wijzigingen opgeslagen.
+              Wijzigingen opgeslagen
             </p>
           )}
           {saveError && (
@@ -128,7 +128,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
                   <option value="">Geen voorkeur</option>
                   <option value="op locatie">Op locatie</option>
                   <option value="hybride">Hybride</option>
-                  <option value="remote">Thuis (remote)</option>
+                  <option value="remote">Thuis werken</option>
                 </select>
               </div>
               <button
@@ -141,7 +141,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
               </button>
             </form>
           ) : (
-            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen profiel gevonden. Maak er een aan via het dashboard.</p>
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen profiel gevonden. Ga naar het dashboard om een profiel aan te maken.</p>
           )}
         </section>
 
@@ -150,12 +150,12 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>CV</h2>
           {profile?.cv_url ? (
             <>
-              <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                Er is een CV opgeslagen.
-                {profile.cv_expires_at && (
-                  <> Vervalt op {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.</>
-                )}
-              </p>
+              <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>Er is een CV opgeslagen.</p>
+              {profile.cv_expires_at && (
+                <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                  Vervalt op {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.
+                </p>
+              )}
               {cvError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
               <button
                 onClick={handleDeleteCV}

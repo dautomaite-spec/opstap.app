@@ -134,7 +134,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 <option value="">Geen voorkeur</option>
                 <option value="op locatie">Op locatie</option>
                 <option value="hybride">Hybride</option>
-                <option value="remote">Thuis (remote)</option>
+                <option value="remote">Thuis werken</option>
               </select>
             </div>
             <button type="submit" className="py-2.5 rounded-xl text-sm font-semibold text-white mt-2 hover:opacity-90 transition" style={{ background: 'var(--color-indigo-primary)' }}>
