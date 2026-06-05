@@ -91,7 +91,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="8. Cookies en tracking">
-          <p>Opstap gebruikt <strong>geen</strong> cookies, advertentietrackers of analysediensten van derden. Er is geen Google Analytics, Firebase Analytics of vergelijkbare dienst actief.</p>
+          <p>Opstap gebruikt <strong>geen</strong> cookies of advertentietrackers. Voor anonieme bezoekersstatistieken gebruiken wij <strong>Plausible Analytics</strong> — een privacyvriendelijke dienst zonder cookies, zonder persoonlijk identificeerbare informatie en zonder tracking over websites heen. Plausible voldoet volledig aan de AVG en slaat geen persoonsgegevens op. Er is geen Google Analytics, Firebase Analytics of vergelijkbare advertentiedienst actief.</p>
         </Section>
 
         <Section title="9. Geautomatiseerde besluitvorming">

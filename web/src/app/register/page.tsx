@@ -1,5 +1,12 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { register } from '@/app/actions/auth'
+
+export const metadata: Metadata = {
+  title: 'Gratis account aanmaken — Opstap',
+  description: 'Maak gratis een Opstap-account aan en begin automatisch te solliciteren op Nederlandse vacatures.',
+  alternates: { canonical: 'https://opstap.nl/register' },
+}
 
 export default async function RegisterPage({
   searchParams,
