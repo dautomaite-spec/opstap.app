@@ -124,8 +124,8 @@ async def send_application_email(email: ApplicationEmail) -> bool:
     Returns True on success, False on failure (logs the error).
     """
     if not settings.sendgrid_api_key:
-        logger.warning("SENDGRID_API_KEY not set — skipping email send (dev mode)")
-        return True  # don't fail in development
+        logger.warning("SENDGRID_API_KEY not set — email not sent")
+        return False
 
     safe_job_title = _sanitize_header(email.job_title)
     safe_reply_name = _sanitize_header(email.reply_to_name)
