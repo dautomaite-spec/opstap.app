@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 import re
 
 from app.core.supabase import get_supabase
@@ -10,6 +11,23 @@ from app.schemas.profile import ProfileCreate, ProfileUpdate, ProfileOut
 router = APIRouter(prefix="/profile", tags=["profile"])
 
 CV_BUCKET = "cvs"
+CV_SIGNED_URL_EXPIRY = 3600  # 1 hour
+
+
+def _attach_cv_url(profile: dict, supabase) -> dict:
+    """Replace cv_path with a signed cv_url if a CV is stored."""
+    path = profile.pop("cv_path", None)
+    user_id = str(profile.get("user_id", ""))
+    # Guard: only generate signed URL for paths owned by this user
+    if path and path.startswith(f"{user_id}/"):
+        try:
+            res = supabase.storage.from_(CV_BUCKET).create_signed_url(path, CV_SIGNED_URL_EXPIRY)
+            profile["cv_url"] = res.get("signedURL") or res.get("signed_url")
+        except Exception:
+            profile["cv_url"] = None
+    else:
+        profile["cv_url"] = None
+    return profile
 
 
 @router.post("/", response_model=ProfileOut, status_code=201)
@@ -23,7 +41,7 @@ async def create_profile(
     result = supabase.table("profiles").insert(data).execute()
     if not result.data:
         raise HTTPException(status_code=500, detail="Profile creation failed")
-    return result.data[0]
+    return _attach_cv_url(result.data[0], supabase)
 
 
 @router.get("/me", response_model=ProfileOut)
@@ -34,7 +52,7 @@ async def get_profile(
     result = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
-    return result.data
+    return _attach_cv_url(result.data, supabase)
 
 
 @router.patch("/me", response_model=ProfileOut)
@@ -50,7 +68,30 @@ async def update_profile(
     )
     if not result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
-    return result.data[0]
+    return _attach_cv_url(result.data[0], supabase)
+
+
+@router.delete("/me", status_code=200)
+async def delete_account(
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    # Delete CV from storage if present
+    profile_result = supabase.table("profiles").select("cv_path").eq("user_id", user_id).maybe_single().execute()
+    if profile_result.data and profile_result.data.get("cv_path"):
+        try:
+            supabase.storage.from_(CV_BUCKET).remove([profile_result.data["cv_path"]])
+        except Exception:
+            pass
+
+    # Delete auth user first — if this fails, DB rows are still intact (safe to retry)
+    supabase.auth.admin.delete_user(user_id)
+
+    # Then delete application and profile rows
+    supabase.table("applications").delete().eq("user_id", user_id).execute()
+    supabase.table("profiles").delete().eq("user_id", user_id).execute()
+
+    return {"message": "Account deleted"}
 
 
 @router.post("/cv", status_code=200)
@@ -64,7 +105,6 @@ async def upload_cv(
         "application/pdf",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
-    # Magic bytes: PDF starts with %PDF, DOCX is a ZIP (PK\x03\x04)
     allowed_magic = (b"%PDF", b"PK\x03\x04")
 
     if file.content_type not in allowed_mime:
@@ -79,10 +119,9 @@ async def upload_cv(
     if len(content) > max_bytes:
         raise HTTPException(status_code=400, detail="File too large (max 10 MB)")
 
-    # Sanitise filename — strip path separators and allow only safe characters
-    safe_name = re.sub(r"[^\w\-.]", "_", (file.filename or "cv"))
-    safe_name = safe_name.lstrip(".")[:100]  # no hidden files, max 100 chars
-    path = f"{user_id}/{safe_name}"
+    # Use a UUID-based filename to prevent path traversal and filename-based attacks
+    ext = "pdf" if file.content_type == "application/pdf" else "docx"
+    path = f"{user_id}/{uuid4()}.{ext}"
     supabase.storage.from_(CV_BUCKET).upload(path, content, {"content-type": file.content_type, "upsert": "true"})
 
     expires_at = (datetime.now(timezone.utc) + timedelta(days=retention_days)).isoformat()
