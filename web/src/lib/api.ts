@@ -30,6 +30,22 @@ export const api = {
     get: () => request<Profile>('GET', '/api/v1/profile/me'),
     create: (body: ProfileCreate) => request<Profile>('POST', '/api/v1/profile/', body),
     update: (body: Partial<ProfileCreate>) => request<Profile>('PATCH', '/api/v1/profile/me', body),
+    uploadCV: async (file: File, retentionDays = 30) => {
+      const token = await getToken()
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('retention_days', String(retentionDays))
+      const res = await fetch(`${BASE}/api/v1/profile/cv`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }))
+        throw new ApiError(res.status, err.detail ?? res.statusText)
+      }
+      return res.json() as Promise<{ message: string; expires_at: string }>
+    },
     deleteCV: () => request<void>('DELETE', '/api/v1/profile/cv'),
     deleteAccount: () => request<void>('DELETE', '/api/v1/profile/me'),
   },

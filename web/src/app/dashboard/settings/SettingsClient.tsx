@@ -17,7 +17,9 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState('')
 
-  // CV delete state
+  // CV state
+  const [uploadingCV, setUploadingCV] = useState(false)
+  const [cvUploadSuccess, setCvUploadSuccess] = useState('')
   const [deletingCV, setDeletingCV] = useState(false)
   const [cvError, setCvError] = useState('')
 
@@ -57,9 +59,28 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
     }
   }
 
+  async function handleUploadCV(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingCV(true)
+    setCvError('')
+    setCvUploadSuccess('')
+    try {
+      const res = await api.profile.uploadCV(file)
+      setCvUploadSuccess(`CV opgeslagen. Vervalt op ${new Date(res.expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.`)
+      setProfile(p => p ? { ...p, cv_url: 'uploaded', cv_expires_at: res.expires_at } : p)
+    } catch (err) {
+      setCvError(err instanceof ApiError ? err.message : 'CV uploaden mislukt. Probeer het opnieuw.')
+    } finally {
+      setUploadingCV(false)
+      e.target.value = ''
+    }
+  }
+
   async function handleDeleteCV() {
     setDeletingCV(true)
     setCvError('')
+    setCvUploadSuccess('')
     try {
       await api.profile.deleteCV()
       setProfile(p => p ? { ...p, cv_url: undefined, cv_expires_at: undefined } : p)
@@ -148,26 +169,42 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
         {/* CV section */}
         <section className="mb-10 pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
           <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>CV</h2>
+          {cvUploadSuccess && (
+            <p className="text-sm mb-3 px-3 py-2 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>{cvUploadSuccess}</p>
+          )}
+          {cvError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
           {profile?.cv_url ? (
             <>
               <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>Er is een CV opgeslagen.</p>
               {profile.cv_expires_at && (
-                <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                <p className="text-sm mb-3" style={{ color: 'var(--color-text-muted)' }}>
                   Vervalt op {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.
                 </p>
               )}
-              {cvError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
-              <button
-                onClick={handleDeleteCV}
-                disabled={deletingCV}
-                className="text-sm px-4 py-2 rounded-lg border transition hover:bg-red-50 disabled:opacity-50"
-                style={{ borderColor: '#ef4444', color: '#ef4444' }}
-              >
-                {deletingCV ? 'Verwijderen…' : 'CV verwijderen'}
-              </button>
+              <div className="flex gap-3 flex-wrap">
+                <label className={`text-sm px-4 py-2 rounded-lg border cursor-pointer transition hover:bg-gray-50 ${uploadingCV ? 'opacity-50 pointer-events-none' : ''}`} style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
+                  {uploadingCV ? 'Uploaden…' : 'Nieuw CV uploaden'}
+                  <input type="file" accept=".pdf,.docx" className="hidden" onChange={handleUploadCV} disabled={uploadingCV} />
+                </label>
+                <button
+                  onClick={handleDeleteCV}
+                  disabled={deletingCV}
+                  className="text-sm px-4 py-2 rounded-lg border transition hover:bg-red-50 disabled:opacity-50"
+                  style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                >
+                  {deletingCV ? 'Verwijderen…' : 'CV verwijderen'}
+                </button>
+              </div>
             </>
           ) : (
-            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen CV opgeslagen.</p>
+            <>
+              <p className="text-sm mb-3" style={{ color: 'var(--color-text-muted)' }}>Geen CV opgeslagen.</p>
+              <label className={`inline-block text-sm px-4 py-2 rounded-lg text-white cursor-pointer transition hover:opacity-90 ${uploadingCV ? 'opacity-50 pointer-events-none' : ''}`} style={{ background: 'var(--color-indigo-primary)' }}>
+                {uploadingCV ? 'Uploaden…' : 'CV uploaden'}
+                <input type="file" accept=".pdf,.docx" className="hidden" onChange={handleUploadCV} disabled={uploadingCV} />
+              </label>
+              <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>PDF of DOCX, max 10 MB</p>
+            </>
           )}
         </section>
 
