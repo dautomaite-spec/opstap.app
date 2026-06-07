@@ -29,6 +29,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [applyError, setApplyError] = useState('')
   const [applySuccess, setApplySuccess] = useState('')
   const [writingStyle, setWritingStyle] = useState('formeel')
+  const [sendMethod, setSendMethod] = useState<'email' | 'form'>('email')
 
   // History
   const [history, setHistory] = useState<Application[]>([])
@@ -103,7 +104,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setApplyState(s => s ? { ...s, sending: true } : s)
     setApplyError('')
     try {
-      await api.apply.send({ job_id: applyState.job.id, profile_id: profile.id, letter_nl: applyState.letter })
+      await api.apply.send({ job_id: applyState.job.id, profile_id: profile.id, letter_nl: applyState.letter, send_method: sendMethod })
       setApplySuccess(`Sollicitatie voor ${applyState.job.title} bij ${applyState.job.company} verstuurd!`)
       setApplyState(null)
     } catch (err) {
@@ -120,7 +121,16 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     return (
       <Shell userEmail={userEmail}>
         <div className="max-w-md mx-auto mt-8">
-          <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>Profiel aanmaken</h2>
+          <div className="flex items-start justify-between mb-1">
+            <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Profiel aanmaken</h2>
+            <button
+              onClick={() => setShowProfileForm(false)}
+              className="text-xs underline ml-4 mt-1"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              Overslaan
+            </button>
+          </div>
           <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>Vul je gegevens in zodat we de juiste vacatures en brieven voor je kunnen vinden.</p>
           <p className="text-xs mb-5" style={{ color: 'var(--color-text-muted)' }}>Velden met * zijn verplicht</p>
           {profileError && <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: 'var(--color-error)' }}>{profileError}</p>}
@@ -231,7 +241,18 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   className="w-full px-3 py-2 rounded-lg border text-sm resize-none outline-none"
                   style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
                 />
-                <div className="flex gap-3 mt-4 justify-end">
+                <div className="flex items-center gap-3 mt-4 mb-1">
+                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Versturen via:</span>
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--color-text-primary)' }}>
+                    <input type="radio" name="send_method" value="email" checked={sendMethod === 'email'} onChange={() => setSendMethod('email')} />
+                    E-mail
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--color-text-primary)' }}>
+                    <input type="radio" name="send_method" value="form" checked={sendMethod === 'form'} onChange={() => setSendMethod('form')} />
+                    Webformulier
+                  </label>
+                </div>
+                <div className="flex gap-3 mt-3 justify-end">
                   <button onClick={() => setApplyState(null)} className="px-4 py-2 text-sm rounded-lg border hover:bg-gray-50 transition" style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
                     Annuleren
                   </button>

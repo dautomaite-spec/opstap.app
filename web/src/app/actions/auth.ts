@@ -32,15 +32,33 @@ export async function register(formData: FormData) {
   const password = formData.get('password') as string
   const naam = formData.get('naam') as string
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { naam } },
+    options: {
+      data: { naam },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstap.nl'}/auth/confirm`,
+    },
   })
   if (error) {
     redirect(`/register?error=${encodeURIComponent(dutchAuthError(error.message))}`)
   }
+  // If Supabase auto-confirm is off, user.identities will be empty or session null
+  if (!data.session) {
+    redirect('/register/bevestig')
+  }
   redirect('/dashboard')
+}
+
+export async function forgotPassword(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstap.nl'}/auth/reset`,
+  })
+  // Always redirect to "sent" page — don't reveal whether email exists (enumeration protection)
+  redirect('/forgot-password?sent=1')
 }
 
 export async function logout() {

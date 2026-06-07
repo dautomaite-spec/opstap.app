@@ -97,7 +97,11 @@ export default async function RegisterPage({
             </div>
 
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Door een account aan te maken ga je akkoord met ons{' '}
+              Door een account aan te maken ga je akkoord met onze{' '}
+              <Link href="/voorwaarden" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
+                algemene voorwaarden
+              </Link>
+              {' '}en ons{' '}
               <Link href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
                 privacybeleid
               </Link>

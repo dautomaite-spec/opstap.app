@@ -79,6 +79,12 @@ export default async function LoginPage({
               Inloggen
             </button>
           </form>
+
+          <p className="text-center text-sm mt-4">
+            <Link href="/forgot-password" className="underline" style={{ color: 'var(--color-text-muted)' }}>
+              Wachtwoord vergeten?
+            </Link>
+          </p>
         </div>
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
