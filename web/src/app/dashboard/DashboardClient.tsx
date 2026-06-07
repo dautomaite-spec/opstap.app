@@ -104,8 +104,13 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setApplyState(s => s ? { ...s, sending: true } : s)
     setApplyError('')
     try {
-      await api.apply.send({ job_id: applyState.job.id, profile_id: profile.id, letter_nl: applyState.letter, send_method: sendMethod })
-      setApplySuccess(`Sollicitatie voor ${applyState.job.title} bij ${applyState.job.company} verstuurd!`)
+      const { job } = applyState
+      const result = await api.apply.send({ job_id: job.id, profile_id: profile.id, letter_nl: applyState.letter, send_method: sendMethod })
+      if (sendMethod === 'form' || result.status === 'pending') {
+        setApplySuccess(`Brief opgeslagen voor ${job.title}. Dien het formulier in via: ${job.url}`)
+      } else {
+        setApplySuccess(`Sollicitatie voor ${job.title} bij ${job.company} verstuurd!`)
+      }
       setApplyState(null)
     } catch (err) {
       setApplyError(err instanceof ApiError ? err.message : 'Versturen mislukt.')
