@@ -1,6 +1,9 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, Request
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
+
+_EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
@@ -129,16 +132,21 @@ async def send_application(
         raise HTTPException(status_code=404, detail="Job not found")
     job = job_result.data
 
-    profile_result = supabase.table("profiles").select("naam,email,is_suspended").eq("user_id", user_id).single().execute()
+    profile_result = supabase.table("profiles").select("naam,is_suspended").eq("user_id", user_id).single().execute()
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = profile_result.data
 
+    # Check suspension before making any further API calls
     if profile.get("is_suspended"):
         raise HTTPException(
             status_code=403,
             detail="Je account is geschorst wegens vermoeden van misbruik. Neem contact op via misbruik@opstap.nl.",
         )
+
+    # Get user email from Supabase auth (not stored on profile to avoid duplication)
+    auth_user = supabase.auth.admin.get_user_by_id(user_id)
+    profile["email"] = auth_user.user.email if auth_user.user else ""
 
     # ── Per-company weekly limit ───────────────────────────────────────────────
     week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
@@ -162,10 +170,10 @@ async def send_application(
 
     if body.send_method == "email":
         contact_email = job.get("contact_email")
-        if not contact_email:
+        if not contact_email or not _EMAIL_RE.match(contact_email):
             raise HTTPException(
                 status_code=422,
-                detail="No contact email available for this job. Use send_method='form' instead.",
+                detail="No valid contact email available for this job. Use send_method='form' instead.",
             )
 
         success = await send_application_email(ApplicationEmail(

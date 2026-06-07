@@ -25,6 +25,8 @@ class ProfileOut(ProfileCreate):
     user_id: UUID4
     cv_url: Optional[str] = None
     cv_expires_at: Optional[datetime] = None
+    avg_consent_given_at: Optional[datetime] = None
+    last_active_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

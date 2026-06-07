@@ -1,6 +1,9 @@
-from pydantic import BaseModel, UUID4, Field
+import re
+from pydantic import BaseModel, UUID4, Field, field_validator
 from typing import Optional, Literal
 from datetime import datetime
+
+_HTML_TAG_RE = re.compile(r'<[^>]+>')
 
 _WritingStyle = Literal["formeel", "informeel", "luchtig", "grappig"]
 
@@ -24,6 +27,11 @@ class ApplicationCreate(BaseModel):
     profile_id: UUID4
     letter_nl: str = Field(..., min_length=50, max_length=6000)
     send_method: Literal["email", "form"]  # reject arbitrary strings
+
+    @field_validator('letter_nl')
+    @classmethod
+    def strip_html(cls, v: str) -> str:
+        return _HTML_TAG_RE.sub('', v)
 
 
 class ApplicationOut(BaseModel):
