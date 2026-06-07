@@ -103,7 +103,7 @@ export default async function RegisterPage({
               </Link>
               {' '}en ons{' '}
               <Link href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-                privacybeleid
+                privacyvoorwaarden
               </Link>
               .
             </p>
