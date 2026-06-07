@@ -28,6 +28,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [generatingLetter, setGeneratingLetter] = useState(false)
   const [applyError, setApplyError] = useState('')
   const [applySuccess, setApplySuccess] = useState('')
+  const [writingStyle, setWritingStyle] = useState('formeel')
 
   // History
   const [history, setHistory] = useState<Application[]>([])
@@ -88,7 +89,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setApplyError('')
     setApplySuccess('')
     try {
-      const res = await api.apply.generateLetter({ job_id: job.id, profile_id: profile.id })
+      const res = await api.apply.generateLetter({ job_id: job.id, profile_id: profile.id, writing_style: writingStyle })
       setApplyState({ job, letter: res.letter_nl, sending: false })
     } catch (err) {
       setApplyError(err instanceof ApiError ? err.message : 'Kon brief niet genereren.')
@@ -203,6 +204,26 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               <div className="w-full max-w-lg rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
                 <h3 className="font-bold text-base mb-1" style={{ color: 'var(--color-text-primary)' }}>Motivatiebrief</h3>
                 <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>{applyState.job.title} · {applyState.job.company}</p>
+                <div className="flex items-center gap-3 mb-3">
+                  <select
+                    value={writingStyle}
+                    onChange={e => setWritingStyle(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg border text-sm"
+                    style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                  >
+                    <option value="formeel">Formeel</option>
+                    <option value="informeel">Informeel</option>
+                    <option value="enthousiast">Enthousiast</option>
+                  </select>
+                  <button
+                    onClick={() => handleGenerateLetter(applyState.job)}
+                    disabled={generatingLetter}
+                    className="px-3 py-1.5 text-xs rounded-lg border transition hover:bg-gray-50 disabled:opacity-50"
+                    style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
+                  >
+                    {generatingLetter ? 'Genereren…' : 'Opnieuw genereren'}
+                  </button>
+                </div>
                 <textarea
                   value={applyState.letter}
                   onChange={e => setApplyState(s => s ? { ...s, letter: e.target.value } : s)}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
@@ -22,6 +22,9 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
   const [cvUploadSuccess, setCvUploadSuccess] = useState('')
   const [deletingCV, setDeletingCV] = useState(false)
   const [cvError, setCvError] = useState('')
+  const [showAvgConsent, setShowAvgConsent] = useState(false)
+  const [retentionDays, setRetentionDays] = useState(30)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Account delete state
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -59,6 +62,15 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
     }
   }
 
+  function handleCVButtonClick() {
+    setShowAvgConsent(true)
+  }
+
+  function handleAvgAccept() {
+    setShowAvgConsent(false)
+    fileInputRef.current?.click()
+  }
+
   async function handleUploadCV(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -66,7 +78,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
     setCvError('')
     setCvUploadSuccess('')
     try {
-      const res = await api.profile.uploadCV(file)
+      const res = await api.profile.uploadCV(file, retentionDays)
       setCvUploadSuccess(`CV opgeslagen. Vervalt op ${new Date(res.expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.`)
       setProfile(p => p ? { ...p, cv_url: 'uploaded', cv_expires_at: res.expires_at } : p)
     } catch (err) {
@@ -166,6 +178,48 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           )}
         </section>
 
+        {/* AVG consent modal */}
+        {showAvgConsent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
+              <h3 className="font-bold text-base mb-3" style={{ color: 'var(--color-text-primary)' }}>Toestemming CV opslaan</h3>
+              <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>
+                Opstap slaat je CV versleuteld op EU-servers op. Je CV wordt alleen gebruikt voor het genereren van sollicitatiebrieven en wordt nooit gedeeld met derden of gebruikt voor training van AI-modellen.
+              </p>
+              <p className="text-sm mb-1 font-medium" style={{ color: 'var(--color-text-primary)' }}>Bewaartermijn</p>
+              <select
+                value={retentionDays}
+                onChange={e => setRetentionDays(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-lg border text-sm mb-4"
+                style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+              >
+                <option value={7}>7 dagen</option>
+                <option value={30}>30 dagen (standaard)</option>
+                <option value={90}>90 dagen</option>
+              </select>
+              <p className="text-xs mb-5" style={{ color: 'var(--color-text-muted)' }}>
+                Je ontvangt 7 dagen voor het verlopen een herinnering. Je kunt je CV altijd eerder verwijderen via Instellingen.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowAvgConsent(false)}
+                  className="px-4 py-2 text-sm rounded-lg border hover:bg-gray-50 transition"
+                  style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
+                >
+                  Annuleren
+                </button>
+                <button
+                  onClick={handleAvgAccept}
+                  className="px-5 py-2 text-sm font-semibold rounded-lg text-white transition hover:opacity-90"
+                  style={{ background: 'var(--color-indigo-primary)' }}
+                >
+                  Ik ga akkoord
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* CV section */}
         <section className="mb-10 pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
           <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>CV</h2>
@@ -173,6 +227,8 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
             <p className="text-sm mb-3 px-3 py-2 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>{cvUploadSuccess}</p>
           )}
           {cvError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
+          {/* Hidden file input — triggered after AVG consent */}
+          <input ref={fileInputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={handleUploadCV} disabled={uploadingCV} />
           {profile?.cv_url ? (
             <>
               <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>Er is een CV opgeslagen.</p>
@@ -182,10 +238,14 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
                 </p>
               )}
               <div className="flex gap-3 flex-wrap">
-                <label className={`text-sm px-4 py-2 rounded-lg border cursor-pointer transition hover:bg-gray-50 ${uploadingCV ? 'opacity-50 pointer-events-none' : ''}`} style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
+                <button
+                  onClick={handleCVButtonClick}
+                  disabled={uploadingCV}
+                  className="text-sm px-4 py-2 rounded-lg border transition hover:bg-gray-50 disabled:opacity-50"
+                  style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
+                >
                   {uploadingCV ? 'Uploaden…' : 'Nieuw CV uploaden'}
-                  <input type="file" accept=".pdf,.docx" className="hidden" onChange={handleUploadCV} disabled={uploadingCV} />
-                </label>
+                </button>
                 <button
                   onClick={handleDeleteCV}
                   disabled={deletingCV}
@@ -199,10 +259,14 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           ) : (
             <>
               <p className="text-sm mb-3" style={{ color: 'var(--color-text-muted)' }}>Geen CV opgeslagen.</p>
-              <label className={`inline-block text-sm px-4 py-2 rounded-lg text-white cursor-pointer transition hover:opacity-90 ${uploadingCV ? 'opacity-50 pointer-events-none' : ''}`} style={{ background: 'var(--color-indigo-primary)' }}>
+              <button
+                onClick={handleCVButtonClick}
+                disabled={uploadingCV}
+                className="text-sm px-4 py-2 rounded-lg text-white transition hover:opacity-90 disabled:opacity-50"
+                style={{ background: 'var(--color-indigo-primary)' }}
+              >
                 {uploadingCV ? 'Uploaden…' : 'CV uploaden'}
-                <input type="file" accept=".pdf,.docx" className="hidden" onChange={handleUploadCV} disabled={uploadingCV} />
-              </label>
+              </button>
               <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>PDF of DOCX, max 10 MB</p>
             </>
           )}

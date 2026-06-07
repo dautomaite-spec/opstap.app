@@ -62,7 +62,9 @@ async def update_profile(
     supabase=Depends(get_supabase),
 ):
     data = body.model_dump(exclude_unset=True)
-    data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    data["updated_at"] = now_iso
+    data["last_active_at"] = now_iso
     result = (
         supabase.table("profiles").update(data).eq("user_id", user_id).execute()
     )
@@ -124,11 +126,14 @@ async def upload_cv(
     path = f"{user_id}/{uuid4()}.{ext}"
     supabase.storage.from_(CV_BUCKET).upload(path, content, {"content-type": file.content_type, "upsert": "true"})
 
-    expires_at = (datetime.now(timezone.utc) + timedelta(days=retention_days)).isoformat()
+    now = datetime.now(timezone.utc)
+    expires_at = (now + timedelta(days=retention_days)).isoformat()
     supabase.table("profiles").update({
         "cv_path": path,
         "cv_expires_at": expires_at,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "avg_consent_given_at": now.isoformat(),
+        "last_active_at": now.isoformat(),
+        "updated_at": now.isoformat(),
     }).eq("user_id", user_id).execute()
 
     return {"message": "CV uploaded", "expires_at": expires_at}
