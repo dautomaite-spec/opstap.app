@@ -340,6 +340,20 @@ Opstap App
 - [x] SEO foundations: sitemap.xml, robots.txt, JSON-LD structured data, canonical URLs
 - [x] E2E test suite (Playwright, 10/10 passing) + GitHub Actions CI
 - [x] Deployed to Vercel (https://opstap-app-j5ie.vercel.app)
+- [x] Blog (3 articles, MDX pipeline, SEO)
+- [x] Auth email confirmation flow (/auth/confirm callback + /register/bevestig page)
+- [x] Password reset flow (/forgot-password + /auth/reset callback + /reset-password)
+- [x] AVG consent modal before CV upload (retention selector, purpose statement)
+- [x] Writing style selector in motivation letter modal (formeel/informeel/enthousiast)
+- [x] Send method picker in apply modal (e-mail vs webformulier)
+- [x] /misbruik abuse reporting page
+- [x] /voorwaarden terms of service page
+- [x] error.tsx global error boundary + not-found.tsx 404 page
+- [x] Footer legal links (Privacyvoorwaarden, Voorwaarden, Misbruik melden)
+- [x] Migration 005 applied (last_active_at, avg_consent_given_at columns)
+- [x] Security fixes: HTML strip on letter_nl, contact_email validation, suspension check ordering
+- [x] Email sender returns False when SENDGRID_API_KEY not set (was incorrectly returning True)
+- [x] Supabase redirect URLs: /auth/confirm and /auth/reset added
 
 ### Traction milestone — 500 MAU
 > Unlock Play Store + App Store submissions once 500 unique monthly active users have completed at least one job search on the website.
