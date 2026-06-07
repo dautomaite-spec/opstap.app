@@ -85,9 +85,14 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="text-center py-6 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-        © {new Date().getFullYear()} Opstap &middot;{' '}
-        <Link href="/privacy" className="underline">Privacybeleid</Link>
+      <footer className="text-center py-6 text-xs flex flex-wrap items-center justify-center gap-x-3 gap-y-1" style={{ color: 'var(--color-text-muted)' }}>
+        <span>© {new Date().getFullYear()} Opstap</span>
+        <span aria-hidden>&middot;</span>
+        <Link href="/privacy" className="underline hover:text-gray-600">Privacyvoorwaarden</Link>
+        <span aria-hidden>&middot;</span>
+        <Link href="/voorwaarden" className="underline hover:text-gray-600">Algemene voorwaarden</Link>
+        <span aria-hidden>&middot;</span>
+        <Link href="/misbruik" className="underline hover:text-gray-600">Misbruik melden</Link>
       </footer>
     </main>
   )

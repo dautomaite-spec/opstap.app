@@ -270,9 +270,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           )}
 
           {/* Job results */}
-          {jobs.length === 0 && !searching && (
+          {jobs.length === 0 && !searching && !searchError && keywords === '' && location === '' && (
             <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>
               Zoek naar vacatures om te beginnen.
+            </p>
+          )}
+          {jobs.length === 0 && !searching && !searchError && (keywords !== '' || location !== '') && (
+            <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>
+              Geen vacatures gevonden. Probeer een ander trefwoord of een bredere locatie.
             </p>
           )}
           <div className="flex flex-col gap-3">
