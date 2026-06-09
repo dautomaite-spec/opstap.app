@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Blog — Opstap',
     description: 'Praktische tips over solliciteren in Nederland.',
-    url: 'https://opstap.nl/blog',
+    url: 'https://opstapapp.nl/blog',
   },
 }
 

@@ -37,7 +37,7 @@ export async function register(formData: FormData) {
     password,
     options: {
       data: { naam },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstap.nl'}/auth/confirm`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/auth/confirm`,
     },
   })
   if (error) {
@@ -55,7 +55,7 @@ export async function forgotPassword(formData: FormData) {
   const email = formData.get('email') as string
 
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstap.nl'}/auth/reset`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/auth/reset`,
   })
   // Always redirect to "sent" page — don't reveal whether email exists (enumeration protection)
   redirect('/forgot-password?sent=1')
