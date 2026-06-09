@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Algemene voorwaarden — Opstap',
   description: 'Lees de algemene voorwaarden van Opstap.',
-  alternates: { canonical: 'https://opstap.nl/voorwaarden' },
+  alternates: { canonical: 'https://opstapapp.nl/voorwaarden' },
 }
 
 export default function VoorwaardenPage() {
@@ -66,8 +66,8 @@ export default function VoorwaardenPage() {
 
         <Section title="10. Contact">
           Vragen over deze voorwaarden? Stuur een e-mail naar{' '}
-          <a href="mailto:info@opstap.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            info@opstap.nl
+          <a href="mailto:info@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
+            info@opstapapp.nl
           </a>
           .
         </Section>

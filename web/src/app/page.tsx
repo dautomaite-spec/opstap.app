@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: 'https://opstap.nl',
+    canonical: 'https://opstapapp.nl',
   },
 }
 
@@ -11,7 +11,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Opstap',
-  url: 'https://opstap.nl',
+  url: 'https://opstapapp.nl',
   description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',

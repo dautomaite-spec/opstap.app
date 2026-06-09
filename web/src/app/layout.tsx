@@ -5,7 +5,7 @@ import './globals.css'
 
 const geist = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 
-const siteUrl = 'https://opstap.nl'
+const siteUrl = 'https://opstapapp.nl'
 
 export const metadata: Metadata = {
   title: 'Opstap — Meer kansen. Minder moeite.',
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <Script
           defer
-          data-domain="opstap.nl"
+          data-domain="opstapapp.nl"
           src="https://plausible.io/js/script.js"
         />
       </head>

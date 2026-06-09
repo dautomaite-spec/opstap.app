@@ -17,7 +17,7 @@ export default function PrivacyPage() {
         <p className="text-sm mb-10" style={{ color: 'var(--color-text-muted)' }}>Laatste update: april 2026</p>
 
         <Section title="1. Wie zijn wij?">
-          <p>Opstap is een dienst voor het automatiseren van sollicitaties, ontwikkeld en beheerd in Nederland. Je kunt ons bereiken via <a href="mailto:privacy@opstap.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstap.nl</a>.</p>
+          <p>Opstap is een dienst voor het automatiseren van sollicitaties, ontwikkeld en beheerd in Nederland. Je kunt ons bereiken via <a href="mailto:privacy@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstapapp.nl</a>.</p>
         </Section>
 
         <Section title="2. Welke gegevens verwerken wij?">
@@ -84,10 +84,10 @@ export default function PrivacyPage() {
             <li><strong>Beperking</strong> (art. 18): je kunt verzoeken de verwerking van je gegevens tijdelijk te beperken</li>
             <li><strong>Intrekking toestemming</strong> (art. 7 lid 3): je kunt je toestemming voor cv-opslag op elk moment intrekken door je cv te verwijderen via Instellingen</li>
             <li><strong>Bezwaar</strong> (art. 21): je kunt bezwaar maken tegen verwerking op grond van gerechtvaardigd belang</li>
-            <li><strong>Dataportabiliteit</strong> (art. 20): stuur een verzoek naar <a href="mailto:privacy@opstap.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstap.nl</a></li>
+            <li><strong>Dataportabiliteit</strong> (art. 20): stuur een verzoek naar <a href="mailto:privacy@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstapapp.nl</a></li>
             <li><strong>Klacht indienen</strong>: bij de <a href="https://www.autoriteitpersoonsgegevens.nl" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>Autoriteit Persoonsgegevens</a></li>
           </ul>
-          <p className="mt-3">Voor rechten die niet automatisch beschikbaar zijn: <a href="mailto:privacy@opstap.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstap.nl</a>. Wij reageren binnen 30 dagen.</p>
+          <p className="mt-3">Voor rechten die niet automatisch beschikbaar zijn: <a href="mailto:privacy@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstapapp.nl</a>. Wij reageren binnen 30 dagen.</p>
         </Section>
 
         <Section title="8. Cookies en tracking">
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="11. Contact">
-          <p><strong>E-mail</strong>: <a href="mailto:privacy@opstap.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstap.nl</a><br />
+          <p><strong>E-mail</strong>: <a href="mailto:privacy@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacy@opstapapp.nl</a><br />
           <strong>Opstap</strong> — Nederland</p>
         </Section>
       </article>

@@ -26,11 +26,11 @@ export default function MisbruikPage() {
             Stuur een e-mail naar
           </p>
           <a
-            href="mailto:misbruik@opstap.nl"
+            href="mailto:misbruik@opstapapp.nl"
             className="text-sm font-medium hover:underline"
             style={{ color: 'var(--color-indigo-primary)' }}
           >
-            misbruik@opstap.nl
+            misbruik@opstapapp.nl
           </a>
           <p className="text-xs mt-3" style={{ color: 'var(--color-text-muted)' }}>
             Vermeld zo veel mogelijk: de datum en het tijdstip, de naam of het e-mailadres van de afzender, en een korte beschrijving van wat er is gebeurd. We streven naar een reactie binnen 2 werkdagen.
@@ -39,8 +39,8 @@ export default function MisbruikPage() {
 
         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
           Als je account ten onrechte is geschorst, stuur dan ook een e-mail naar{' '}
-          <a href="mailto:misbruik@opstap.nl" className="hover:underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            misbruik@opstap.nl
+          <a href="mailto:misbruik@opstapapp.nl" className="hover:underline" style={{ color: 'var(--color-indigo-primary)' }}>
+            misbruik@opstapapp.nl
           </a>{' '}
           met je e-mailadres en een uitleg. We beoordelen elk geval individueel.
         </p>
