@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { register } from '@/app/actions/auth'
+import SocialButtons from '@/app/components/SocialButtons'
 
 export const metadata: Metadata = {
   title: 'Gratis account aanmaken — Opstap',
@@ -116,6 +117,11 @@ export default async function RegisterPage({
               Account aanmaken
             </button>
           </form>
+        </div>
+
+        <div className="rounded-2xl p-6 mt-4" style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.08)' }}>
+          <p className="text-xs text-center mb-3" style={{ color: 'var(--color-text-muted)' }}>Of registreer met</p>
+          <SocialButtons />
         </div>
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
