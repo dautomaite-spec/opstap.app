@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Progress Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EAE8F8; color: #1a1a2e; padding: 24px 16px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  header { background: #3D3A8C; color: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+  header h1 { font-size: 1.6rem; font-weight: 700; }
+  header .meta { font-size: 0.85rem; opacity: 0.75; margin-top: 6px; }
+  .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(61,58,140,0.08); }
+  .card h2 { font-size: 1rem; font-weight: 600; color: #3D3A8C; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EAE8F8; }
+  .step:last-child { border-bottom: none; padding-bottom: 0; }
+  .badge { flex-shrink: 0; font-size: 1.1rem; line-height: 1.4; }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+  .step-why { font-size: 0.83rem; color: #555; line-height: 1.5; }
+  .step-action { display: inline-block; margin-top: 6px; font-size: 0.78rem; background: #FFF3CD; color: #856404; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .stat { background: #EAE8F8; border-radius: 10px; padding: 14px; text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 700; color: #3D3A8C; }
+  .stat-label { font-size: 0.78rem; color: #666; margin-top: 2px; }
+  .section-label { font-size: 0.7rem; font-weight: 700; color: #3D3A8C; text-transform: uppercase; letter-spacing: 0.08em; background: #EAE8F8; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Opstap — Progress Report</h1>
+    <div class="meta">Session: 2026-06-09 &nbsp;·&nbsp; Phase 3: Polish &amp; Launch</div>
+  </header>
+
+  <div class="card">
+    <h2>Summary</h2>
+    <div class="summary-grid">
+      <div class="stat"><div class="stat-num">8</div><div class="stat-label">PRs merged</div></div>
+      <div class="stat"><div class="stat-num">5</div><div class="stat-label">Manual configs done</div></div>
+      <div class="stat"><div class="stat-num">2</div><div class="stat-label">Pending (manual)</div></div>
+      <div class="stat"><div class="stat-num">✅</div><div class="stat-label">Email sending live</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Infrastructure</div>
+    <h2>Configuration &amp; Deployment</h2>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Supabase redirect URLs configured</div>
+        <div class="step-why">Added <code>/auth/confirm</code> and <code>/auth/reset</code> for both the Vercel domain and opstap.nl. Required so that email confirmation and password reset links redirect back to the correct page after the user clicks them.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Vercel NEXT_PUBLIC_SITE_URL set</div>
+        <div class="step-why">Set to <code>https://opstap-app-j5ie.vercel.app</code> for Production and Preview. Without this, the auth email links point to localhost and break in production.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Vercel redeployed</div>
+        <div class="step-why">Triggered a fresh deployment after adding the env var so the running app picks it up. Env var changes on Vercel require a redeploy to take effect.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">SendGrid account created + API key generated</div>
+        <div class="step-why">Created <code>opstap-production</code> key with Full Access. SendGrid is used to send application emails from <code>sollicitaties@opstap.nl</code> on behalf of users. Key: <code>SG.oiVT…B0d60</code> (save this — not shown again).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">SENDGRID_API_KEY set in Railway + redeployed</div>
+        <div class="step-why">Updated the existing variable in Railway (it was present but empty/wrong, causing emails to silently fail). Railway auto-triggered a new deployment on save.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Features shipped (PRs #13–18)</div>
+    <h2>Code Changes</h2>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Auth email confirmation flow</div>
+        <div class="step-why">Built <code>/auth/confirm</code> (OTP verifier) and <code>/register/bevestig</code> (holding page). Without this, users who registered got a confirmation email but clicking it did nothing — they'd be stuck.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Password reset flow</div>
+        <div class="step-why">Built <code>/forgot-password</code>, <code>/auth/reset</code> callback, and <code>/reset-password</code> form. Enumeration-safe: always redirects to "sent" page regardless of whether the email exists.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">AVG consent modal before CV upload</div>
+        <div class="step-why">Dutch law (AVG/GDPR) requires explicit informed consent before processing personal data. Modal shows purpose, retention period selector (7/30/90 days), and records <code>avg_consent_given_at</code> in the database.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Writing style + send method in dashboard</div>
+        <div class="step-why">Users can now choose Formeel / Informeel / Enthousiast for their motivation letter, and pick E-mail vs Webformulier. Gives the user control over how they come across to recruiters.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Social login: Microsoft, Apple, Meta</div>
+        <div class="step-why">Added OAuth buttons to login and register pages using <code>supabase.auth.signInWithOAuth</code>. Reduces friction — users don't need to remember a password if they have one of these accounts.
+          <span class="step-action">⚠️ Needs: OAuth credentials configured in Supabase dashboard before buttons go live</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Security fixes (HTML strip, email validation, suspension check)</div>
+        <div class="step-why">Three issues flagged by the security agent: stored XSS via letter_nl (fixed with HTML strip validator), contact_email header injection (fixed with regex), and suspension check happening after an API call it should block (reordered).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Migration 005: last_active_at + avg_consent_given_at</div>
+        <div class="step-why">AVG Rule 6 requires auto-deletion after 90 days inactivity. <code>last_active_at</code> is now stamped on every profile update so the purge-inactive Edge Function can enforce this correctly.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">✅</div>
+      <div class="step-body">
+        <div class="step-title">Legal pages: /voorwaarden, /misbruik, 404, error boundary</div>
+        <div class="step-why">Dutch ToS and abuse reporting are legally required before going public. The error boundary prevents white-screen crashes from leaking to users.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Still needed</div>
+    <h2>Pending — Manual Steps Required</h2>
+
+    <div class="step">
+      <div class="badge">⚠️</div>
+      <div class="step-body">
+        <div class="step-title">Register opstap.nl domain</div>
+        <div class="step-why">The domain is the linchpin: it unlocks email deliverability (sending from opstap.nl), Plausible analytics, and proper SEO. Register via SIDN-accredited registrar (e.g. TransIP, Versio).</div>
+        <span class="step-action">Manual: go to transip.nl or versio.nl → search opstap.nl → register</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">⚠️</div>
+      <div class="step-body">
+        <div class="step-title">Activate SendGrid Sender Authentication for opstap.nl</div>
+        <div class="step-why">Without domain authentication, emails arrive with "via sendgrid.net" in the from field — a spam signal. Requires adding SPF/DKIM DNS records after the domain is registered.</div>
+        <span class="step-action">After domain: SendGrid → Settings → Sender Authentication → Authenticate Your Domain</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">⚠️</div>
+      <div class="step-body">
+        <div class="step-title">Activate Plausible analytics</div>
+        <div class="step-why">Plausible is already wired in the code but needs a domain to track. Create account at plausible.io with opstap.nl after domain is registered.</div>
+        <span class="step-action">After domain: plausible.io → Add Site → opstap.nl</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="badge">⚠️</div>
+      <div class="step-body">
+        <div class="step-title">Configure OAuth providers in Supabase</div>
+        <div class="step-why">Social login buttons are live in the UI but the providers (Microsoft Azure, Apple, Meta) need app credentials added in Supabase → Authentication → Providers before they actually work.</div>
+        <span class="step-action">Microsoft: Azure Portal → App registrations. Meta: developers.facebook.com. Apple: needs Apple Developer ($99/yr).</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
