@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { login } from '@/app/actions/auth'
+import SocialButtons from '@/app/components/SocialButtons'
 
 export const metadata: Metadata = {
   title: 'Inloggen — Opstap',
@@ -85,6 +86,14 @@ export default async function LoginPage({
               Wachtwoord vergeten?
             </Link>
           </p>
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px" style={{ background: 'var(--color-lavender-card)' }} />
+            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>of</span>
+            <div className="flex-1 h-px" style={{ background: 'var(--color-lavender-card)' }} />
+          </div>
+
+          <SocialButtons />
         </div>
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
