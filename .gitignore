@@ -25,3 +25,6 @@ opstap/.flutter-plugins-dependencies
 # OS
 .DS_Store
 Thumbs.db
+
+# Playwright MCP session logs (auto-generated, not project files)
+.playwright-mcp/
