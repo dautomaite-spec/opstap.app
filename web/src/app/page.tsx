@@ -53,8 +53,10 @@ export default function Home() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 flex flex-col gap-1">
-          <SidebarNavLink href="/blog" label="Blog" />
-          <SidebarNavLink href="/login" label="Inloggen" />
+          <SidebarNavLink href="/dashboard" label="Vacatures" />
+          <SidebarNavLink href="/dashboard/sollicitaties" label="Gesolliciteerde vacatures" />
+          <SidebarNavLink href="/dashboard/sollicitaties" label="Reacties" />
+          <SidebarNavLink href="/dashboard/settings" label="Instellingen" />
         </nav>
 
         {/* Bottom CTA */}
@@ -139,7 +141,7 @@ export default function Home() {
             </h2>
 
             {/* Steps — horizontal on desktop, vertical on mobile */}
-            <div className="flex flex-col md:flex-row items-start md:items-stretch gap-0">
+            <div className="flex flex-col md:flex-row items-stretch gap-0">
 
               {[
                 {
@@ -157,15 +159,13 @@ export default function Home() {
                   title: 'Solliciteer automatisch',
                   desc: 'AI schrijft een persoonlijke brief per vacature. Jij keurt goed — wij versturen ze allemaal.',
                 },
-              ].map((step, i) => (
-                <div key={step.n} className="flex md:flex-col flex-1 items-start md:items-stretch">
-
-                  {/* Step card */}
+              ].flatMap((step, i, arr) => {
+                const card = (
                   <div
+                    key={step.n}
                     className="flex-1 rounded-2xl p-6 flex flex-col"
                     style={{ background: 'var(--color-lavender-card)' }}
                   >
-                    {/* Number */}
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white mb-4 shrink-0"
                       style={{ background: 'var(--color-indigo-primary)' }}
@@ -179,26 +179,25 @@ export default function Home() {
                       {step.desc}
                     </p>
                   </div>
-
-                  {/* Arrow between steps — right arrow on desktop, down arrow on mobile */}
-                  {i < 2 && (
-                    <>
-                      {/* Desktop: right arrow between cards */}
-                      <div className="hidden md:flex items-center px-3 shrink-0" style={{ alignSelf: 'center' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-light)' }}>
-                          <path d="M5 12h14M13 6l6 6-6 6" />
-                        </svg>
-                      </div>
-                      {/* Mobile: down arrow */}
-                      <div className="md:hidden flex justify-start pl-5 py-3">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-light)' }}>
-                          <path d="M12 5v14M6 13l6 6 6-6" />
-                        </svg>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                )
+                if (i < arr.length - 1) {
+                  return [
+                    card,
+                    /* Desktop: right arrow — Mobile: down arrow */
+                    <div key={`arrow-${i}`} className="flex md:items-center md:px-3 justify-center py-3 md:py-0 shrink-0">
+                      {/* right arrow, desktop only */}
+                      <svg className="hidden md:block" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-light)' }}>
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                      {/* down arrow, mobile only */}
+                      <svg className="md:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-light)' }}>
+                        <path d="M12 5v14M6 13l6 6 6-6" />
+                      </svg>
+                    </div>,
+                  ]
+                }
+                return [card]
+              })}
             </div>
 
             {/* Multi-apply emphasis below flowchart */}
