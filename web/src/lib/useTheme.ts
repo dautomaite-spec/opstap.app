@@ -6,12 +6,7 @@ export function useTheme() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme')
-    if (stored === 'dark') {
-      setTheme('dark')
-    } else if (stored === 'light') {
-      setTheme('light')
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (localStorage.getItem('theme') === 'dark') {
       setTheme('dark')
     }
   }, [])
