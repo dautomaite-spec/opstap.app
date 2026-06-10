@@ -99,7 +99,7 @@ export default async function LoginPage({
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
           Nog geen account?{' '}
           <Link href="/register" className="font-medium underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            Gratis account aanmaken
+            Account aanmaken
           </Link>
         </p>
       </div>

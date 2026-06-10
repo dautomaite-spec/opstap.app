@@ -67,7 +67,7 @@ export default function OGImage() {
             fontWeight: 600,
           }}
         >
-          Begin gratis →
+          Aan de slag →
         </div>
       </div>
     ),

@@ -13,18 +13,35 @@
   header .meta { font-size: 0.85rem; opacity: 0.75; margin-top: 6px; }
   .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(61,58,140,0.08); }
   .card h2 { font-size: 1rem; font-weight: 600; color: #3D3A8C; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EAE8F8; }
-  .step:last-child { border-bottom: none; padding-bottom: 0; }
-  .badge { flex-shrink: 0; font-size: 1.1rem; line-height: 1.4; }
-  .step-body { flex: 1; }
-  .step-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
-  .step-why { font-size: 0.83rem; color: #555; line-height: 1.5; }
-  .step-action { display: inline-block; margin-top: 6px; font-size: 0.78rem; background: #FFF3CD; color: #856404; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
   .stat { background: #EAE8F8; border-radius: 10px; padding: 14px; text-align: center; }
   .stat-num { font-size: 2rem; font-weight: 700; color: #3D3A8C; }
   .stat-label { font-size: 0.78rem; color: #666; margin-top: 2px; }
-  .section-label { font-size: 0.7rem; font-weight: 700; color: #3D3A8C; text-transform: uppercase; letter-spacing: 0.08em; background: #EAE8F8; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 2px; background: #EAE8F8; }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item:last-child { margin-bottom: 0; }
+  .tl-dot { position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #3D3A8C; border: 2px solid white; box-shadow: 0 0 0 2px #3D3A8C; }
+  .tl-dot.pending { background: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; }
+  .tl-date { font-size: 0.72rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .tl-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+  .tl-desc { font-size: 0.83rem; color: #555; line-height: 1.5; }
+  .tl-action { display: inline-block; margin-top: 6px; font-size: 0.78rem; background: #FFF3CD; color: #856404; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
+  .tl-tag { display: inline-block; font-size: 0.72rem; background: #d1fae5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-bottom: 4px; }
+  .tl-tag.infra { background: #dbeafe; color: #1e40af; }
+  .tl-tag.code { background: #f3e8ff; color: #6b21a8; }
+  .tl-tag.pending { background: #fef3c7; color: #92400e; }
+
+  /* Status table */
+  .status-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .status-table td { padding: 8px 10px; border-bottom: 1px solid #EAE8F8; }
+  .status-table tr:last-child td { border-bottom: none; }
+  .status-table .label { font-weight: 600; width: 60%; }
+  .badge-done { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+  .badge-pending { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+  .badge-manual { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -32,174 +49,151 @@
 
   <header>
     <h1>Opstap — Progress Report</h1>
-    <div class="meta">Session: 2026-06-09 &nbsp;·&nbsp; Phase 3: Polish &amp; Launch</div>
+    <div class="meta">Updated: 2026-06-10 &nbsp;·&nbsp; Phase 3: Polish &amp; Launch</div>
   </header>
 
+  <!-- Summary stats -->
   <div class="card">
-    <h2>Summary</h2>
+    <h2>Where we are</h2>
     <div class="summary-grid">
-      <div class="stat"><div class="stat-num">8</div><div class="stat-label">PRs merged</div></div>
-      <div class="stat"><div class="stat-num">5</div><div class="stat-label">Manual configs done</div></div>
-      <div class="stat"><div class="stat-num">2</div><div class="stat-label">Pending (manual)</div></div>
-      <div class="stat"><div class="stat-num">✅</div><div class="stat-label">Email sending live</div></div>
+      <div class="stat"><div class="stat-num">21+</div><div class="stat-label">PRs merged</div></div>
+      <div class="stat"><div class="stat-num">✅</div><div class="stat-label">opstapapp.nl live</div></div>
+      <div class="stat"><div class="stat-num">✅</div><div class="stat-num" style="font-size:1rem">Dark mode added</div></div>
+      <div class="stat"><div class="stat-num">2</div><div class="stat-label">manual steps left</div></div>
     </div>
   </div>
 
+  <!-- Quick status checklist -->
   <div class="card">
-    <div class="section-label">Infrastructure</div>
-    <h2>Configuration &amp; Deployment</h2>
-
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Supabase redirect URLs configured</div>
-        <div class="step-why">Added <code>/auth/confirm</code> and <code>/auth/reset</code> for both the Vercel domain and opstap.nl. Required so that email confirmation and password reset links redirect back to the correct page after the user clicks them.</div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Vercel NEXT_PUBLIC_SITE_URL set</div>
-        <div class="step-why">Set to <code>https://opstap-app-j5ie.vercel.app</code> for Production and Preview. Without this, the auth email links point to localhost and break in production.</div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Vercel redeployed</div>
-        <div class="step-why">Triggered a fresh deployment after adding the env var so the running app picks it up. Env var changes on Vercel require a redeploy to take effect.</div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">SendGrid account created + API key generated</div>
-        <div class="step-why">Created <code>opstap-production</code> key with Full Access. SendGrid is used to send application emails from <code>sollicitaties@opstap.nl</code> on behalf of users. Key: <code>SG.oiVT…B0d60</code> (save this — not shown again).</div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">SENDGRID_API_KEY set in Railway + redeployed</div>
-        <div class="step-why">Updated the existing variable in Railway (it was present but empty/wrong, causing emails to silently fail). Railway auto-triggered a new deployment on save.</div>
-      </div>
-    </div>
+    <h2>Feature checklist</h2>
+    <table class="status-table">
+      <tr><td class="label">User registration + email confirmation</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Login + password reset</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Google OAuth ("Doorgaan met Google")</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Microsoft / Apple / Meta OAuth</td><td><span class="badge-pending">UI only — no credentials</span></td></tr>
+      <tr><td class="label">AVG consent modal before CV upload</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">CV upload flow</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Job search (NL boards)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Auto-apply (email + web form)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">AI motivation letter (Dutch)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Writing style selector (Formeel/Informeel/Enthousiast)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Legal pages (privacy, voorwaarden, misbruik)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Custom domain opstapapp.nl</td><td><span class="badge-done">DONE — DNS live</span></td></tr>
+      <tr><td class="label">Email sending (SendGrid)</td><td><span class="badge-done">DONE — needs domain auth</span></td></tr>
+      <tr><td class="label">SendGrid sender authentication for opstapapp.nl</td><td><span class="badge-manual">MANUAL STEP</span></td></tr>
+      <tr><td class="label">Plausible analytics dashboard</td><td><span class="badge-manual">MANUAL STEP</span></td></tr>
+      <tr><td class="label">Auto-delete + inactivity purge (Edge Functions)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Dashboard sidebar (Vacatures, Jouw reacties, Profiel, Instellingen)</td><td><span class="badge-done">DONE — this session</span></td></tr>
+      <tr><td class="label">Dark mode (system + toggle, persistent)</td><td><span class="badge-done">DONE — this session</span></td></tr>
+      <tr><td class="label">Removed "gratis" / money text from site</td><td><span class="badge-done">DONE — this session</span></td></tr>
+      <tr><td class="label">Monetization plan (credits model, Mollie/iDEAL)</td><td><span class="badge-pending">Planned — ready to implement</span></td></tr>
+      <tr><td class="label">Marketing plan (SEO content + Reddit NL + LinkedIn)</td><td><span class="badge-pending">Planned — see wiki</span></td></tr>
+      <tr><td class="label">Credit payment flow (Mollie + Supabase credits column)</td><td><span class="badge-pending">Next task</span></td></tr>
+    </table>
   </div>
 
+  <!-- Timeline -->
   <div class="card">
-    <div class="section-label">Features shipped (PRs #13–18)</div>
-    <h2>Code Changes</h2>
+    <h2>What happened &amp; when</h2>
+    <div class="timeline">
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Auth email confirmation flow</div>
-        <div class="step-why">Built <code>/auth/confirm</code> (OTP verifier) and <code>/register/bevestig</code> (holding page). Without this, users who registered got a confirmation email but clicking it did nothing — they'd be stuck.</div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Phase 1 — May 2026</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">App built from scratch</div>
+        <div class="tl-desc">Flutter mobile app scaffolded. FastAPI backend on Railway. Supabase for auth + database + file storage. CI/CD via GitHub Actions. First working build.</div>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Password reset flow</div>
-        <div class="step-why">Built <code>/forgot-password</code>, <code>/auth/reset</code> callback, and <code>/reset-password</code> form. Enumeration-safe: always redirects to "sent" page regardless of whether the email exists.</div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Phase 2 — Late May 2026</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">Core features shipped (PRs #1–12)</div>
+        <div class="tl-desc">CV upload, job search on NL boards (Indeed NL, LinkedIn NL, Jobbird, Nationale Vacaturebank), auto-apply via email and web form, AI motivation letter generation in Dutch, AVG consent modal, data retention controls.</div>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">AVG consent modal before CV upload</div>
-        <div class="step-why">Dutch law (AVG/GDPR) requires explicit informed consent before processing personal data. Modal shows purpose, retention period selector (7/30/90 days), and records <code>avg_consent_given_at</code> in the database.</div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Early June 2026 — Session 1</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">Web app + auth flows (PRs #13–18)</div>
+        <div class="tl-desc">Next.js web app built and deployed to Vercel. Email confirmation flow (/auth/confirm), password reset flow, writing style selector, auto-apply via webformulier, legal pages, error boundary. 6 security fixes applied.</div>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Writing style + send method in dashboard</div>
-        <div class="step-why">Users can now choose Formeel / Informeel / Enthousiast for their motivation letter, and pick E-mail vs Webformulier. Gives the user control over how they come across to recruiters.</div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 9, 2026 — Session 2</div>
+        <div class="tl-tag infra">Infra</div>
+        <div class="tl-title">Google OAuth + social login UI (PRs #19–20)</div>
+        <div class="tl-desc">New Google OAuth client created (old client's secret was inaccessible after Auth Platform UI change). Credentials wired to Supabase. Social login component built: Google as primary full-width button, Microsoft/Apple/Meta as compact row.</div>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Social login: Microsoft, Apple, Meta</div>
-        <div class="step-why">Added OAuth buttons to login and register pages using <code>supabase.auth.signInWithOAuth</code>. Reduces friction — users don't need to remember a password if they have one of these accounts.
-          <span class="step-action">⚠️ Needs: OAuth credentials configured in Supabase dashboard before buttons go live</span>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 9–10, 2026 — Session 3</div>
+        <div class="tl-tag infra">Infra</div>
+        <div class="tl-title">opstapapp.nl registered and wired end-to-end</div>
+        <div class="tl-desc">
+          opstap.nl was taken; registered <strong>opstapapp.nl</strong> at TransIP for €0.49/yr.<br><br>
+          Automated via TransIP REST API (generated API key + JWT access token from CP):
+          <ul style="margin: 6px 0 0 16px; font-size: 0.82rem; color: #444;">
+            <li>DNS: A record @ → 76.76.21.21 (Vercel), www CNAME → cname.vercel-dns.com</li>
+            <li>Domain added to Vercel project — verified instantly</li>
+            <li>NEXT_PUBLIC_SITE_URL set to https://opstapapp.nl in Vercel, redeployed</li>
+            <li>Supabase redirect URLs updated (opstapapp.nl variants added)</li>
+            <li>Google OAuth JS origin + Supabase callback redirect URI updated</li>
+            <li>All hardcoded opstap.nl URLs and emails updated in codebase (PR #21)</li>
+          </ul>
+          <br>DNS propagated and confirmed live via nslookup.
         </div>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Security fixes (HTML strip, email validation, suspension check)</div>
-        <div class="step-why">Three issues flagged by the security agent: stored XSS via letter_nl (fixed with HTML strip validator), contact_email header injection (fixed with regex), and suspension check happening after an API call it should block (reordered).</div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 10, 2026 — Session 4</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">Dashboard sidebar + dark mode + product strategy</div>
+        <div class="tl-desc">
+          Added persistent sidebar to dashboard (Vacatures, Jouw reacties, Persoonlijke gegevens, Instellingen) with mobile drawer, collapse mode, user avatar + logout. Removed the old duplicated Shell nav pattern.<br><br>
+          Dark mode: CSS variable overrides, system preference detection, localStorage persistence, anti-flash inline script in &lt;head&gt;. ThemeToggle component with ☾/☀ icon on public site and dashboard.<br><br>
+          Removed all "gratis"/"geen creditcard nodig" copy from site (8 files). Updated JSON-LD price from 0 to 2.99.<br><br>
+          Wrote interactive wiki at <code>progress/wiki.html</code> covering all services, schema, features, env vars, deployments, and AVG compliance.<br><br>
+          Produced full monetization plan: credits model (10/€2.99, 30/€6.99, 75/€14.99), Mollie iDEAL payment integration, 3-credit trial on registration. Break-even analysis: ~€0.18/user/month AI cost, breakeven at 500 MAU needs €175/month total. Marketing plan: SEO blog articles first, then Reddit NL + Facebook groups, then LinkedIn organic, then paid search.
+        </div>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Migration 005: last_active_at + avg_consent_given_at</div>
-        <div class="step-why">AVG Rule 6 requires auto-deletion after 90 days inactivity. <code>last_active_at</code> is now stamped on every profile update so the purge-inactive Edge Function can enforce this correctly.</div>
+      <div class="tl-item">
+        <div class="tl-dot pending"></div>
+        <div class="tl-date">Next — manual (you)</div>
+        <div class="tl-tag pending">Pending</div>
+        <div class="tl-title">SendGrid sender authentication</div>
+        <div class="tl-desc">Emails currently send but arrive with "via sendgrid.net" — a spam signal. Fix: authenticate opstapapp.nl in SendGrid and add 3 CNAME records to TransIP.</div>
+        <span class="tl-action">SendGrid → Settings → Sender Authentication → Authenticate Your Domain → opstapapp.nl → copy 3 CNAMEs → TransIP DNS</span>
       </div>
-    </div>
 
-    <div class="step">
-      <div class="badge">✅</div>
-      <div class="step-body">
-        <div class="step-title">Legal pages: /voorwaarden, /misbruik, 404, error boundary</div>
-        <div class="step-why">Dutch ToS and abuse reporting are legally required before going public. The error boundary prevents white-screen crashes from leaking to users.</div>
+      <div class="tl-item">
+        <div class="tl-dot pending"></div>
+        <div class="tl-date">Next — manual (you)</div>
+        <div class="tl-tag pending">Pending</div>
+        <div class="tl-title">Plausible analytics account</div>
+        <div class="tl-desc">The Plausible script is already live in the app pointing to opstapapp.nl. Just needs an account so the dashboard shows traffic data. Registration requires solving an hCaptcha (can't automate).</div>
+        <span class="tl-action">plausible.io → Register → Add Site → opstapapp.nl (the script is already in the app)</span>
       </div>
+
     </div>
   </div>
 
+  <!-- What's left to be truly launch-ready -->
   <div class="card">
-    <div class="section-label">Still needed</div>
-    <h2>Pending — Manual Steps Required</h2>
-
-    <div class="step">
-      <div class="badge">⚠️</div>
-      <div class="step-body">
-        <div class="step-title">Register opstap.nl domain</div>
-        <div class="step-why">The domain is the linchpin: it unlocks email deliverability (sending from opstap.nl), Plausible analytics, and proper SEO. Register via SIDN-accredited registrar (e.g. TransIP, Versio).</div>
-        <span class="step-action">Manual: go to transip.nl or versio.nl → search opstap.nl → register</span>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">⚠️</div>
-      <div class="step-body">
-        <div class="step-title">Activate SendGrid Sender Authentication for opstap.nl</div>
-        <div class="step-why">Without domain authentication, emails arrive with "via sendgrid.net" in the from field — a spam signal. Requires adding SPF/DKIM DNS records after the domain is registered.</div>
-        <span class="step-action">After domain: SendGrid → Settings → Sender Authentication → Authenticate Your Domain</span>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">⚠️</div>
-      <div class="step-body">
-        <div class="step-title">Activate Plausible analytics</div>
-        <div class="step-why">Plausible is already wired in the code but needs a domain to track. Create account at plausible.io with opstap.nl after domain is registered.</div>
-        <span class="step-action">After domain: plausible.io → Add Site → opstap.nl</span>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="badge">⚠️</div>
-      <div class="step-body">
-        <div class="step-title">Configure OAuth providers in Supabase</div>
-        <div class="step-why">Social login buttons are live in the UI but the providers (Microsoft Azure, Apple, Meta) need app credentials added in Supabase → Authentication → Providers before they actually work.</div>
-        <span class="step-action">Microsoft: Azure Portal → App registrations. Meta: developers.facebook.com. Apple: needs Apple Developer ($99/yr).</span>
-      </div>
-    </div>
+    <h2>To be launch-ready</h2>
+    <table class="status-table">
+      <tr><td class="label">SSL cert auto-issued by Vercel for opstapapp.nl</td><td><span class="badge-pending">Provisioning (auto, ~10 min)</span></td></tr>
+      <tr><td class="label">SendGrid domain authentication</td><td><span class="badge-manual">Manual — see above</span></td></tr>
+      <tr><td class="label">Plausible account</td><td><span class="badge-manual">Manual — see above</span></td></tr>
+      <tr><td class="label">Twilio recovery code rotated</td><td><span class="badge-manual">Old code was exposed — regenerate in Twilio console</span></td></tr>
+      <tr><td class="label">App Store + Google Play submission</td><td><span class="badge-pending">Flutter app ready, store listings not yet created</span></td></tr>
+    </table>
   </div>
 
 </div>

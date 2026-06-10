@@ -13,6 +13,28 @@
   --font-sans: var(--font-geist-sans);
 }
 
+:root {
+  --color-success-bg: #f0fdf4;
+  --color-success-text: #16a34a;
+  --color-error-bg: #fef2f2;
+  --color-hover-surface: #f9f9f9;
+}
+
+html.dark {
+  --color-indigo-primary: #7b78d4;
+  --color-indigo-light: #9e9be0;
+  --color-lavender-bg: #111118;
+  --color-lavender-card: #1e1c2e;
+  --color-text-primary: #edecf9;
+  --color-text-muted: #9ca3af;
+  --color-white: #16141f;
+  --color-error: #f87171;
+  --color-success-bg: #052e16;
+  --color-success-text: #4ade80;
+  --color-error-bg: #2d0a0a;
+  --color-hover-surface: #1e1c2e;
+}
+
 body {
   background-color: var(--color-lavender-bg);
   color: var(--color-text-primary);

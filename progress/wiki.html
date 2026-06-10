@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Project Wiki</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --indigo: #3D3A8C;
+    --lavender: #EAE8F8;
+    --lavender-dark: #d4d0f0;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --white: #ffffff;
+    --sidebar-w: 260px;
+    --header-h: 56px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3fc; color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* Header */
+  header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-h); background: var(--indigo); color: white; display: flex; align-items: center; gap: 16px; padding: 0 20px; z-index: 100; }
+  header h1 { font-size: 1.1rem; font-weight: 700; }
+  header .badge { font-size: 0.72rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; }
+  .search-bar { flex: 1; max-width: 320px; margin-left: auto; }
+  .search-bar input { width: 100%; padding: 6px 12px; border-radius: 8px; border: none; font-size: 0.85rem; background: rgba(255,255,255,0.15); color: white; outline: none; }
+  .search-bar input::placeholder { color: rgba(255,255,255,0.6); }
+
+  /* Layout */
+  .layout { display: flex; margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
+
+  /* Sidebar */
+  nav.sidebar { width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--lavender-dark); padding: 20px 0; position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); overflow-y: auto; flex-shrink: 0; }
+  .nav-section { margin-bottom: 8px; }
+  .nav-section-title { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 8px 20px 4px; }
+  .nav-link { display: block; padding: 8px 20px; font-size: 0.85rem; color: var(--text); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; transition: all 0.15s; }
+  .nav-link:hover { background: var(--lavender); color: var(--indigo); }
+  .nav-link.active { background: var(--lavender); color: var(--indigo); font-weight: 600; border-left-color: var(--indigo); }
+
+  /* Content */
+  main { flex: 1; padding: 36px 48px; max-width: 900px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  h2 { font-size: 1.6rem; font-weight: 700; color: var(--indigo); margin-bottom: 8px; }
+  .page-subtitle { font-size: 0.9rem; color: var(--muted); margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--lavender-dark); }
+  h3 { font-size: 1.05rem; font-weight: 600; color: var(--indigo); margin: 28px 0 10px; }
+  h4 { font-size: 0.9rem; font-weight: 600; margin: 16px 0 6px; }
+  p { font-size: 0.88rem; line-height: 1.65; color: #374151; margin-bottom: 10px; }
+  ul, ol { padding-left: 20px; font-size: 0.88rem; line-height: 1.7; color: #374151; margin-bottom: 10px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin: 16px 0; }
+  .card { background: var(--white); border-radius: 10px; padding: 16px; border: 1px solid var(--lavender-dark); }
+  .card .icon { font-size: 1.4rem; margin-bottom: 8px; }
+  .card h4 { margin: 0 0 4px; font-size: 0.88rem; }
+  .card p { font-size: 0.8rem; color: var(--muted); margin: 0; }
+  .card a { font-size: 0.78rem; color: var(--indigo); text-decoration: none; display: block; margin-top: 6px; }
+  .card a:hover { text-decoration: underline; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin: 12px 0 20px; }
+  th { background: var(--lavender); color: var(--indigo); font-weight: 600; padding: 8px 12px; text-align: left; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--lavender); vertical-align: top; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Code */
+  code { background: #f1f0ff; color: var(--indigo); padding: 1px 5px; border-radius: 4px; font-size: 0.82em; font-family: 'SF Mono', 'Fira Code', monospace; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.8rem; margin: 12px 0; line-height: 1.6; }
+
+  /* Tags */
+  .tag { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin: 2px; }
+  .tag.green { background: #d1fae5; color: #065f46; }
+  .tag.blue { background: #dbeafe; color: #1e40af; }
+  .tag.yellow { background: #fef3c7; color: #92400e; }
+  .tag.red { background: #fee2e2; color: #991b1b; }
+  .tag.purple { background: #ede9fe; color: #5b21b6; }
+
+  /* Callout */
+  .callout { background: var(--lavender); border-left: 4px solid var(--indigo); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; }
+  .callout.warn { background: #fef3c7; border-color: #f59e0b; }
+  .callout.danger { background: #fee2e2; border-color: #dc2626; }
+
+  @media (max-width: 768px) {
+    nav.sidebar { display: none; }
+    main { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;">O</div>
+  <h1>Opstap Wiki</h1>
+  <span class="badge">Internal</span>
+  <div class="search-bar"><input type="text" placeholder="Search wiki..." id="search-input" oninput="filterNav(this.value)" /></div>
+</header>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="nav-section">
+    <div class="nav-section-title">Overview</div>
+    <a class="nav-link active" onclick="show('overview')">What is Opstap?</a>
+    <a class="nav-link" onclick="show('architecture')">Architecture</a>
+    <a class="nav-link" onclick="show('repo')">Repository &amp; Code</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Services</div>
+    <a class="nav-link" onclick="show('supabase')">Supabase</a>
+    <a class="nav-link" onclick="show('vercel')">Vercel</a>
+    <a class="nav-link" onclick="show('railway')">Railway</a>
+    <a class="nav-link" onclick="show('sendgrid')">SendGrid</a>
+    <a class="nav-link" onclick="show('claude-api')">Claude API</a>
+    <a class="nav-link" onclick="show('transip')">TransIP (DNS)</a>
+    <a class="nav-link" onclick="show('google-oauth')">Google OAuth</a>
+    <a class="nav-link" onclick="show('plausible')">Plausible</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Data</div>
+    <a class="nav-link" onclick="show('data-schema')">Database Schema</a>
+    <a class="nav-link" onclick="show('data-files')">File Storage</a>
+    <a class="nav-link" onclick="show('data-avg')">AVG / GDPR</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Features</div>
+    <a class="nav-link" onclick="show('feature-auth')">Auth flows</a>
+    <a class="nav-link" onclick="show('feature-cv')">CV upload</a>
+    <a class="nav-link" onclick="show('feature-jobs')">Job search</a>
+    <a class="nav-link" onclick="show('feature-apply')">Auto-apply</a>
+    <a class="nav-link" onclick="show('feature-letter')">AI letter</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Ops</div>
+    <a class="nav-link" onclick="show('envvars')">Env variables</a>
+    <a class="nav-link" onclick="show('deployments')">Deployments</a>
+    <a class="nav-link" onclick="show('edge-functions')">Edge Functions</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ===== OVERVIEW ===== -->
+<div class="page active" id="page-overview">
+  <h2>What is Opstap?</h2>
+  <p class="page-subtitle">Dutch job application automation — slogan: "Meer kansen. Minder moeite."</p>
+
+  <p>Opstap automates the Dutch job application process. A user uploads their CV or fills in their profile manually, searches the major Dutch job boards, selects a job, and Opstap generates a personalised Dutch motivation letter using Claude AI — then sends the application by email or web form.</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🌐</div><h4>Live website</h4><p>Next.js 15 on Vercel</p><a href="https://opstapapp.nl" target="_blank">opstapapp.nl ↗</a></div>
+    <div class="card"><div class="icon">⚙️</div><h4>Backend API</h4><p>FastAPI on Railway</p><a href="https://opstapapp-production.up.railway.app/docs" target="_blank">API docs ↗</a></div>
+    <div class="card"><div class="icon">🗄️</div><h4>Database</h4><p>Supabase (EU Frankfurt)</p><a href="https://supabase.com/dashboard/project/rwwumtwelwncdqmvhdkt" target="_blank">Supabase dashboard ↗</a></div>
+    <div class="card"><div class="icon">📦</div><h4>GitHub</h4><p>Private repo</p><a href="https://github.com/dautomaite-spec/opstap.app" target="_blank">dautomaite-spec/opstap.app ↗</a></div>
+  </div>
+
+  <h3>User flow (step by step)</h3>
+  <ol>
+    <li>User visits opstapapp.nl → registers (email/password or Google OAuth)</li>
+    <li>Confirms email via link → lands on dashboard</li>
+    <li>Uploads CV (PDF) — AVG consent shown first → stored encrypted in Supabase Storage</li>
+    <li>Searches vacatures by keyword + location on NL job boards</li>
+    <li>Selects a job → dashboard shows job details</li>
+    <li>Chooses writing style (Formeel / Informeel / Enthousiast) and send method (Email / Webformulier)</li>
+    <li>Claude generates a Dutch motivation letter → user reviews &amp; edits</li>
+    <li>User confirms → application sent</li>
+    <li>Application logged in "Jouw reacties" history</li>
+  </ol>
+
+  <h3>MVP scope (v1)</h3>
+  <div class="card-grid">
+    <div class="card"><span class="tag green">Done</span><h4>CV upload</h4></div>
+    <div class="card"><span class="tag green">Done</span><h4>Job search (NL boards)</h4></div>
+    <div class="card"><span class="tag green">Done</span><h4>Auto-apply (email + form)</h4></div>
+    <div class="card"><span class="tag green">Done</span><h4>AI motivation letter</h4></div>
+    <div class="card"><span class="tag green">Done</span><h4>Google OAuth</h4></div>
+    <div class="card"><span class="tag green">Done</span><h4>AVG consent + data controls</h4></div>
+    <div class="card"><span class="tag yellow">Pending</span><h4>SendGrid domain auth</h4></div>
+    <div class="card"><span class="tag yellow">Pending</span><h4>Plausible analytics</h4></div>
+  </div>
+</div>
+
+<!-- ===== ARCHITECTURE ===== -->
+<div class="page" id="page-architecture">
+  <h2>Architecture</h2>
+  <p class="page-subtitle">How the pieces fit together</p>
+
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Hosts</th></tr>
+    <tr><td>Web frontend</td><td>Next.js 15 (App Router, React 19, Tailwind v4)</td><td>Vercel (EU)</td></tr>
+    <tr><td>Backend API</td><td>Python FastAPI</td><td>Railway (EU West)</td></tr>
+    <tr><td>Database</td><td>PostgreSQL via Supabase</td><td>Supabase EU (Frankfurt)</td></tr>
+    <tr><td>Auth</td><td>Supabase Auth (email + Google OAuth)</td><td>Supabase</td></tr>
+    <tr><td>File storage</td><td>Supabase Storage (encrypted)</td><td>Supabase EU</td></tr>
+    <tr><td>AI</td><td>Claude API (claude-sonnet-4-6)</td><td>Anthropic (US) — only called from backend, no PII sent</td></tr>
+    <tr><td>Email sending</td><td>SendGrid</td><td>Twilio/SendGrid (EU)</td></tr>
+    <tr><td>Analytics</td><td>Plausible (privacy-friendly)</td><td>Plausible (EU)</td></tr>
+    <tr><td>DNS</td><td>TransIP</td><td>TransIP.nl</td></tr>
+    <tr><td>Mobile (deferred)</td><td>Flutter</td><td>— (deferred until 500 MAU)</td></tr>
+  </table>
+
+  <h3>Request flow (apply)</h3>
+  <pre>Browser → Next.js (Vercel)
+         → POST /api/v1/apply (Railway FastAPI)
+              → Supabase (check user, load profile)
+              → Claude API (generate motivation letter)
+              → SendGrid (send email) OR Playwright (web form)
+              → Supabase (log application)</pre>
+
+  <h3>Auth flow</h3>
+  <pre>Register → Supabase sends confirmation email
+           → User clicks link → /auth/confirm?token=...
+           → Supabase verifies OTP → session created
+           → Redirect to /dashboard</pre>
+
+  <div class="callout">
+    <strong>EU-only rule:</strong> No personal data leaves the EU. Supabase is on Frankfurt servers. Railway uses EU West. Claude API receives only the CV content + job description — no names or contact details.
+  </div>
+</div>
+
+<!-- ===== REPO ===== -->
+<div class="page" id="page-repo">
+  <h2>Repository &amp; Code</h2>
+  <p class="page-subtitle">github.com/dautomaite-spec/opstap.app (private)</p>
+
+  <h3>Directory structure</h3>
+  <table>
+    <tr><th>Path</th><th>What's here</th></tr>
+    <tr><td><code>web/</code></td><td>Next.js web app (the main product for now)</td></tr>
+    <tr><td><code>web/src/app/</code></td><td>Next.js App Router pages</td></tr>
+    <tr><td><code>web/src/app/dashboard/</code></td><td>Authenticated dashboard — job search, apply, settings</td></tr>
+    <tr><td><code>web/src/app/actions/</code></td><td>Server actions (auth.ts — register, login, forgot-password)</td></tr>
+    <tr><td><code>web/src/lib/supabase/</code></td><td>Supabase client (client.ts = browser, server.ts = RSC)</td></tr>
+    <tr><td><code>web/src/app/components/</code></td><td>Shared UI components (SocialButtons, etc.)</td></tr>
+    <tr><td><code>backend/</code></td><td>Python FastAPI backend</td></tr>
+    <tr><td><code>backend/app/api/</code></td><td>API route handlers</td></tr>
+    <tr><td><code>supabase/migrations/</code></td><td>SQL migrations (001–005 applied)</td></tr>
+    <tr><td><code>supabase/functions/</code></td><td>Edge Functions (delete-account, cv-cleanup, etc.)</td></tr>
+    <tr><td><code>opstap/</code></td><td>Flutter mobile app — deferred until 500 MAU</td></tr>
+    <tr><td><code>progress/</code></td><td>This wiki + progress report (not deployed)</td></tr>
+  </table>
+
+  <h3>Branching &amp; PRs</h3>
+  <ul>
+    <li>Never push directly to <code>master</code></li>
+    <li>Create a branch → PR → merge (21 PRs merged so far)</li>
+    <li>Branch naming: <code>feat/</code>, <code>fix/</code>, <code>chore/</code></li>
+  </ul>
+</div>
+
+<!-- ===== SUPABASE ===== -->
+<div class="page" id="page-supabase">
+  <h2>Supabase</h2>
+  <p class="page-subtitle">Auth + Database + Storage — project ID: rwwumtwelwncdqmvhdkt</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🔐</div><h4>Dashboard</h4><a href="https://supabase.com/dashboard/project/rwwumtwelwncdqmvhdkt" target="_blank">Open Supabase ↗</a></div>
+    <div class="card"><div class="icon">🔑</div><h4>Auth providers</h4><a href="https://supabase.com/dashboard/project/rwwumtwelwncdqmvhdkt/auth/providers" target="_blank">Providers ↗</a></div>
+    <div class="card"><div class="icon">🌐</div><h4>URL config</h4><a href="https://supabase.com/dashboard/project/rwwumtwelwncdqmvhdkt/auth/url-configuration" target="_blank">Redirect URLs ↗</a></div>
+    <div class="card"><div class="icon">📊</div><h4>Table Editor</h4><a href="https://supabase.com/dashboard/project/rwwumtwelwncdqmvhdkt/editor" target="_blank">Tables ↗</a></div>
+  </div>
+
+  <h3>Tables</h3>
+  <table>
+    <tr><th>Table</th><th>Purpose</th><th>Key columns</th></tr>
+    <tr><td><code>profiles</code></td><td>User profile data (name, location, etc.)</td><td>id, full_name, location, cv_storage_path, avg_consent_given_at, last_active_at</td></tr>
+    <tr><td><code>applications</code></td><td>Log of every application sent</td><td>id, user_id, job_title, company, status, sent_at, letter_nl</td></tr>
+    <tr><td><code>jobs_cache</code></td><td>Temporary job search result cache</td><td>id, query_hash, results_json, expires_at</td></tr>
+  </table>
+
+  <h3>Migrations applied</h3>
+  <table>
+    <tr><th>Migration</th><th>What it added</th></tr>
+    <tr><td>001</td><td>Initial schema: profiles, applications tables + RLS policies</td></tr>
+    <tr><td>002</td><td>CV storage path + retention fields</td></tr>
+    <tr><td>003</td><td>Applications log table</td></tr>
+    <tr><td>004</td><td>Jobs cache table</td></tr>
+    <tr><td>005</td><td><code>last_active_at</code> + <code>avg_consent_given_at</code> on profiles (AVG Rule 6)</td></tr>
+  </table>
+
+  <h3>Auth providers configured</h3>
+  <ul>
+    <li><strong>Email</strong> — with confirmation required</li>
+    <li><strong>Google</strong> — fully wired (Client ID: 689844913573-djbvc9…)</li>
+    <li><strong>Microsoft / Apple / Meta</strong> — UI exists, credentials not yet added</li>
+  </ul>
+
+  <h3>Redirect URLs (allowlist)</h3>
+  <p>Includes: localhost variants, opstapapp.nl variants, Vercel URL, Railway URL, opstap:// mobile deep links.</p>
+</div>
+
+<!-- ===== VERCEL ===== -->
+<div class="page" id="page-vercel">
+  <h2>Vercel</h2>
+  <p class="page-subtitle">Web frontend hosting — project: opstap-app-j5ie</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🚀</div><h4>Project</h4><a href="https://vercel.com/dautomaite-3600s-projects/opstap-app-j5ie" target="_blank">Open Vercel ↗</a></div>
+    <div class="card"><div class="icon">⚙️</div><h4>Env vars</h4><a href="https://vercel.com/dautomaite-3600s-projects/opstap-app-j5ie/settings/environment-variables" target="_blank">Settings ↗</a></div>
+    <div class="card"><div class="icon">🌐</div><h4>Domain</h4><a href="https://vercel.com/dautomaite-3600s-projects/opstap-app-j5ie/settings/domains" target="_blank">Domains ↗</a></div>
+  </div>
+
+  <h3>Env variables (Vercel)</h3>
+  <table>
+    <tr><th>Variable</th><th>Value</th><th>Used for</th></tr>
+    <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>https://rwwumtwelwncdqmvhdkt.supabase.co</td><td>Supabase client init</td></tr>
+    <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>(sensitive)</td><td>Supabase client init</td></tr>
+    <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td>https://opstapapp-production.up.railway.app</td><td>Backend API calls</td></tr>
+    <tr><td><code>NEXT_PUBLIC_SITE_URL</code></td><td>https://opstapapp.nl</td><td>Auth email redirect base URL</td></tr>
+  </table>
+
+  <h3>Domains</h3>
+  <ul>
+    <li><code>opstapapp.nl</code> — primary (DNS: A @ → 76.76.21.21)</li>
+    <li><code>www.opstapapp.nl</code> — CNAME → cname.vercel-dns.com</li>
+    <li><code>opstap-app-j5ie.vercel.app</code> — Vercel default (always works)</li>
+  </ul>
+</div>
+
+<!-- ===== RAILWAY ===== -->
+<div class="page" id="page-railway">
+  <h2>Railway</h2>
+  <p class="page-subtitle">FastAPI backend — service: backend</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🚂</div><h4>Dashboard</h4><a href="https://railway.app/dashboard" target="_blank">Open Railway ↗</a></div>
+    <div class="card"><div class="icon">📖</div><h4>API docs</h4><a href="https://opstapapp-production.up.railway.app/docs" target="_blank">FastAPI docs ↗</a></div>
+  </div>
+
+  <h3>API endpoints</h3>
+  <table>
+    <tr><th>Endpoint</th><th>What it does</th></tr>
+    <tr><td><code>POST /api/v1/profile</code></td><td>Create/update user profile</td></tr>
+    <tr><td><code>GET /api/v1/jobs</code></td><td>Search jobs on NL boards (Adzuna NL)</td></tr>
+    <tr><td><code>POST /api/v1/apply</code></td><td>Generate letter + send application</td></tr>
+    <tr><td><code>DELETE /api/v1/profile</code></td><td>Delete all user data (AVG right to erasure)</td></tr>
+  </table>
+
+  <h3>Key env vars (Railway)</h3>
+  <table>
+    <tr><th>Variable</th><th>Purpose</th></tr>
+    <tr><td><code>SUPABASE_URL</code></td><td>Supabase project URL</td></tr>
+    <tr><td><code>SUPABASE_SERVICE_KEY</code></td><td>Service role key (admin access)</td></tr>
+    <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude API for letter generation</td></tr>
+    <tr><td><code>SENDGRID_API_KEY</code></td><td>Email sending</td></tr>
+    <tr><td><code>CORS_ORIGINS</code></td><td>Allowed origins (Vercel URL, localhost)</td></tr>
+    <tr><td><code>CRON_SECRET</code></td><td>Auth token for Edge Function cron calls</td></tr>
+  </table>
+</div>
+
+<!-- ===== SENDGRID ===== -->
+<div class="page" id="page-sendgrid">
+  <h2>SendGrid</h2>
+  <p class="page-subtitle">Transactional email — sends job applications on behalf of users</p>
+
+  <div class="callout warn"><strong>Pending:</strong> Sender authentication for opstapapp.nl not yet set up. Emails work but show "via sendgrid.net" — fix this for deliverability.</div>
+
+  <h3>How it's used</h3>
+  <p>When a user chooses "E-mail" as apply method, the backend calls SendGrid to send the application email from <code>sollicitaties@opstapapp.nl</code> with the AI-generated motivation letter in the body.</p>
+
+  <h3>Setup status</h3>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>Account created</td><td><span class="tag green">Done</span></td></tr>
+    <tr><td>API key in Railway</td><td><span class="tag green">Done</span> (key: SG.oiVT…)</td></tr>
+    <tr><td>Domain auth (SPF/DKIM for opstapapp.nl)</td><td><span class="tag yellow">Pending — manual</span></td></tr>
+  </table>
+
+  <h3>To complete domain auth (manual)</h3>
+  <ol>
+    <li>Log in to <a href="https://app.sendgrid.com" target="_blank">app.sendgrid.com</a></li>
+    <li>Settings → Sender Authentication → Authenticate Your Domain</li>
+    <li>Enter <code>opstapapp.nl</code></li>
+    <li>SendGrid gives you 3 CNAME records</li>
+    <li>Add those records in <a href="https://www.transip.nl/cp/account/api/" target="_blank">TransIP DNS</a> for opstapapp.nl</li>
+  </ol>
+</div>
+
+<!-- ===== CLAUDE API ===== -->
+<div class="page" id="page-claude-api">
+  <h2>Claude API</h2>
+  <p class="page-subtitle">Anthropic — model: claude-sonnet-4-6</p>
+
+  <h3>How it's used</h3>
+  <p>The FastAPI backend calls Claude to generate personalised Dutch motivation letters. The prompt includes: job title, company, job description, user's CV content (stripped of PII), and the user's chosen writing style.</p>
+
+  <div class="callout warn">
+    <strong>Cost note:</strong> This is the main variable cost. Each letter generation uses ~1,000–3,000 tokens. At current pricing ~€0.003–0.01 per application. See monetization planning for how to handle this sustainably.
+  </div>
+
+  <h3>Where the key lives</h3>
+  <p>In Railway env vars as <code>ANTHROPIC_API_KEY</code>. Never in the frontend or committed to git.</p>
+
+  <h3>Model used</h3>
+  <table>
+    <tr><th>Model</th><th>Why</th></tr>
+    <tr><td><code>claude-sonnet-4-6</code></td><td>Best balance of quality and cost for letter generation</td></tr>
+  </table>
+</div>
+
+<!-- ===== TRANSIP ===== -->
+<div class="page" id="page-transip">
+  <h2>TransIP</h2>
+  <p class="page-subtitle">Domain registrar — opstapapp.nl</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🌐</div><h4>Control panel</h4><a href="https://www.transip.nl/cp/" target="_blank">TransIP CP ↗</a></div>
+    <div class="card"><div class="icon">🔑</div><h4>API management</h4><a href="https://www.transip.nl/cp/account/api/" target="_blank">API keys ↗</a></div>
+  </div>
+
+  <h3>Domain</h3>
+  <table>
+    <tr><th>Domain</th><th>opstapapp.nl</th></tr>
+    <tr><td>Registered</td><td>2026-06-09</td></tr>
+    <tr><td>Auto-renews</td><td>2027-06-08</td></tr>
+    <tr><td>Cost</td><td>€0.49/yr</td></tr>
+    <tr><td>Registrar</td><td>TransIP (SIDN-accredited)</td></tr>
+  </table>
+
+  <h3>DNS records</h3>
+  <table>
+    <tr><th>Name</th><th>Type</th><th>Value</th><th>Purpose</th></tr>
+    <tr><td>@</td><td>A</td><td>76.76.21.21</td><td>Vercel (apex domain)</td></tr>
+    <tr><td>www</td><td>CNAME</td><td>cname.vercel-dns.com.</td><td>Vercel (www)</td></tr>
+    <tr><td>@</td><td>TXT</td><td>v=spf1 ~all</td><td>SPF (will update after SendGrid auth)</td></tr>
+    <tr><td>_dmarc</td><td>TXT</td><td>v=DMARC1; p=none;</td><td>DMARC</td></tr>
+    <tr><td>transip-A/B/C._domainkey</td><td>CNAME</td><td>TransIP email</td><td>Legacy (can remove)</td></tr>
+  </table>
+
+  <h3>API access</h3>
+  <p>TransIP REST API v6 is enabled on the account. An access token (expires 2026-06-17) and key pair "opstap-dns" were created. Use the API to manage DNS programmatically.</p>
+</div>
+
+<!-- ===== GOOGLE OAUTH ===== -->
+<div class="page" id="page-google-oauth">
+  <h2>Google OAuth</h2>
+  <p class="page-subtitle">Google Auth Platform — project: Opstap</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🔑</div><h4>Auth Platform</h4><a href="https://console.cloud.google.com/auth/clients?project=opstap" target="_blank">Open console ↗</a></div>
+  </div>
+
+  <h3>Client</h3>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td>Name</td><td>Opstap Web</td></tr>
+    <tr><td>Client ID</td><td>689844913573-djbvc9aaoophil7ug8vcfl09fskukiq7.apps.googleusercontent.com</td></tr>
+    <tr><td>Type</td><td>Web application</td></tr>
+    <tr><td>JS origins</td><td>https://opstapapp.nl</td></tr>
+    <tr><td>Redirect URI</td><td>https://rwwumtwelwncdqmvhdkt.supabase.co/auth/v1/callback</td></tr>
+  </table>
+
+  <h3>How it works</h3>
+  <p>User clicks "Doorgaan met Google" → Supabase initiates OAuth flow → Google redirects to Supabase callback → Supabase creates/updates session → user redirected to /dashboard.</p>
+
+  <div class="callout warn"><strong>Note:</strong> The secret is stored in Supabase (Authentication → Providers → Google). The secret is NOT in the codebase or git history.</div>
+</div>
+
+<!-- ===== PLAUSIBLE ===== -->
+<div class="page" id="page-plausible">
+  <h2>Plausible Analytics</h2>
+  <p class="page-subtitle">Privacy-friendly, cookie-free analytics — GDPR compliant</p>
+
+  <div class="callout warn"><strong>Pending:</strong> Account not yet created. The script is already live in the app.</div>
+
+  <h3>Setup status</h3>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>Script added to app (<code>data-domain="opstapapp.nl"</code>)</td><td><span class="tag green">Done</span></td></tr>
+    <tr><td>Plausible account created</td><td><span class="tag yellow">Pending — manual (hCaptcha)</span></td></tr>
+    <tr><td>Site added in Plausible dashboard</td><td><span class="tag yellow">Pending</span></td></tr>
+  </table>
+
+  <h3>Where the script is</h3>
+  <p><code>web/src/app/layout.tsx</code> — the <code>&lt;Script&gt;</code> tag with <code>data-domain="opstapapp.nl"</code>.</p>
+
+  <h3>Why Plausible?</h3>
+  <p>No cookies, no GDPR consent banner needed, no Google involved, EU-hosted. Fully compliant with Dutch/EU privacy law. Cheaper and simpler than GA4.</p>
+</div>
+
+<!-- ===== DATA SCHEMA ===== -->
+<div class="page" id="page-data-schema">
+  <h2>Database Schema</h2>
+  <p class="page-subtitle">PostgreSQL on Supabase — EU Frankfurt</p>
+
+  <h3>profiles</h3>
+  <table>
+    <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+    <tr><td>id</td><td>uuid</td><td>= auth.users.id (FK)</td></tr>
+    <tr><td>full_name</td><td>text</td><td></td></tr>
+    <tr><td>location</td><td>text</td><td>City/region in NL</td></tr>
+    <tr><td>cv_storage_path</td><td>text</td><td>Path in Supabase Storage</td></tr>
+    <tr><td>cv_expires_at</td><td>timestamptz</td><td>Auto-delete date (user sets 7/30/90 days)</td></tr>
+    <tr><td>avg_consent_given_at</td><td>timestamptz</td><td>When user accepted AVG consent modal</td></tr>
+    <tr><td>last_active_at</td><td>timestamptz</td><td>Updated on profile changes; used for 90-day inactivity purge</td></tr>
+    <tr><td>writing_style</td><td>text</td><td>'formeel' | 'informeel' | 'enthousiast'</td></tr>
+    <tr><td>send_method</td><td>text</td><td>'email' | 'webformulier'</td></tr>
+    <tr><td>is_suspended</td><td>bool</td><td>Admin can suspend; checked before apply</td></tr>
+  </table>
+
+  <h3>applications</h3>
+  <table>
+    <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+    <tr><td>id</td><td>uuid</td><td></td></tr>
+    <tr><td>user_id</td><td>uuid</td><td>FK to profiles.id</td></tr>
+    <tr><td>job_title</td><td>text</td><td></td></tr>
+    <tr><td>company</td><td>text</td><td></td></tr>
+    <tr><td>job_url</td><td>text</td><td></td></tr>
+    <tr><td>contact_email</td><td>text</td><td>Validated; used for email apply</td></tr>
+    <tr><td>letter_nl</td><td>text</td><td>The generated/edited Dutch letter (HTML-stripped)</td></tr>
+    <tr><td>status</td><td>text</td><td>'sent' | 'failed' | 'pending'</td></tr>
+    <tr><td>send_method</td><td>text</td><td>'email' | 'webformulier'</td></tr>
+    <tr><td>sent_at</td><td>timestamptz</td><td></td></tr>
+  </table>
+
+  <h3>RLS policies</h3>
+  <p>Row-Level Security is enabled on all tables. Users can only read/write their own rows. Service role (backend) has full access.</p>
+</div>
+
+<!-- ===== FILE STORAGE ===== -->
+<div class="page" id="page-data-files">
+  <h2>File Storage</h2>
+  <p class="page-subtitle">Supabase Storage — EU Frankfurt — encrypted at rest</p>
+
+  <h3>Bucket: cvs</h3>
+  <table>
+    <tr><th>Field</th><th>Detail</th></tr>
+    <tr><td>Bucket name</td><td><code>cvs</code></td></tr>
+    <tr><td>Access</td><td>Private (authenticated only)</td></tr>
+    <tr><td>Path format</td><td><code>{user_id}/{filename}.pdf</code></td></tr>
+    <tr><td>Encryption</td><td>At rest (Supabase default)</td></tr>
+    <tr><td>Max file size</td><td>10MB</td></tr>
+    <tr><td>Allowed types</td><td>PDF only</td></tr>
+  </table>
+
+  <h3>Retention</h3>
+  <p>Users choose retention period at upload (7 / 30 / 90 days). A warning email is sent 7 days before expiry. CV is auto-deleted on expiry by the <code>cleanup-expired-cvs</code> Edge Function. User can delete manually at any time from the dashboard.</p>
+</div>
+
+<!-- ===== AVG ===== -->
+<div class="page" id="page-data-avg">
+  <h2>AVG / GDPR</h2>
+  <p class="page-subtitle">Dutch privacy law compliance</p>
+
+  <h3>Rules we follow</h3>
+  <table>
+    <tr><th>#</th><th>Rule</th><th>Implementation</th></tr>
+    <tr><td>1</td><td>Explicit consent before CV upload</td><td>AVG consent modal (records <code>avg_consent_given_at</code>)</td></tr>
+    <tr><td>2</td><td>EU servers only</td><td>Supabase EU Frankfurt, Railway EU West</td></tr>
+    <tr><td>3</td><td>User can delete all data</td><td>Dashboard → Settings → "Verwijder mijn account" → Edge Function wipes everything</td></tr>
+    <tr><td>4</td><td>CV encrypted + time-limited</td><td>Supabase Storage encrypted; 7/30/90 day expiry; auto-delete</td></tr>
+    <tr><td>5</td><td>No data for training</td><td>Claude API called with <code>no-training</code> headers; not stored</td></tr>
+    <tr><td>6</td><td>Auto-delete after 90 days inactivity</td><td><code>purge-inactive</code> Edge Function; <code>last_active_at</code> tracked</td></tr>
+    <tr><td>7</td><td>Every automated decision visible + editable</td><td>Generated letter shown to user before sending; user can edit</td></tr>
+  </table>
+</div>
+
+<!-- ===== AUTH FLOWS ===== -->
+<div class="page" id="page-feature-auth">
+  <h2>Auth Flows</h2>
+  <p class="page-subtitle">Registration, login, password reset, social OAuth</p>
+
+  <h3>Register</h3>
+  <ol>
+    <li>POST to Supabase auth via server action (<code>web/src/app/actions/auth.ts</code>)</li>
+    <li>Supabase sends confirmation email to user</li>
+    <li>User lands on <code>/register/bevestig</code> (holding page)</li>
+    <li>User clicks email link → <code>/auth/confirm?token_hash=...&type=email</code></li>
+    <li>OTP verified → session created → redirect to <code>/dashboard</code></li>
+  </ol>
+
+  <h3>Google OAuth</h3>
+  <ol>
+    <li>User clicks "Doorgaan met Google" (SocialButtons component)</li>
+    <li><code>supabase.auth.signInWithOAuth({ provider: 'google' })</code></li>
+    <li>Google redirect → Supabase callback → session → <code>/dashboard</code></li>
+  </ol>
+
+  <h3>Password reset</h3>
+  <ol>
+    <li><code>/forgot-password</code> → user enters email</li>
+    <li>Supabase sends reset email (enumeration-safe — always shows "sent")</li>
+    <li>User clicks link → <code>/auth/reset</code> → <code>/reset-password</code></li>
+    <li>User sets new password → login</li>
+  </ol>
+</div>
+
+<!-- ===== CV UPLOAD ===== -->
+<div class="page" id="page-feature-cv">
+  <h2>CV Upload</h2>
+  <p class="page-subtitle">PDF upload → Supabase Storage (encrypted)</p>
+
+  <h3>Flow</h3>
+  <ol>
+    <li>User opens dashboard → clicks "CV uploaden"</li>
+    <li>AVG consent modal appears (if not yet consented)</li>
+    <li>User selects retention period (7 / 30 / 90 days) and accepts</li>
+    <li><code>avg_consent_given_at</code> stamped on profile</li>
+    <li>PDF uploaded to <code>cvs/{user_id}/{filename}.pdf</code> in Supabase Storage</li>
+    <li><code>cv_storage_path</code> + <code>cv_expires_at</code> saved on profile</li>
+  </ol>
+</div>
+
+<!-- ===== JOBS ===== -->
+<div class="page" id="page-feature-jobs">
+  <h2>Job Search</h2>
+  <p class="page-subtitle">Searches NL job boards via backend API</p>
+
+  <h3>Sources</h3>
+  <ul>
+    <li>Adzuna NL (API) — aggregates Indeed NL, LinkedIn NL, Jobbird, Nationale Vacaturebank</li>
+  </ul>
+
+  <h3>Flow</h3>
+  <ol>
+    <li>User enters keyword + location in dashboard search</li>
+    <li>Frontend calls <code>GET /api/v1/jobs?q=...&location=...</code></li>
+    <li>Backend checks <code>jobs_cache</code> table first (TTL: 1 hour)</li>
+    <li>If cache miss → calls Adzuna API → stores in cache → returns results</li>
+    <li>Results displayed as cards with title, company, location, salary, description</li>
+  </ol>
+</div>
+
+<!-- ===== APPLY ===== -->
+<div class="page" id="page-feature-apply">
+  <h2>Auto-Apply</h2>
+  <p class="page-subtitle">Send application via email or web form</p>
+
+  <h3>Email apply flow</h3>
+  <ol>
+    <li>User selects job → chooses "E-mail" method</li>
+    <li>Enters contact email address (validated server-side)</li>
+    <li>Backend generates letter via Claude</li>
+    <li>SendGrid sends email from <code>sollicitaties@opstapapp.nl</code></li>
+    <li>Application logged in <code>applications</code> table</li>
+  </ol>
+
+  <h3>Web form apply flow</h3>
+  <ol>
+    <li>User selects job → chooses "Webformulier" method</li>
+    <li>Backend uses Playwright to navigate to job URL</li>
+    <li>Fills form with profile data + generated letter</li>
+    <li>Submits form</li>
+    <li>Application logged in <code>applications</code> table</li>
+  </ol>
+
+  <div class="callout warn"><strong>Note:</strong> Web form apply works for simple forms. Complex forms with CAPTCHAs or custom portals may fail.</div>
+</div>
+
+<!-- ===== LETTER ===== -->
+<div class="page" id="page-feature-letter">
+  <h2>AI Motivation Letter</h2>
+  <p class="page-subtitle">Generated by Claude (claude-sonnet-4-6) in Dutch</p>
+
+  <h3>Inputs to the prompt</h3>
+  <ul>
+    <li>Job title, company name, job description</li>
+    <li>User's CV content (text extracted from PDF)</li>
+    <li>User's writing style preference (Formeel / Informeel / Enthousiast)</li>
+    <li>System prompt: "Write a professional Dutch motivation letter..."</li>
+  </ul>
+
+  <h3>What happens next</h3>
+  <ol>
+    <li>Letter displayed to user in dashboard (editable textarea)</li>
+    <li>User can edit before sending</li>
+    <li>Letter is HTML-stripped server-side before storage (XSS protection)</li>
+    <li>Stored in <code>applications.letter_nl</code></li>
+  </ol>
+
+  <div class="callout">Letters are always editable before sending — AVG Rule 7 (every automated decision visible and editable).</div>
+</div>
+
+<!-- ===== ENV VARS ===== -->
+<div class="page" id="page-envvars">
+  <h2>Environment Variables</h2>
+  <p class="page-subtitle">Where each secret lives</p>
+
+  <div class="callout danger"><strong>Never commit secrets to git.</strong> All secrets are in service dashboards (Vercel, Railway). The <code>.env.local</code> is gitignored.</div>
+
+  <h3>Vercel (web frontend)</h3>
+  <table>
+    <tr><th>Variable</th><th>Where to find/update</th></tr>
+    <tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Supabase → Project Settings → API</td></tr>
+    <tr><td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td>Supabase → Project Settings → API</td></tr>
+    <tr><td>NEXT_PUBLIC_API_URL</td><td>Railway → backend service → variables</td></tr>
+    <tr><td>NEXT_PUBLIC_SITE_URL</td><td>Set to https://opstapapp.nl</td></tr>
+  </table>
+
+  <h3>Railway (backend)</h3>
+  <table>
+    <tr><th>Variable</th><th>Where to find/update</th></tr>
+    <tr><td>SUPABASE_URL</td><td>Supabase → Project Settings → API</td></tr>
+    <tr><td>SUPABASE_SERVICE_KEY</td><td>Supabase → Project Settings → API → service_role key</td></tr>
+    <tr><td>ANTHROPIC_API_KEY</td><td>console.anthropic.com → API keys</td></tr>
+    <tr><td>SENDGRID_API_KEY</td><td>SendGrid → Settings → API Keys</td></tr>
+    <tr><td>CORS_ORIGINS</td><td>Comma-separated list of allowed origins</td></tr>
+    <tr><td>CRON_SECRET</td><td>Random string; also set in Supabase Edge Function secrets</td></tr>
+  </table>
+
+  <h3>Supabase Edge Function secrets</h3>
+  <table>
+    <tr><th>Function</th><th>Secrets needed</th></tr>
+    <tr><td>delete-account</td><td>SUPABASE_SERVICE_ROLE_KEY</td></tr>
+    <tr><td>warn-cv-expiry</td><td>SUPABASE_SERVICE_ROLE_KEY, SENDGRID_API_KEY</td></tr>
+    <tr><td>cleanup-expired-cvs</td><td>SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET</td></tr>
+    <tr><td>purge-inactive</td><td>SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET</td></tr>
+  </table>
+</div>
+
+<!-- ===== DEPLOYMENTS ===== -->
+<div class="page" id="page-deployments">
+  <h2>Deployments</h2>
+  <p class="page-subtitle">How code gets to production</p>
+
+  <h3>Web (Vercel)</h3>
+  <ol>
+    <li>Push/merge to <code>master</code> on GitHub</li>
+    <li>Vercel auto-deploys (GitHub integration)</li>
+    <li>Build: <code>cd web && npm run build</code></li>
+    <li>Live at opstapapp.nl within ~2 minutes</li>
+  </ol>
+
+  <h3>Backend (Railway)</h3>
+  <ol>
+    <li>Push/merge to <code>master</code></li>
+    <li>Railway auto-deploys (GitHub integration)</li>
+    <li>Build: Docker via <code>backend/Dockerfile</code></li>
+    <li>Live at opstapapp-production.up.railway.app within ~3 minutes</li>
+  </ol>
+
+  <h3>Database migrations</h3>
+  <ol>
+    <li>Write SQL in <code>supabase/migrations/00X_name.sql</code></li>
+    <li>Run <code>npx supabase db push</code> or use Supabase MCP <code>apply_migration</code></li>
+    <li>Migrations are idempotent and versioned</li>
+  </ol>
+</div>
+
+<!-- ===== EDGE FUNCTIONS ===== -->
+<div class="page" id="page-edge-functions">
+  <h2>Edge Functions</h2>
+  <p class="page-subtitle">Supabase Deno runtime — deployed to EU</p>
+
+  <h3>Deployed functions</h3>
+  <table>
+    <tr><th>Function</th><th>Trigger</th><th>What it does</th></tr>
+    <tr><td><code>delete-account</code></td><td>HTTP (user action)</td><td>Deletes all user data: profile, applications, CV file, auth user</td></tr>
+    <tr><td><code>warn-cv-expiry</code></td><td>Cron (daily)</td><td>Emails users whose CV expires in 7 days</td></tr>
+    <tr><td><code>cleanup-expired-cvs</code></td><td>Cron (daily)</td><td>Deletes CVs past their expiry date from Storage + clears profile path</td></tr>
+    <tr><td><code>purge-inactive</code></td><td>Cron (weekly)</td><td>Deletes profiles inactive for 90+ days (AVG Rule 6)</td></tr>
+  </table>
+
+  <h3>Cron schedules</h3>
+  <p>Configured in Supabase Dashboard → Edge Functions → each function's settings.</p>
+</div>
+
+</main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  // Find and activate the nav link that called this
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.getAttribute('onclick') === `show('${id}')`) l.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+}
+
+function filterNav(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.style.display = !q || link.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-section').forEach(section => {
+    const hasVisible = Array.from(section.querySelectorAll('.nav-link')).some(l => l.style.display !== 'none');
+    section.style.display = hasVisible ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

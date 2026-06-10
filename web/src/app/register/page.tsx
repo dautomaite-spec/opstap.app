@@ -4,8 +4,8 @@ import { register } from '@/app/actions/auth'
 import SocialButtons from '@/app/components/SocialButtons'
 
 export const metadata: Metadata = {
-  title: 'Gratis account aanmaken — Opstap',
-  description: 'Maak gratis een Opstap-account aan en begin automatisch te solliciteren op Nederlandse vacatures.',
+  title: 'Account aanmaken — Opstap',
+  description: 'Maak een Opstap-account aan en begin automatisch te solliciteren op Nederlandse vacatures.',
   alternates: { canonical: 'https://opstapapp.nl/register' },
 }
 
@@ -28,7 +28,7 @@ export default async function RegisterPage({
             Account aanmaken
           </h1>
           <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-            Gratis starten — geen creditcard nodig.
+            Maak een account aan en begin met automatisch solliciteren.
           </p>
 
           {error && (
