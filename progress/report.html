@@ -49,17 +49,17 @@
 
   <header>
     <h1>Opstap — Progress Report</h1>
-    <div class="meta">Updated: 2026-06-10 &nbsp;·&nbsp; Phase 3: Polish &amp; Launch</div>
+    <div class="meta">Updated: 2026-06-10 &nbsp;·&nbsp; Phase 3: Polish &amp; Launch &nbsp;·&nbsp; Deploy batch pending</div>
   </header>
 
   <!-- Summary stats -->
   <div class="card">
     <h2>Where we are</h2>
     <div class="summary-grid">
-      <div class="stat"><div class="stat-num">21+</div><div class="stat-label">PRs merged</div></div>
+      <div class="stat"><div class="stat-num">26+</div><div class="stat-label">PRs merged</div></div>
       <div class="stat"><div class="stat-num">✅</div><div class="stat-label">opstapapp.nl live</div></div>
-      <div class="stat"><div class="stat-num">✅</div><div class="stat-num" style="font-size:1rem">Dark mode added</div></div>
-      <div class="stat"><div class="stat-num">2</div><div class="stat-label">manual steps left</div></div>
+      <div class="stat"><div class="stat-num">✅</div><div class="stat-label">Public pages live</div></div>
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">manual steps left</div></div>
     </div>
   </div>
 
@@ -70,7 +70,7 @@
       <tr><td class="label">User registration + email confirmation</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">Login + password reset</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">Google OAuth ("Doorgaan met Google")</td><td><span class="badge-done">DONE</span></td></tr>
-      <tr><td class="label">Microsoft / Apple / Meta OAuth</td><td><span class="badge-pending">UI only — no credentials</span></td></tr>
+      <tr><td class="label">Outlook / Meta OAuth (social login)</td><td><span class="badge-pending">UI done — provider credentials needed in Supabase</span></td></tr>
       <tr><td class="label">AVG consent modal before CV upload</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">CV upload flow</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">Job search (NL boards)</td><td><span class="badge-done">DONE</span></td></tr>
@@ -83,12 +83,17 @@
       <tr><td class="label">SendGrid sender authentication for opstapapp.nl</td><td><span class="badge-manual">MANUAL STEP</span></td></tr>
       <tr><td class="label">Plausible analytics dashboard</td><td><span class="badge-manual">MANUAL STEP</span></td></tr>
       <tr><td class="label">Auto-delete + inactivity purge (Edge Functions)</td><td><span class="badge-done">DONE</span></td></tr>
-      <tr><td class="label">Dashboard sidebar (Vacatures, Jouw reacties, Profiel, Instellingen)</td><td><span class="badge-done">DONE — this session</span></td></tr>
-      <tr><td class="label">Dark mode (system + toggle, persistent)</td><td><span class="badge-done">DONE — this session</span></td></tr>
-      <tr><td class="label">Removed "gratis" / money text from site</td><td><span class="badge-done">DONE — this session</span></td></tr>
-      <tr><td class="label">Monetization plan (credits model, Mollie/iDEAL)</td><td><span class="badge-pending">Planned — ready to implement</span></td></tr>
+      <tr><td class="label">Dashboard sidebar (Vacatures, Jouw reacties, Profiel, Instellingen)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Dark mode (toggle, localStorage, anti-flash)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Removed "gratis" / money text from site</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Homepage sidebar + flowchart (numbered steps, arrows)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Over Opstap page (/over-ons)</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Help &amp; FAQ page (/faq) with accordion</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Login: Apple removed, Microsoft → Outlook, Skip link</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Recruiter angle in homepage copy</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Monetization plan (credits model, Mollie/iDEAL)</td><td><span class="badge-pending">Planned — discuss with user</span></td></tr>
       <tr><td class="label">Marketing plan (SEO content + Reddit NL + LinkedIn)</td><td><span class="badge-pending">Planned — see wiki</span></td></tr>
-      <tr><td class="label">Credit payment flow (Mollie + Supabase credits column)</td><td><span class="badge-pending">Next task</span></td></tr>
+      <tr><td class="label">Credit payment flow (Mollie + Supabase credits column)</td><td><span class="badge-pending">Next after pricing discussion</span></td></tr>
     </table>
   </div>
 
@@ -160,6 +165,24 @@
           Removed all "gratis"/"geen creditcard nodig" copy from site (8 files). Updated JSON-LD price from 0 to 2.99.<br><br>
           Wrote interactive wiki at <code>progress/wiki.html</code> covering all services, schema, features, env vars, deployments, and AVG compliance.<br><br>
           Produced full monetization plan: credits model (10/€2.99, 30/€6.99, 75/€14.99), Mollie iDEAL payment integration, 3-credit trial on registration. Break-even analysis: ~€0.18/user/month AI cost, breakeven at 500 MAU needs €175/month total. Marketing plan: SEO blog articles first, then Reddit NL + Facebook groups, then LinkedIn organic, then paid search.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 10, 2026 — Session 5</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">Public pages, sidebar overhaul, login cleanup (PRs #26+)</div>
+        <div class="tl-desc">
+          <strong>Homepage sidebar</strong> restructured: two groups (account nav / product info) separated by a divider. Items: Mijn profiel, Instellingen, Vind vacatures, Opgeslagen vacatures — then Voorkeuren/instellingen, Over Opstap, Help &amp; FAQ.<br><br>
+          <strong>Flowchart fixed</strong>: arrows now render as true siblings between cards (not nested inside step flex items), correct on both desktop and mobile. Step 3 copy updated with recruiter angle. Callout card updated: "Brieven geschreven met recruiterkennis."<br><br>
+          <strong>Login page cleaned up</strong>: Apple removed, Microsoft renamed to Outlook, Skip link added (login only, not register). Hardcoded hover colors replaced with CSS variables.<br><br>
+          <strong>New public pages</strong>:
+          <ul style="margin: 6px 0 0 16px; font-size: 0.82rem; color: #444;">
+            <li><code>/over-ons</code> — founding story, what makes Opstap different (recruiter expertise), NL market focus, CTA</li>
+            <li><code>/faq</code> — accordion FAQ across 4 sections: Aan de slag, Motivatiebrieven, Privacy &amp; gegevens, Kosten</li>
+          </ul>
+          <br>Deploy batched — pending one PR to ship all changes at once.
         </div>
       </div>
 
