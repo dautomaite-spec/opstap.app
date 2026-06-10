@@ -56,9 +56,9 @@
   <div class="card">
     <h2>Where we are</h2>
     <div class="summary-grid">
-      <div class="stat"><div class="stat-num">21</div><div class="stat-label">PRs merged</div></div>
+      <div class="stat"><div class="stat-num">21+</div><div class="stat-label">PRs merged</div></div>
       <div class="stat"><div class="stat-num">✅</div><div class="stat-label">opstapapp.nl live</div></div>
-      <div class="stat"><div class="stat-num">✅</div><div class="stat-num" style="font-size:1rem">Google OAuth</div></div>
+      <div class="stat"><div class="stat-num">✅</div><div class="stat-num" style="font-size:1rem">Dark mode added</div></div>
       <div class="stat"><div class="stat-num">2</div><div class="stat-label">manual steps left</div></div>
     </div>
   </div>
@@ -83,6 +83,12 @@
       <tr><td class="label">SendGrid sender authentication for opstapapp.nl</td><td><span class="badge-manual">MANUAL STEP</span></td></tr>
       <tr><td class="label">Plausible analytics dashboard</td><td><span class="badge-manual">MANUAL STEP</span></td></tr>
       <tr><td class="label">Auto-delete + inactivity purge (Edge Functions)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Dashboard sidebar (Vacatures, Jouw reacties, Profiel, Instellingen)</td><td><span class="badge-done">DONE — this session</span></td></tr>
+      <tr><td class="label">Dark mode (system + toggle, persistent)</td><td><span class="badge-done">DONE — this session</span></td></tr>
+      <tr><td class="label">Removed "gratis" / money text from site</td><td><span class="badge-done">DONE — this session</span></td></tr>
+      <tr><td class="label">Monetization plan (credits model, Mollie/iDEAL)</td><td><span class="badge-pending">Planned — ready to implement</span></td></tr>
+      <tr><td class="label">Marketing plan (SEO content + Reddit NL + LinkedIn)</td><td><span class="badge-pending">Planned — see wiki</span></td></tr>
+      <tr><td class="label">Credit payment flow (Mollie + Supabase credits column)</td><td><span class="badge-pending">Next task</span></td></tr>
     </table>
   </div>
 
@@ -140,6 +146,20 @@
             <li>All hardcoded opstap.nl URLs and emails updated in codebase (PR #21)</li>
           </ul>
           <br>DNS propagated and confirmed live via nslookup.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 10, 2026 — Session 4</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">Dashboard sidebar + dark mode + product strategy</div>
+        <div class="tl-desc">
+          Added persistent sidebar to dashboard (Vacatures, Jouw reacties, Persoonlijke gegevens, Instellingen) with mobile drawer, collapse mode, user avatar + logout. Removed the old duplicated Shell nav pattern.<br><br>
+          Dark mode: CSS variable overrides, system preference detection, localStorage persistence, anti-flash inline script in &lt;head&gt;. ThemeToggle component with ☾/☀ icon on public site and dashboard.<br><br>
+          Removed all "gratis"/"geen creditcard nodig" copy from site (8 files). Updated JSON-LD price from 0 to 2.99.<br><br>
+          Wrote interactive wiki at <code>progress/wiki.html</code> covering all services, schema, features, env vars, deployments, and AVG compliance.<br><br>
+          Produced full monetization plan: credits model (10/€2.99, 30/€6.99, 75/€14.99), Mollie iDEAL payment integration, 3-credit trial on registration. Break-even analysis: ~€0.18/user/month AI cost, breakeven at 500 MAU needs €175/month total. Marketing plan: SEO blog articles first, then Reddit NL + Facebook groups, then LinkedIn organic, then paid search.
         </div>
       </div>
 

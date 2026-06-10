@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
 import { api, ApiError } from '@/lib/api'
 import type { Profile } from '@/lib/api'
@@ -118,29 +117,23 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
 
   if (loading) {
     return (
-      <Shell userEmail={userEmail}>
-        <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
-      </Shell>
+      <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
     )
   }
 
   return (
-    <Shell userEmail={userEmail}>
-      <div className="max-w-lg mx-auto">
-        <Link href="/dashboard" className="inline-flex items-center text-sm mb-6 hover:underline" style={{ color: 'var(--color-text-muted)' }}>
-          ← Terug naar dashboard
-        </Link>
+    <div className="max-w-lg mx-auto">
 
         {/* Profile section */}
         <section className="mb-10">
           <h2 className="text-base font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</h2>
           {saveSuccess && (
-            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
               Wijzigingen opgeslagen
             </p>
           )}
           {saveError && (
-            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: 'var(--color-error)' }}>
+            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>
               {saveError}
             </p>
           )}
@@ -203,7 +196,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowAvgConsent(false)}
-                  className="px-4 py-2 text-sm rounded-lg border hover:bg-gray-50 transition"
+                  className="px-4 py-2 text-sm rounded-lg border hover:opacity-80 transition"
                   style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
                 >
                   Annuleren
@@ -224,7 +217,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
         <section className="mb-10 pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
           <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>CV</h2>
           {cvUploadSuccess && (
-            <p className="text-sm mb-3 px-3 py-2 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>{cvUploadSuccess}</p>
+            <p className="text-sm mb-3 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{cvUploadSuccess}</p>
           )}
           {cvError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
           {/* Hidden file input — triggered after AVG consent */}
@@ -241,7 +234,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
                 <button
                   onClick={handleCVButtonClick}
                   disabled={uploadingCV}
-                  className="text-sm px-4 py-2 rounded-lg border transition hover:bg-gray-50 disabled:opacity-50"
+                  className="text-sm px-4 py-2 rounded-lg border transition hover:opacity-80 disabled:opacity-50"
                   style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
                 >
                   {uploadingCV ? 'Uploaden…' : 'Nieuw CV uploaden'}
@@ -249,7 +242,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
                 <button
                   onClick={handleDeleteCV}
                   disabled={deletingCV}
-                  className="text-sm px-4 py-2 rounded-lg border transition hover:bg-red-50 disabled:opacity-50"
+                  className="text-sm px-4 py-2 rounded-lg border transition hover:opacity-80 disabled:opacity-50"
                   style={{ borderColor: '#ef4444', color: '#ef4444' }}
                 >
                   {deletingCV ? 'Verwijderen…' : 'CV verwijderen'}
@@ -282,13 +275,13 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           {!confirmDelete ? (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="text-sm px-4 py-2 rounded-lg border transition hover:bg-red-50"
+              className="text-sm px-4 py-2 rounded-lg border transition hover:opacity-80"
               style={{ borderColor: '#ef4444', color: '#ef4444' }}
             >
               Account verwijderen
             </button>
           ) : (
-            <div className="flex flex-col gap-3 p-4 rounded-xl" style={{ background: '#fef2f2' }}>
+            <div className="flex flex-col gap-3 p-4 rounded-xl" style={{ background: 'var(--color-error-bg)' }}>
               <p className="text-sm font-medium" style={{ color: '#ef4444' }}>
                 Weet je het zeker? Dit is permanent en kan niet ongedaan worden gemaakt.
               </p>
@@ -313,28 +306,6 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           )}
         </section>
       </div>
-    </Shell>
-  )
-}
-
-function Shell({ userEmail, children }: { userEmail: string; children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-lavender-bg)' }}>
-      <nav className="flex items-center justify-between px-6 py-4 border-b" style={{ background: 'var(--color-white)', borderColor: 'var(--color-lavender-card)' }}>
-        <span className="font-bold text-lg" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
-        <div className="flex items-center gap-4">
-          <span className="text-sm hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</span>
-          <form action={logout}>
-            <button type="submit" className="text-sm px-3 py-1.5 rounded-lg border transition hover:bg-gray-50" style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}>
-              Uitloggen
-            </button>
-          </form>
-        </div>
-      </nav>
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
-        {children}
-      </main>
-    </div>
   )
 }
 

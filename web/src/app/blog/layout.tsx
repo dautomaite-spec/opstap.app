@@ -8,7 +8,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
           Opstap
         </Link>
         <Link href="/register" className="px-4 py-2 text-sm font-semibold rounded-lg text-white" style={{ background: 'var(--color-indigo-primary)' }}>
-          Gratis starten
+          Aan de slag
         </Link>
       </nav>
       <main className="max-w-2xl mx-auto px-6 py-12">

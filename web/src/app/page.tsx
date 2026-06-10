@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import ThemeToggle from '@/app/components/ThemeToggle'
 
 export const metadata: Metadata = {
   alternates: {
@@ -17,7 +18,7 @@ const jsonLd = {
   operatingSystem: 'Web',
   offers: {
     '@type': 'Offer',
-    price: '0',
+    price: '2.99',
     priceCurrency: 'EUR',
   },
   inLanguage: 'nl',
@@ -39,15 +40,16 @@ export default function Home() {
       />
       <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto w-full">
         <span className="font-bold text-xl" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
-        <div className="flex gap-3">
-          <Link href="/blog" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:bg-white" style={{ color: 'var(--color-text-muted)' }}>
+        <div className="flex items-center gap-3">
+          <Link href="/blog" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:opacity-80" style={{ color: 'var(--color-text-muted)' }}>
             Blog
           </Link>
-          <Link href="/login" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:bg-white" style={{ color: 'var(--color-indigo-primary)' }}>
+          <Link href="/login" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:opacity-80" style={{ color: 'var(--color-indigo-primary)' }}>
             Inloggen
           </Link>
+          <ThemeToggle />
           <Link href="/register" className="px-4 py-2 text-sm font-medium rounded-lg text-white transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
-            Gratis starten
+            Aan de slag
           </Link>
         </div>
       </nav>
@@ -61,7 +63,7 @@ export default function Home() {
         </p>
         <div className="mt-10 flex gap-4 flex-wrap justify-center">
           <Link href="/register" className="px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
-            Begin gratis
+            Aan de slag
           </Link>
           <Link href="/login" className="px-8 py-3 text-base font-semibold rounded-xl border transition hover:bg-white" style={{ color: 'var(--color-indigo-primary)', borderColor: 'var(--color-indigo-primary)' }}>
             Inloggen
