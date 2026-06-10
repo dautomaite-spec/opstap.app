@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import ThemeToggle from '@/app/components/ThemeToggle'
+import SidebarNavLink from '@/app/components/SidebarNavLink'
 
 export const metadata: Metadata = {
   alternates: {
@@ -33,69 +34,207 @@ const jsonLd = {
 
 export default function Home() {
   return (
-    <main className="flex flex-col min-h-screen" style={{ background: 'var(--color-lavender-bg)' }}>
+    <div className="flex min-h-screen" style={{ background: 'var(--color-lavender-bg)' }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto w-full">
-        <span className="font-bold text-xl" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
-        <div className="flex items-center gap-3">
-          <Link href="/blog" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:opacity-80" style={{ color: 'var(--color-text-muted)' }}>
-            Blog
-          </Link>
-          <Link href="/login" className="px-4 py-2 text-sm font-medium rounded-lg transition hover:opacity-80" style={{ color: 'var(--color-indigo-primary)' }}>
-            Inloggen
-          </Link>
+
+      {/* Sidebar */}
+      <aside
+        className="hidden md:flex flex-col shrink-0 sticky top-0 h-screen"
+        style={{ width: 220, background: 'var(--color-indigo-primary)' }}
+      >
+        {/* Logo */}
+        <div className="px-6 pt-8 pb-6">
+          <span className="font-bold text-xl text-white tracking-tight">Opstap</span>
+          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Meer kansen. Minder moeite.</p>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 flex flex-col gap-1">
+          <SidebarNavLink href="/blog" label="Blog" />
+          <SidebarNavLink href="/login" label="Inloggen" />
+        </nav>
+
+        {/* Bottom CTA */}
+        <div className="px-4 py-6 flex flex-col gap-3">
           <ThemeToggle />
-          <Link href="/register" className="px-4 py-2 text-sm font-medium rounded-lg text-white transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
+          <Link
+            href="/register"
+            className="w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
+            style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)' }}
+          >
             Aan de slag
           </Link>
         </div>
-      </nav>
+      </aside>
 
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
-        <h1 className="text-5xl font-bold leading-tight max-w-2xl" style={{ color: 'var(--color-indigo-primary)' }}>
-          Meer kansen.<br />Minder moeite.
-        </h1>
-        <p className="mt-6 text-lg max-w-xl" style={{ color: 'var(--color-text-muted)' }}>
-          Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en ontvang een persoonlijke motivatiebrief — geschreven door AI, goedgekeurd door jou.
-        </p>
-        <div className="mt-10 flex gap-4 flex-wrap justify-center">
-          <Link href="/register" className="px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
+      {/* Mobile top bar */}
+      <div
+        className="md:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-5 py-3 border-b"
+        style={{ background: 'var(--color-indigo-primary)', borderColor: 'rgba(255,255,255,0.1)' }}
+      >
+        <span className="font-bold text-white">Opstap</span>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link href="/register" className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.18)' }}>
             Aan de slag
           </Link>
-          <Link href="/login" className="px-8 py-3 text-base font-semibold rounded-xl border transition hover:bg-white" style={{ color: 'var(--color-indigo-primary)', borderColor: 'var(--color-indigo-primary)' }}>
-            Inloggen
-          </Link>
         </div>
-      </section>
+      </div>
 
-      <section className="py-16 px-6">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { icon: '📄', title: 'Upload je CV', desc: 'Of vul je profiel handmatig in. Opstap onthoudt alles — één keer invoeren.' },
-            { icon: '🔍', title: 'Vind vacatures', desc: 'We doorzoeken de grootste Nederlandse jobboards en tonen alleen de vacatures die bij jou passen.' },
-            { icon: '✉️', title: 'Solliciteer automatisch', desc: 'AI schrijft per vacature een persoonlijke motivatiebrief. Jij keurt goed — wij versturen.' },
-          ].map((f) => (
-            <div key={f.title} className="rounded-2xl p-6" style={{ background: 'var(--color-lavender-card)' }}>
-              <div className="text-3xl mb-3">{f.icon}</div>
-              <h3 className="font-semibold text-lg mb-2" style={{ color: 'var(--color-indigo-primary)' }}>{f.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>{f.desc}</p>
+      {/* Main content */}
+      <main className="flex-1 flex flex-col pt-14 md:pt-0">
+
+        {/* Hero */}
+        <section className="flex-1 flex flex-col items-center justify-center text-center px-8 py-20 md:py-28">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
+            style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-indigo-primary)', display: 'inline-block' }} />
+            Solliciteer op meerdere vacatures tegelijk
+          </div>
+          <h1 className="text-5xl font-bold leading-tight max-w-2xl" style={{ color: 'var(--color-indigo-primary)' }}>
+            Meer kansen.<br />Minder moeite.
+          </h1>
+          <p className="mt-6 text-lg max-w-xl" style={{ color: 'var(--color-text-muted)' }}>
+            Opstap zoekt vacatures, schrijft je motivatiebrief en solliciteert voor jou — op <strong style={{ color: 'var(--color-text-primary)' }}>meerdere functies tegelijk</strong>. Jij keurt goed, wij versturen.
+          </p>
+          <div className="mt-10 flex gap-4 flex-wrap justify-center">
+            <Link href="/register" className="px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
+              Aan de slag
+            </Link>
+            <Link href="/login" className="px-8 py-3 text-base font-semibold rounded-xl border transition hover:opacity-80" style={{ color: 'var(--color-indigo-primary)', borderColor: 'var(--color-indigo-primary)' }}>
+              Inloggen
+            </Link>
+          </div>
+
+          {/* Multi-apply callout */}
+          <div
+            className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            {[
+              'Meerdere vacatures in één keer',
+              'Persoonlijke brief per sollicitatie',
+              'Versturen per e-mail of webformulier',
+            ].map(item => (
+              <span key={item} className="flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)', flexShrink: 0 }}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {item}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* Flowchart */}
+        <section className="py-16 px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-center text-2xl font-bold mb-12" style={{ color: 'var(--color-indigo-primary)' }}>
+              Zo werkt het
+            </h2>
+
+            {/* Steps — horizontal on desktop, vertical on mobile */}
+            <div className="flex flex-col md:flex-row items-start md:items-stretch gap-0">
+
+              {[
+                {
+                  n: 1,
+                  title: 'Upload je CV',
+                  desc: 'Upload je CV of vul je profiel handmatig in. Opstap onthoudt alles — één keer invoeren.',
+                },
+                {
+                  n: 2,
+                  title: 'Vind vacatures',
+                  desc: 'We doorzoeken de grootste Nederlandse jobboards. Kies één of meerdere vacatures die je aanspreken.',
+                },
+                {
+                  n: 3,
+                  title: 'Solliciteer automatisch',
+                  desc: 'AI schrijft een persoonlijke brief per vacature. Jij keurt goed — wij versturen ze allemaal.',
+                },
+              ].map((step, i) => (
+                <div key={step.n} className="flex md:flex-col flex-1 items-start md:items-stretch">
+
+                  {/* Step card */}
+                  <div
+                    className="flex-1 rounded-2xl p-6 flex flex-col"
+                    style={{ background: 'var(--color-lavender-card)' }}
+                  >
+                    {/* Number */}
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white mb-4 shrink-0"
+                      style={{ background: 'var(--color-indigo-primary)' }}
+                    >
+                      {step.n}
+                    </div>
+                    <h3 className="font-semibold text-base mb-2" style={{ color: 'var(--color-indigo-primary)' }}>
+                      {step.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                      {step.desc}
+                    </p>
+                  </div>
+
+                  {/* Arrow between steps — right arrow on desktop, down arrow on mobile */}
+                  {i < 2 && (
+                    <>
+                      {/* Desktop: right arrow between cards */}
+                      <div className="hidden md:flex items-center px-3 shrink-0" style={{ alignSelf: 'center' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-light)' }}>
+                          <path d="M5 12h14M13 6l6 6-6 6" />
+                        </svg>
+                      </div>
+                      {/* Mobile: down arrow */}
+                      <div className="md:hidden flex justify-start pl-5 py-3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-light)' }}>
+                          <path d="M12 5v14M6 13l6 6 6-6" />
+                        </svg>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
 
-      <footer className="text-center py-6 text-xs flex flex-wrap items-center justify-center gap-x-3 gap-y-1" style={{ color: 'var(--color-text-muted)' }}>
-        <span>© {new Date().getFullYear()} Opstap</span>
-        <span aria-hidden>&middot;</span>
-        <Link href="/privacy" className="underline hover:text-gray-600">Privacyvoorwaarden</Link>
-        <span aria-hidden>&middot;</span>
-        <Link href="/voorwaarden" className="underline hover:text-gray-600">Algemene voorwaarden</Link>
-        <span aria-hidden>&middot;</span>
-        <Link href="/misbruik" className="underline hover:text-gray-600">Misbruik melden</Link>
-      </footer>
-    </main>
+            {/* Multi-apply emphasis below flowchart */}
+            <div
+              className="mt-8 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+              style={{ background: 'var(--color-indigo-primary)' }}
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-white text-sm">Solliciteer op meerdere vacatures tegelijk</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  Selecteer meerdere vacatures en verstuur ze allemaal in één keer — elk met een unieke, gepersonaliseerde brief.
+                </p>
+              </div>
+              <Link href="/register" className="shrink-0 px-5 py-2 rounded-xl text-sm font-semibold transition hover:opacity-90" style={{ background: 'white', color: 'var(--color-indigo-primary)' }}>
+                Probeer het
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center py-6 text-xs flex flex-wrap items-center justify-center gap-x-3 gap-y-1" style={{ color: 'var(--color-text-muted)' }}>
+          <span>© {new Date().getFullYear()} Opstap</span>
+          <span aria-hidden>&middot;</span>
+          <Link href="/privacy" className="underline hover:opacity-70">Privacyvoorwaarden</Link>
+          <span aria-hidden>&middot;</span>
+          <Link href="/voorwaarden" className="underline hover:opacity-70">Algemene voorwaarden</Link>
+          <span aria-hidden>&middot;</span>
+          <Link href="/misbruik" className="underline hover:opacity-70">Misbruik melden</Link>
+        </footer>
+      </main>
+    </div>
   )
 }
