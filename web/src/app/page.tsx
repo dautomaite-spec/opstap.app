@@ -53,10 +53,14 @@ export default function Home() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 flex flex-col gap-1">
-          <SidebarNavLink href="/dashboard" label="Vacatures" />
-          <SidebarNavLink href="/dashboard/sollicitaties" label="Gesolliciteerde vacatures" />
-          <SidebarNavLink href="/dashboard/sollicitaties" label="Reacties" />
+          <SidebarNavLink href="/dashboard/profiel" label="Mijn profiel" />
           <SidebarNavLink href="/dashboard/settings" label="Instellingen" />
+          <SidebarNavLink href="/dashboard" label="Vind vacatures" />
+          <SidebarNavLink href="/dashboard/opgeslagen" label="Opgeslagen vacatures" />
+          <div className="my-2 mx-3 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
+          <SidebarNavLink href="/dashboard/settings" label="Voorkeuren / instellingen" />
+          <SidebarNavLink href="/over-ons" label="Over Opstap" />
+          <SidebarNavLink href="/faq" label="Help & FAQ" />
         </nav>
 
         {/* Bottom CTA */}
@@ -157,7 +161,7 @@ export default function Home() {
                 {
                   n: 3,
                   title: 'Solliciteer automatisch',
-                  desc: 'AI schrijft een persoonlijke brief per vacature. Jij keurt goed — wij versturen ze allemaal.',
+                  desc: 'AI schrijft een brief per vacature — opgebouwd vanuit recruiterervaring, niet een generieke ChatGPT-tekst. Jij keurt goed, wij versturen.',
                 },
               ].flatMap((step, i, arr) => {
                 const card = (
@@ -211,9 +215,9 @@ export default function Home() {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-white text-sm">Solliciteer op meerdere vacatures tegelijk</p>
+                <p className="font-semibold text-white text-sm">Brieven geschreven met recruiterkennis</p>
                 <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                  Selecteer meerdere vacatures en verstuur ze allemaal in één keer — elk met een unieke, gepersonaliseerde brief.
+                  Opstap is gebouwd door een ervaren recruiter die weet wat hiring managers zoeken. Geen generieke AI-tekst — elke brief is gericht, persoonlijk en overtuigend.
                 </p>
               </div>
               <Link href="/register" className="shrink-0 px-5 py-2 rounded-xl text-sm font-semibold transition hover:opacity-90" style={{ background: 'white', color: 'var(--color-indigo-primary)' }}>

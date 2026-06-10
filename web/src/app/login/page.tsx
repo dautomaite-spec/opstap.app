@@ -93,7 +93,7 @@ export default async function LoginPage({
             <div className="flex-1 h-px" style={{ background: 'var(--color-lavender-card)' }} />
           </div>
 
-          <SocialButtons />
+          <SocialButtons showSkip />
         </div>
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>

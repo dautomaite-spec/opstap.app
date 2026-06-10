@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const GOOGLE_ICON = (
@@ -14,22 +15,13 @@ const GOOGLE_ICON = (
 const SECONDARY_PROVIDERS = [
   {
     id: 'azure' as const,
-    label: 'Microsoft',
+    label: 'Outlook',
     icon: (
       <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
         <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
         <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
         <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'apple' as const,
-    label: 'Apple',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 3.99zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
       </svg>
     ),
   },
@@ -44,13 +36,14 @@ const SECONDARY_PROVIDERS = [
   },
 ]
 
-type OAuthProvider = 'google' | 'azure' | 'apple' | 'facebook'
+type OAuthProvider = 'google' | 'azure' | 'facebook'
 
 interface SocialButtonsProps {
   redirectTo?: string
+  showSkip?: boolean
 }
 
-export default function SocialButtons({ redirectTo }: SocialButtonsProps) {
+export default function SocialButtons({ redirectTo, showSkip = false }: SocialButtonsProps) {
   const supabase = createClient()
 
   async function handleOAuth(provider: OAuthProvider) {
@@ -69,14 +62,14 @@ export default function SocialButtons({ redirectTo }: SocialButtonsProps) {
       <button
         type="button"
         onClick={() => handleOAuth('google')}
-        className="flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-semibold transition hover:bg-gray-50"
+        className="flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-semibold transition hover:opacity-80"
         style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', background: 'var(--color-white)' }}
       >
         {GOOGLE_ICON}
         Doorgaan met Google
       </button>
 
-      {/* Microsoft / Apple / Meta — compact row */}
+      {/* Outlook / Meta — compact row */}
       <div className="flex gap-2">
         {SECONDARY_PROVIDERS.map((p) => (
           <button
@@ -84,14 +77,24 @@ export default function SocialButtons({ redirectTo }: SocialButtonsProps) {
             type="button"
             onClick={() => handleOAuth(p.id)}
             title={`Doorgaan met ${p.label}`}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition hover:bg-gray-50"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition hover:opacity-80"
             style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', background: 'var(--color-white)' }}
           >
             {p.icon}
-            <span className="hidden sm:inline">{p.label}</span>
+            <span>{p.label}</span>
           </button>
         ))}
       </div>
+
+      {showSkip && (
+        <Link
+          href="/"
+          className="block text-center text-xs mt-1 transition hover:opacity-70"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Overslaan
+        </Link>
+      )}
     </div>
   )
 }
