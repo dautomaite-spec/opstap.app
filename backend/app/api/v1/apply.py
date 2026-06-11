@@ -209,11 +209,11 @@ async def send_application(
     sent_at = None
 
     if body.send_method == "email":
-        contact_email = job.get("contact_email")
+        contact_email = body.contact_email_override or job.get("contact_email")
         if not contact_email or not _EMAIL_RE.match(contact_email):
             raise HTTPException(
                 status_code=422,
-                detail="No valid contact email available for this job. Use send_method='form' instead.",
+                detail="Geen geldig e-mailadres beschikbaar. Voer een recruiter e-mailadres in.",
             )
 
         success = await send_application_email(ApplicationEmail(

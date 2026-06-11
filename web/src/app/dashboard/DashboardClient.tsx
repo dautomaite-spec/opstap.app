@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
+import MultiApplyModal from './components/MultiApplyModal'
 
 const SAVED_JOBS_KEY = 'opstap_saved_jobs'
 
@@ -102,6 +103,18 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [applySuccess, setApplySuccess] = useState('')
   const [writingStyle, setWritingStyle] = useState('formeel')
   const [showBuyCredits, setShowBuyCredits] = useState(false)
+
+  // Email apply state (inside single letter modal)
+  const [emailApplyOpen, setEmailApplyOpen] = useState(false)
+  const [recipientEmail, setRecipientEmail] = useState('')
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailSendSuccess, setEmailSendSuccess] = useState('')
+  const [emailSendError, setEmailSendError] = useState('')
+
+  // Multi-apply state
+  const [multiSelect, setMultiSelect] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showMultiApply, setShowMultiApply] = useState(false)
 
   useEffect(() => {
     api.profile.get()
@@ -203,6 +216,44 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     }
   }
 
+  async function handleSendViaEmail() {
+    if (!applyState || !profile || !recipientEmail) return
+    setSendingEmail(true)
+    setEmailSendError('')
+    setEmailSendSuccess('')
+    try {
+      await api.apply.send({
+        job_id: applyState.job.id,
+        profile_id: profile.id,
+        letter_nl: applyState.letter,
+        send_method: 'email',
+        contact_email_override: recipientEmail,
+      })
+      setEmailSendSuccess(`Sollicitatie verstuurd naar ${recipientEmail}.`)
+      setApplyState(null)
+      setEmailApplyOpen(false)
+      setRecipientEmail('')
+    } catch (err) {
+      setEmailSendError(err instanceof ApiError ? err.message : 'Versturen mislukt.')
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
+  function toggleJobSelect(jobId: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(jobId)) next.delete(jobId)
+      else if (next.size < 5) next.add(jobId)
+      return next
+    })
+  }
+
+  function exitMultiSelect() {
+    setMultiSelect(false)
+    setSelectedIds(new Set())
+  }
+
   if (profileLoading) {
     return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
   }
@@ -285,22 +336,54 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
       {/* Sort bar — only shown when there are results */}
       {sortedJobs.length > 0 && (
-        <div className="flex items-center gap-3 mb-5">
-          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Sorteren:</span>
-          {(['match', 'salary', 'date'] as SortKey[]).map(key => (
+        <div className="flex items-center gap-3 mb-5 flex-wrap">
+          {!multiSelect && (
+            <>
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Sorteren:</span>
+              {(['match', 'salary', 'date'] as SortKey[]).map(key => (
+                <button
+                  key={key}
+                  onClick={() => setSortBy(key)}
+                  className="text-xs px-3 py-1 rounded-full transition"
+                  style={{
+                    background: sortBy === key ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                    color: sortBy === key ? 'white' : 'var(--color-text-muted)',
+                  }}
+                >
+                  {{ match: 'Match %', salary: 'Salaris', date: 'Datum' }[key]}
+                </button>
+              ))}
+            </>
+          )}
+          {multiSelect && (
+            <>
+              <span className="text-xs font-medium" style={{ color: 'var(--color-indigo-primary)' }}>
+                {selectedIds.size}/5 geselecteerd
+              </span>
+              <button
+                onClick={exitMultiSelect}
+                className="text-xs underline"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Annuleren
+              </button>
+            </>
+          )}
+          <div className="ml-auto flex items-center gap-2">
+            {!multiSelect && (
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{sortedJobs.length} vacatures</span>
+            )}
             <button
-              key={key}
-              onClick={() => setSortBy(key)}
+              onClick={() => { setMultiSelect(m => !m); setSelectedIds(new Set()) }}
               className="text-xs px-3 py-1 rounded-full transition"
               style={{
-                background: sortBy === key ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-                color: sortBy === key ? 'white' : 'var(--color-text-muted)',
+                background: multiSelect ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                color: multiSelect ? 'white' : 'var(--color-text-muted)',
               }}
             >
-              {{ match: 'Match %', salary: 'Salaris', date: 'Datum' }[key]}
+              Meerdere selecteren
             </button>
-          ))}
-          <span className="text-xs ml-auto" style={{ color: 'var(--color-text-muted)' }}>{sortedJobs.length} vacatures</span>
+          </div>
         </div>
       )}
 
@@ -309,6 +392,39 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       {applyError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{applyError}</p>}
 
       {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}
+
+      {/* Multi-apply modal */}
+      {showMultiApply && profile && (
+        <MultiApplyModal
+          selectedJobs={sortedJobs.filter(j => selectedIds.has(j.id))}
+          profile={profile}
+          writingStyle={writingStyle}
+          onClose={(sentCount) => {
+            setShowMultiApply(false)
+            exitMultiSelect()
+            if (sentCount > 0) setApplySuccess(`${sentCount} sollicitatie${sentCount !== 1 ? 's' : ''} verstuurd.`)
+          }}
+        />
+      )}
+
+      {/* Multi-select sticky bottom bar */}
+      {multiSelect && selectedIds.size > 0 && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 px-5 py-3 rounded-2xl shadow-xl"
+          style={{ background: 'var(--color-indigo-primary)' }}
+        >
+          <span className="text-sm text-white font-medium">
+            {selectedIds.size} geselecteerd
+          </span>
+          <button
+            onClick={() => setShowMultiApply(true)}
+            className="px-4 py-1.5 rounded-xl text-sm font-semibold transition hover:opacity-90"
+            style={{ background: 'white', color: 'var(--color-indigo-primary)' }}
+          >
+            Solliciteer → ({selectedIds.size} credits)
+          </button>
+        </div>
+      )}
 
       {/* Letter modal */}
       {applyState && (
@@ -344,12 +460,51 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               className="w-full px-3 py-2 rounded-lg border text-sm resize-none outline-none"
               style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
             />
-            <p className="text-xs mt-2 mb-4" style={{ color: 'var(--color-text-muted)' }}>
-              De brief wordt gekopieerd naar je klembord. Plak hem in het sollicitatieformulier van het bedrijf.
-            </p>
-            <div className="flex gap-3 justify-end">
+            {/* Email send section */}
+            <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--color-lavender-card)' }}>
               <button
-                onClick={() => setApplyState(null)}
+                onClick={() => { setEmailApplyOpen(v => !v); setEmailSendError(''); setEmailSendSuccess('') }}
+                className="text-xs flex items-center gap-1.5 transition hover:opacity-80"
+                style={{ color: 'var(--color-indigo-primary)' }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+                {emailApplyOpen ? 'Verbergen' : 'Stuur per e-mail naar recruiter'}
+              </button>
+              {emailApplyOpen && (
+                <div className="mt-2 flex flex-col gap-2">
+                  {emailSendSuccess && (
+                    <p className="text-xs px-2 py-1.5 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{emailSendSuccess}</p>
+                  )}
+                  {emailSendError && (
+                    <p className="text-xs" style={{ color: 'var(--color-error)' }}>{emailSendError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={recipientEmail}
+                      onChange={e => setRecipientEmail(e.target.value)}
+                      placeholder="recruiter@bedrijf.nl"
+                      className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none"
+                      style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                    />
+                    <button
+                      onClick={handleSendViaEmail}
+                      disabled={sendingEmail || !recipientEmail}
+                      className="px-4 py-2 text-sm font-medium rounded-lg text-white transition hover:opacity-90 disabled:opacity-50"
+                      style={{ background: 'var(--color-indigo-primary)' }}
+                    >
+                      {sendingEmail ? 'Versturen…' : 'Verstuur'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end mt-4">
+              <button
+                onClick={() => { setApplyState(null); setEmailApplyOpen(false); setRecipientEmail('') }}
                 className="px-4 py-2 text-sm rounded-lg border transition"
                 style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)', background: 'var(--color-hover-surface)' }}
               >
@@ -419,14 +574,31 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   )}
                 </div>
                 <div className="flex flex-col gap-2 shrink-0">
-                  <button
-                    onClick={() => handleGenerateLetter(job)}
-                    disabled={generatingLetter || !profile}
-                    className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
-                    style={{ background: 'var(--color-indigo-primary)' }}
-                  >
-                    {generatingLetter ? 'Laden…' : 'Solliciteren'}
-                  </button>
+                  {multiSelect ? (
+                    <button
+                      onClick={() => toggleJobSelect(job.id)}
+                      className="w-8 h-8 rounded-lg border-2 flex items-center justify-center transition"
+                      style={{
+                        borderColor: selectedIds.has(job.id) ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                        background: selectedIds.has(job.id) ? 'var(--color-indigo-primary)' : 'transparent',
+                      }}
+                    >
+                      {selectedIds.has(job.id) && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleGenerateLetter(job)}
+                      disabled={generatingLetter || !profile}
+                      className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
+                      style={{ background: 'var(--color-indigo-primary)' }}
+                    >
+                      {generatingLetter ? 'Laden…' : 'Solliciteren'}
+                    </button>
+                  )}
                   <div className="flex gap-1.5">
                     <a
                       href={job.url}

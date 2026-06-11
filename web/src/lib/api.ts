@@ -165,6 +165,7 @@ export interface SendRequest {
   profile_id: string
   letter_nl: string
   send_method?: string
+  contact_email_override?: string
 }
 
 export interface Application {
