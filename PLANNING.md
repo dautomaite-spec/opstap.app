@@ -1,5 +1,5 @@
 # Opstap — Planning Document
-> Last updated: 2026-06-10 (Strategic pivot: website first, app store deferred until traction milestone)
+> Last updated: 2026-06-11
 
 ---
 
@@ -376,6 +376,13 @@ Opstap App
 - [x] DB migrations 006 + 007: credits_balance, referral_code, credit_transactions, referral_uses, mollie_payments, grant_credits/debit_one_credit/claim_payment_credits RPCs
 - [x] Privacy policy updated: referral, Mollie, betalingsgegevens 7-jaar retention, delete cascade fixed
 - [x] Security: debit ordered after job/profile validation; claim_payment_credits atomic PG transaction; webhook HMAC validation (optional); delete cascade now includes credit_transactions + referral_uses
+
+- [x] Email notification service: credit_low_warning, reply_congratulations, follow_up_reminder, job_digest (SendGrid)
+- [x] Cron endpoints: /admin/cron/follow-up (Sundays) + /admin/cron/job-digest (Mondays) — X-Admin-Key protected, deduped
+- [x] Manual reply logging: "Markeer als beantwoord" button in sollicitaties, replied_at timestamp, congrats email
+- [x] Hourly salary: Adzuna salary_min/max stored raw, ≈ €X/uur computed (annual/2080) shown on job cards
+- [x] Admin panel (/admin): user list with search, credits adjust (+ or −), suspend/unsuspend, delete account
+- [x] DB migration 008: notifications table, applications.replied_at, jobs.salary_min/max raw
 
 ### Traction milestone — 500 MAU
 > Unlock Play Store + App Store submissions once 500 unique monthly active users have completed at least one job search on the website.
