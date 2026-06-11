@@ -1,7 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createHash } from 'crypto'
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Admin route guard — checked before Supabase (no auth needed)
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    const session = request.cookies.get('admin_session')?.value
+    const adminKey = process.env.ADMIN_API_KEY
+    if (!adminKey || session !== createHash('sha256').update(adminKey).digest('hex')) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -23,7 +35,6 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register')
   const isProtected = pathname.startsWith('/dashboard')
 
