@@ -42,8 +42,13 @@ class ApplicationOut(BaseModel):
     job_title: str
     letter_nl: str
     send_method: str
-    status: str  # sent / failed / pending
+    status: str  # sent / failed / pending / replied
     sent_at: Optional[datetime] = None
+    replied_at: Optional[datetime] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ApplicationStatusUpdate(BaseModel):
+    status: Literal["replied", "pending", "rejected", "accepted"]

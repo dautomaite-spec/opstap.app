@@ -369,7 +369,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{job.company} · {job.location}</p>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
                     {job.salary_range && (
-                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{job.salary_range}</span>
+                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                        {job.salary_range}
+                        {job.salary_hourly && <span style={{ color: 'var(--color-text-muted)', opacity: 0.75 }}> · {job.salary_hourly}</span>}
+                      </span>
                     )}
                     {job.contract_type && (
                       <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{job.contract_type}</span>
