@@ -12,6 +12,9 @@ class JobOut(BaseModel):
     url: str
     description_snippet: Optional[str] = None
     salary_range: Optional[str] = None
+    salary_hourly: Optional[str] = None
+    salary_min_raw: Optional[int] = None
+    salary_max_raw: Optional[int] = None
     contract_type: Optional[str] = None
     match_score: Optional[int] = None  # 0–100
     posted_at: Optional[datetime] = None

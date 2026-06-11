@@ -62,6 +62,8 @@ export const api = {
     generateLetter: (body: LetterRequest) => request<LetterResponse>('POST', '/api/v1/apply/letter', body),
     send: (body: SendRequest) => request<Application>('POST', '/api/v1/apply/send', body),
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
+    updateStatus: (id: string, status: string) =>
+      request<Application>('PATCH', `/api/v1/apply/${id}/status`, { status }),
   },
 }
 
@@ -126,6 +128,9 @@ export interface Job {
   url: string
   description_snippet?: string
   salary_range?: string
+  salary_hourly?: string
+  salary_min_raw?: number
+  salary_max_raw?: number
   contract_type?: string
   posted_at?: string
   scraped_at: string
@@ -165,6 +170,8 @@ export interface Application {
   job_title: string
   letter_nl: string
   status: string
+  sent_at?: string
+  replied_at?: string
   created_at: string
   job_location?: string
   job_salary?: string

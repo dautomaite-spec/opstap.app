@@ -85,6 +85,8 @@ async def scrape_adzuna(keywords: str, location: str = "", limit: int = 20) -> l
                 redirect_url = job.get("redirect_url", "")
                 if not job.get("title") or not redirect_url:
                     continue
+                sal_min = job.get("salary_min")
+                sal_max = job.get("salary_max")
                 raw_results.append({
                     "title": job.get("title", "").strip(),
                     "company": job.get("company", {}).get("display_name", "Onbekend").strip(),
@@ -96,6 +98,9 @@ async def scrape_adzuna(keywords: str, location: str = "", limit: int = 20) -> l
                     "posted_at": posted_at,
                     "contract_type": _contract_type(job),
                     "salary_range": _salary(job),
+                    "salary_min_raw": int(sal_min) if sal_min else None,
+                    "salary_max_raw": int(sal_max) if sal_max else None,
+                    "salary_hourly": _salary_hourly(sal_min, sal_max),
                 })
 
             if not raw_results:
@@ -135,6 +140,19 @@ def _contract_type(job: dict) -> str:
     if pt == "part_time":
         return "Parttime"
     return ""
+
+
+def _salary_hourly(sal_min, sal_max) -> str:
+    """Calculate approximate hourly rate from annual Adzuna salary (assumes 40h/week FT)."""
+    annual = None
+    if sal_min and sal_max:
+        annual = (int(sal_min) + int(sal_max)) / 2
+    elif sal_min:
+        annual = int(sal_min)
+    if not annual or annual < 5000:
+        return ""
+    hourly = round(annual / 2080)
+    return f"≈ €{hourly}/uur"
 
 
 def _salary(job: dict) -> str:

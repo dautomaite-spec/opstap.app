@@ -20,6 +20,7 @@ from app.schemas.application import (
     MotivationLetterOut,
     ApplicationCreate,
     ApplicationOut,
+    ApplicationStatusUpdate,
 )
 from app.services.letter_generator import generate_letter
 from app.services.email_sender import send_application_email, ApplicationEmail
@@ -28,6 +29,7 @@ from app.services.prompt_guard import (
     sanitize_and_check_profile_text,
 )
 from app.services.credits import maybe_award_referrer_credit
+from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations
 
 router = APIRouter(prefix="/apply", tags=["apply"])
 
@@ -71,6 +73,25 @@ async def generate_motivation_letter(
             status_code=402,
             detail="Onvoldoende credits. Koop credits om verder te gaan.",
         )
+
+    # Send credit-low warning when balance drops to 1 — fire-and-forget, deduped per month
+    try:
+        bal_result = supabase.table("profiles").select("credits_balance").eq("user_id", user_id).single().execute()
+        if bal_result.data and bal_result.data.get("credits_balance") == 1:
+            from datetime import date
+            month_key = date.today().strftime("%Y-%m")
+            insert_result = supabase.table("notifications").insert({
+                "user_id": user_id,
+                "type": "credit_low",
+                "reference_id": month_key,
+            }).execute()
+            if insert_result.data:
+                auth_user = supabase.auth.admin.get_user_by_id(user_id)
+                user_email = auth_user.user.email if auth_user.user else None
+                if user_email:
+                    send_credit_low_warning(user_email, profile.get("naam", ""), 1)
+    except Exception:
+        pass  # never block the letter on notification failure
 
     if body.custom_notes:
         # Injection-check custom_notes before merging into the profile that
@@ -239,3 +260,52 @@ async def application_history(
         .execute()
     )
     return result.data or []
+
+
+@router.patch("/{application_id}/status", response_model=ApplicationOut)
+async def update_application_status(
+    application_id: str,
+    body: ApplicationStatusUpdate,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    app_result = (
+        supabase.table("applications")
+        .select("*")
+        .eq("id", application_id)
+        .eq("user_id", user_id)
+        .single()
+        .execute()
+    )
+    if not app_result.data:
+        raise HTTPException(status_code=404, detail="Sollicitatie niet gevonden")
+
+    app = app_result.data
+    now = datetime.now(timezone.utc)
+    update = {"status": body.status}
+    if body.status == "replied":
+        update["replied_at"] = now.isoformat()
+
+    updated = (
+        supabase.table("applications")
+        .update(update)
+        .eq("id", application_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+    if not updated.data:
+        raise HTTPException(status_code=500, detail="Status bijwerken mislukt")
+
+    # Congratulations email on first reply mark
+    if body.status == "replied":
+        try:
+            auth_user = supabase.auth.admin.get_user_by_id(user_id)
+            user_email = auth_user.user.email if auth_user.user else None
+            profile_result = supabase.table("profiles").select("naam").eq("user_id", user_id).single().execute()
+            naam = profile_result.data.get("naam", "") if profile_result.data else ""
+            if user_email:
+                send_reply_congratulations(user_email, naam, app["company"], app["job_title"])
+        except Exception:
+            pass
+
+    return updated.data[0]
