@@ -111,7 +111,6 @@ async def adjust_credits(
     if body.delta == 0:
         raise HTTPException(status_code=422, detail="delta cannot be 0")
 
-    # Verify user exists
     profile_result = supabase.table("profiles").select("credits_balance").eq("user_id", user_id).maybe_single().execute()
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="User not found")
@@ -152,7 +151,6 @@ async def delete_user(
     supabase=Depends(get_supabase),
 ):
     """Permanently delete a user account and all their data."""
-    # Delete CV from storage if present
     profile_result = supabase.table("profiles").select("cv_path").eq("user_id", user_id).maybe_single().execute()
     if profile_result.data and profile_result.data.get("cv_path"):
         try:
