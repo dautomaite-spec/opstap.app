@@ -1,9 +1,23 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
+
+const SAVED_JOBS_KEY = 'opstap_saved_jobs'
+
+function loadSavedJobs(): Record<string, Job> {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_JOBS_KEY) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+function persistSavedJobs(map: Record<string, Job>) {
+  localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(map))
+}
 
 type SortKey = 'match' | 'salary' | 'date'
 type ApplyState = { job: Job; letter: string; sending: boolean; copied: boolean } | null
@@ -62,6 +76,25 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('match')
+
+  const [savedJobs, setSavedJobs] = useState<Record<string, Job>>({})
+
+  useEffect(() => {
+    setSavedJobs(loadSavedJobs())
+  }, [])
+
+  const toggleSave = useCallback((job: Job) => {
+    setSavedJobs(prev => {
+      const next = { ...prev }
+      if (next[job.id]) {
+        delete next[job.id]
+      } else {
+        next[job.id] = job
+      }
+      persistSavedJobs(next)
+      return next
+    })
+  }, [])
 
   const [applyState, setApplyState] = useState<ApplyState>(null)
   const [generatingLetter, setGeneratingLetter] = useState(false)
@@ -394,15 +427,31 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   >
                     {generatingLetter ? 'Laden…' : 'Solliciteren'}
                   </button>
-                  <a
-                    href={job.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
-                    style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
-                  >
-                    Bekijken
-                  </a>
+                  <div className="flex gap-1.5">
+                    <a
+                      href={job.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
+                      style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
+                    >
+                      Bekijken
+                    </a>
+                    <button
+                      onClick={() => toggleSave(job)}
+                      title={savedJobs[job.id] ? 'Verwijder uit opgeslagen' : 'Opslaan'}
+                      className="px-2 py-1.5 rounded-lg border transition hover:opacity-80"
+                      style={{
+                        borderColor: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                        background: savedJobs[job.id] ? 'var(--color-lavender-bg)' : 'transparent',
+                        color: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-text-muted)',
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill={savedJobs[job.id] ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

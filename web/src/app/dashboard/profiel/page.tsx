@@ -83,6 +83,33 @@ export default function ProfielPage() {
       {/* Gegevens tab */}
       {tab === 'gegevens' && (
         <>
+          {profile && (() => {
+            const fields = [profile.naam, profile.functietitel, profile.woonplaats, profile.uren_per_week, profile.werklocatie, profile.opleidingsniveau]
+            const filled = fields.filter(Boolean).length
+            const pct = Math.round((filled / 6) * 100)
+            const complete = filled === 6
+            return (
+              <div className="mb-5 p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Profiel volledigheid</span>
+                  <span className="text-xs font-semibold" style={{ color: complete ? '#16a34a' : 'var(--color-indigo-primary)' }}>
+                    {filled}/6 {complete ? '· Compleet!' : ''}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-lavender-bg)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${pct}%`, background: complete ? '#16a34a' : 'var(--color-indigo-primary)' }}
+                  />
+                </div>
+                {!complete && !profile.profile_bonus_given && (
+                  <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                    Vul alle 6 velden in voor <strong style={{ color: 'var(--color-indigo-primary)' }}>+1 gratis credit</strong>.
+                  </p>
+                )}
+              </div>
+            )
+          })()}
           {saveSuccess && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
               Wijzigingen opgeslagen
