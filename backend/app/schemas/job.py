@@ -14,6 +14,7 @@ class JobOut(BaseModel):
     salary_range: Optional[str] = None
     contract_type: Optional[str] = None
     match_score: Optional[int] = None  # 0–100
+    posted_at: Optional[datetime] = None
     scraped_at: datetime
 
     model_config = {"from_attributes": True}

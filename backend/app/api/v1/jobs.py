@@ -49,6 +49,7 @@ async def search_jobs(
             "description_snippet": j.get("description_snippet"),
             "salary_range": j.get("salary_range"),
             "contract_type": j.get("contract_type"),
+            "posted_at": j.get("posted_at"),
             "scraped_at": j["scraped_at"],
             "scraped_for_user": user_id,
         }

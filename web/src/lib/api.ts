@@ -79,6 +79,7 @@ export interface Profile {
   extra_info?: string
   cv_url?: string
   cv_expires_at?: string
+  opleidingsniveau?: string
 }
 
 export interface ProfileCreate {
@@ -91,6 +92,7 @@ export interface ProfileCreate {
   salaris_max?: number
   werklocatie?: string
   extra_info?: string
+  opleidingsniveau?: string
 }
 
 export interface Job {
@@ -103,6 +105,7 @@ export interface Job {
   description_snippet?: string
   salary_range?: string
   contract_type?: string
+  posted_at?: string
   scraped_at: string
 }
 
@@ -141,4 +144,7 @@ export interface Application {
   letter_nl: string
   status: string
   created_at: string
+  job_location?: string
+  job_salary?: string
+  job_hours?: string
 }

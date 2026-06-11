@@ -5,22 +5,48 @@ Adzuna provides a free REST API with native NL support.
 Docs: https://developer.adzuna.com/docs/search
 """
 
+import asyncio
 import httpx
 from datetime import datetime, timezone
-from typing import Optional
+from urllib.parse import urlparse
 import logging
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Domains whose jobs are blocked by default — these employer platforms require
+# users to register and apply on their own site, making Opstap's flow useless.
+# Companies can be whitelisted later via a paid promoted-listing product.
+BLOCKED_DOMAINS: frozenset[str] = frozenset({
+    "werkenbijdefensie.nl",
+    "defensie.nl",
+    "werkenvoornederland.nl",
+    "politie.nl",
+    "werkenbijpolitie.nl",
+    "werkenbijrijksoverheid.nl",
+    "rijksoverheid.nl",
+    "gemeentebanen.nl",
+    "intermediair.nl",    # own platform, not direct apply
+})
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+async def _resolve_domain(url: str, client: httpx.AsyncClient) -> str:
+    """Follow redirect to extract the final destination domain (bare, no www.)."""
+    try:
+        resp = await client.head(url, follow_redirects=True, timeout=5)
+        host = urlparse(str(resp.url)).netloc.lower()
+        return host.lstrip("www.")
+    except Exception:
+        return ""
+
+
 async def scrape_adzuna(keywords: str, location: str = "", limit: int = 20) -> list[dict]:
-    """Fetch jobs from Adzuna NL API."""
+    """Fetch jobs from Adzuna NL API, stripping jobs from blocked employer platforms."""
     if not settings.adzuna_app_id or not settings.adzuna_app_key:
         logger.warning("Adzuna API credentials not configured")
         return []
@@ -36,38 +62,65 @@ async def scrape_adzuna(keywords: str, location: str = "", limit: int = 20) -> l
     if location:
         params["where"] = location
 
-    url = "https://api.adzuna.com/v1/api/jobs/nl/search/1"
+    api_url = "https://api.adzuna.com/v1/api/jobs/nl/search/1"
 
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            resp = await client.get(url, params=params,
-                                    headers={"User-Agent": "Opstap/1.0 (+https://opstap.nl)"})
+        async with httpx.AsyncClient(
+            timeout=15,
+            headers={"User-Agent": "Opstap/1.0 (+https://opstapapp.nl)"},
+        ) as client:
+            resp = await client.get(api_url, params=params)
             resp.raise_for_status()
+            data = resp.json()
+
+            raw_results = []
+            for job in data.get("results", []):
+                raw_created = job.get("created")
+                try:
+                    posted_at = datetime.fromisoformat(
+                        raw_created.replace("Z", "+00:00")
+                    ).isoformat() if raw_created else None
+                except (ValueError, AttributeError):
+                    posted_at = None
+                redirect_url = job.get("redirect_url", "")
+                if not job.get("title") or not redirect_url:
+                    continue
+                raw_results.append({
+                    "title": job.get("title", "").strip(),
+                    "company": job.get("company", {}).get("display_name", "Onbekend").strip(),
+                    "location": job.get("location", {}).get("display_name", location or "Nederland").strip(),
+                    "url": redirect_url,
+                    "description_snippet": job.get("description", "")[:300],
+                    "source": "adzuna",
+                    "scraped_at": _now(),
+                    "posted_at": posted_at,
+                    "contract_type": _contract_type(job),
+                    "salary_range": _salary(job),
+                })
+
+            if not raw_results:
+                return []
+
+            # Resolve final destination domain in parallel and filter blocked ones
+            domains = await asyncio.gather(
+                *[_resolve_domain(r["url"], client) for r in raw_results]
+            )
+
     except httpx.HTTPError as exc:
         logger.warning("Adzuna API request failed: %s", type(exc).__name__)
         return []
-
-    try:
-        data = resp.json()
     except Exception:
-        logger.warning("Adzuna API returned non-JSON response")
+        logger.warning("Adzuna scraper error", exc_info=True)
         return []
 
-    results = []
-    for job in data.get("results", []):
-        results.append({
-            "title": job.get("title", "").strip(),
-            "company": job.get("company", {}).get("display_name", "Onbekend").strip(),
-            "location": job.get("location", {}).get("display_name", location or "Nederland").strip(),
-            "url": job.get("redirect_url", ""),
-            "description_snippet": job.get("description", "")[:300],
-            "source": "adzuna",
-            "scraped_at": _now(),
-            "contract_type": _contract_type(job),
-            "salary_range": _salary(job),
-        })
+    allowed = []
+    for job, domain in zip(raw_results, domains):
+        if domain and domain in BLOCKED_DOMAINS:
+            logger.debug("Filtered blocked domain %s (%s)", domain, job["title"])
+            continue
+        allowed.append(job)
 
-    return [r for r in results if r["title"] and r["url"]]
+    return allowed
 
 
 def _contract_type(job: dict) -> str:

@@ -1,5 +1,5 @@
 # Opstap — Planning Document
-> Last updated: 2026-06-05 (Strategic pivot: website first, app store deferred until traction milestone)
+> Last updated: 2026-06-10 (Strategic pivot: website first, app store deferred until traction milestone)
 
 ---
 
@@ -354,6 +354,15 @@ Opstap App
 - [x] Security fixes: HTML strip on letter_nl, contact_email validation, suspension check ordering
 - [x] Email sender returns False when SENDGRID_API_KEY not set (was incorrectly returning True)
 - [x] Supabase redirect URLs: /auth/confirm and /auth/reset added
+- [x] Sidebar: Home button, correct nav order, Over Opstap + Help & FAQ in second group
+- [x] /dashboard/profiel: tabbed page (Mijn gegevens + Prestaties with Achievements)
+- [x] Test CV uploaded to test@opstapapp.nl (PDF, Verpleegkundige profile)
+- [x] Vacatures: default sort by match %, user-sortable by salary and date
+- [x] Vacatures: posting date (posted_at) captured from Adzuna and displayed per card
+- [x] "Solliciteer via site" flow: generate letter → copy to clipboard → open URL → record as pending
+- [x] Letter bug fix: Claude meta-commentary stripped post-generation; "enthousiast" writing style works
+- [x] DB migration: posted_at column added to jobs table
+- [x] Decision: web form auto-filling not in MVP scope (high maintenance, legal risk)
 
 ### Traction milestone — 500 MAU
 > Unlock Play Store + App Store submissions once 500 unique monthly active users have completed at least one job search on the website.

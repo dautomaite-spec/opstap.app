@@ -50,6 +50,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
         woonplaats: (fd.get('woonplaats') as string) || undefined,
         uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
         werklocatie: (fd.get('werklocatie') as string) || undefined,
+        opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
       })
       setProfile(updated)
       setSaveSuccess(true)
@@ -155,6 +156,23 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
                   <option value="op locatie">Op locatie</option>
                   <option value="hybride">Hybride</option>
                   <option value="remote">Thuis werken</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Opleidingsniveau</label>
+                <select
+                  name="opleidingsniveau"
+                  defaultValue={profile.opleidingsniveau ?? ''}
+                  className="px-3 py-2 rounded-lg border text-sm"
+                  style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="">Niet opgegeven</option>
+                  <option value="vmbo">VMBO / Basis</option>
+                  <option value="mbo">MBO</option>
+                  <option value="hbo">HBO</option>
+                  <option value="wo_bachelor">WO Bachelor</option>
+                  <option value="wo_master">WO Master</option>
+                  <option value="phd">PhD / Promotie</option>
                 </select>
               </div>
               <button

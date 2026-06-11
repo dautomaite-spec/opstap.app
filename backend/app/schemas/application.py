@@ -5,7 +5,7 @@ from datetime import datetime
 
 _HTML_TAG_RE = re.compile(r'<[^>]+>')
 
-_WritingStyle = Literal["formeel", "informeel", "luchtig", "grappig"]
+_WritingStyle = Literal["formeel", "informeel", "luchtig", "grappig", "enthousiast"]
 
 
 class MotivationLetterRequest(BaseModel):
@@ -26,7 +26,7 @@ class ApplicationCreate(BaseModel):
     job_id: UUID4
     profile_id: UUID4
     letter_nl: str = Field(..., min_length=50, max_length=6000)
-    send_method: Literal["email", "form"]  # reject arbitrary strings
+    send_method: Literal["email", "form", "site"]  # reject arbitrary strings
 
     @field_validator('letter_nl')
     @classmethod

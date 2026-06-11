@@ -18,7 +18,7 @@ export default function MisbruikPage() {
           Misbruik melden
         </h1>
         <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-          Heb je spam, ongewenste sollicitaties of ander misbruik van het Opstap platform ontvangen? Laat het ons weten — we nemen dit serieus en handelen snel.
+          Heb je spam, ongewenste sollicitaties of ander misbruik van het Opstap platform ontvangen? Laat het ons weten. We nemen dit serieus en handelen snel.
         </p>
 
         <div className="rounded-xl p-5 mb-6" style={{ background: 'var(--color-lavender-card)' }}>

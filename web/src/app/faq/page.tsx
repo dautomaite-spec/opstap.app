@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import FaqAccordion from './FaqAccordion'
+import PublicShell from '@/app/components/PublicShell'
 
 export const metadata: Metadata = {
   title: 'Help & FAQ — Opstap',
@@ -13,7 +14,7 @@ const SECTIONS = [
     items: [
       {
         q: 'Wat is Opstap?',
-        a: 'Opstap is een tool die automatisch voor jou solliciteert. Je uploadt je CV of vult je profiel in, kiest vacatures op de grootste Nederlandse jobboards en Opstap schrijft een persoonlijke motivatiebrief per vacature — waarna jij goedkeurt en wij versturen.',
+        a: 'Opstap is een tool die automatisch voor jou solliciteert. Je uploadt je CV of vult je profiel in, kiest vacatures op de grootste Nederlandse jobboards en Opstap schrijft een persoonlijke motivatiebrief per vacature. Jij keurt goed, wij versturen.',
       },
       {
         q: 'Hoe maak ik een account aan?',
@@ -30,7 +31,7 @@ const SECTIONS = [
     items: [
       {
         q: 'Zijn de brieven echt gepersonaliseerd?',
-        a: 'Ja. Elke brief wordt gegenereerd op basis van de specifieke vacature én jouw profiel. Opstap is gebouwd vanuit recruiterervaring — de AI weet welke toon, lengte en inhoud bij welk type bedrijf past, en wat hiring managers wél en niet willen lezen.',
+        a: 'Ja. Elke brief wordt gegenereerd op basis van de specifieke vacature én jouw profiel. Opstap is gebouwd vanuit recruiterervaring: de AI weet welke toon, lengte en inhoud bij welk type bedrijf past, en wat hiring managers wél en niet willen lezen.',
       },
       {
         q: 'Wat maakt Opstap beter dan ChatGPT?',
@@ -80,15 +81,8 @@ const SECTIONS = [
 
 export default function FaqPage() {
   return (
-    <main className="min-h-screen px-6 py-16 md:py-24" style={{ background: 'var(--color-lavender-bg)' }}>
-      <div className="max-w-2xl mx-auto">
-
-        <Link href="/" className="inline-flex items-center gap-2 text-sm mb-10 transition hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
-          Terug
-        </Link>
+    <PublicShell>
+      <div className="max-w-2xl mx-auto px-6 py-16 md:py-24">
 
         <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>
           Help & FAQ
@@ -113,6 +107,6 @@ export default function FaqPage() {
         </div>
 
       </div>
-    </main>
+    </PublicShell>
   )
 }

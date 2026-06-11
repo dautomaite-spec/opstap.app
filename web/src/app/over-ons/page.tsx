@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import PublicShell from '@/app/components/PublicShell'
 
 export const metadata: Metadata = {
   title: 'Over Opstap — Meer kansen. Minder moeite.',
@@ -8,15 +9,8 @@ export const metadata: Metadata = {
 
 export default function OverOnsPage() {
   return (
-    <main className="min-h-screen px-6 py-16 md:py-24" style={{ background: 'var(--color-lavender-bg)' }}>
-      <div className="max-w-2xl mx-auto">
-
-        <Link href="/" className="inline-flex items-center gap-2 text-sm mb-10 transition hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
-          Terug
-        </Link>
+    <PublicShell>
+      <div className="max-w-2xl mx-auto px-6 py-16 md:py-24">
 
         <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--color-indigo-primary)' }}>
           Over Opstap
@@ -30,10 +24,10 @@ export default function OverOnsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>Hoe het begon</h2>
             <p>
-              Opstap is ontstaan vanuit frustratie — de gezonde soort. Na jaren werken als recruiter en HR-professional zag ik elke dag hoe goed gekwalificeerde kandidaten de boot misten. Niet omdat ze niet goed genoeg waren, maar omdat ze niet wisten hoe ze zichzelf moesten presenteren. Een motivatiebrief die te generiek was. Een sollicitatie die net iets te laat binnenkwam. Een vacature die ze nooit hadden gezien.
+              Opstap is ontstaan vanuit frustratie, de gezonde soort. Wij zagen elke dag hoe goed gekwalificeerde kandidaten de boot misten. Niet omdat ze niet goed genoeg waren, maar omdat ze zichzelf niet goed genoeg presenteerden. Een motivatiebrief die te generiek was. Een sollicitatie die net iets te laat binnenkwam. Een vacature die ze nooit hadden gezien.
             </p>
             <p className="mt-4">
-              Tegelijkertijd zag ik hoe tijdrovend solliciteren is. Elke vacature vraagt om een aparte brief, aangepast aan de functie, het bedrijf en de hiring manager. Dat is tientallen uren werk — voor elke serieuze zoektocht opnieuw.
+              Tegelijkertijd zagen wij hoe tijdrovend solliciteren is. Elke vacature vraagt om een aparte brief, aangepast aan de functie, het bedrijf en de hiring manager. Dat is tientallen uren werk voor elke serieuze zoektocht.
             </p>
             <p className="mt-4">
               Opstap lost dat op.
@@ -46,7 +40,7 @@ export default function OverOnsPage() {
               Er zijn genoeg tools die AI gebruiken om motivatiebrieven te schrijven. Het probleem: ze produceren generieke teksten die hiring managers in één oogopslag herkennen als AI-output. Ze klinken correct, maar ze overtuigen niet.
             </p>
             <p className="mt-4">
-              Bij Opstap is de AI opgebouwd vanuit recruiterkennis. Ik weet wat hiring managers zoeken — wat ze meteen weglegt en wat ze door blijven lezen. Die inzichten zitten ingebakken in elke brief die Opstap schrijft. Concreet. Gericht. Menselijk.
+              Bij Opstap is de AI opgebouwd vanuit jarenlange recruitmentervaring. Wij weten wat hiring managers zoeken, wat ze meteen weglegt en wat ze door blijven lezen. Die inzichten zitten ingebakken in elke brief die Opstap schrijft.
             </p>
             <ul className="mt-4 flex flex-col gap-2">
               {[
@@ -59,14 +53,14 @@ export default function OverOnsPage() {
                   <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span style={{ color: 'var(--color-text-primary)' }}>{item}</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>Gebouwd voor Nederlandse arbeidsmarkt</h2>
+            <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>Gebouwd voor de Nederlandse arbeidsmarkt</h2>
             <p>
               Opstap zoekt op de grootste Nederlandse jobboards: Indeed, LinkedIn, Jobbird en Nationale Vacaturebank. Alle brieven zijn in het Nederlands. Alle data blijft in de EU. En je bepaalt zelf hoe lang wij jouw gegevens bewaren.
             </p>
@@ -93,6 +87,6 @@ export default function OverOnsPage() {
 
         </div>
       </div>
-    </main>
+    </PublicShell>
   )
 }
