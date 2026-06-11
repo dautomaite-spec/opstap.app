@@ -27,11 +27,19 @@ class ApplicationCreate(BaseModel):
     profile_id: UUID4
     letter_nl: str = Field(..., min_length=50, max_length=6000)
     send_method: Literal["email", "form", "site"]  # reject arbitrary strings
+    contact_email_override: Optional[str] = Field(None, max_length=254)
 
     @field_validator('letter_nl')
     @classmethod
     def strip_html(cls, v: str) -> str:
         return _HTML_TAG_RE.sub('', v)
+
+    @field_validator('contact_email_override')
+    @classmethod
+    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', v):
+            raise ValueError('Ongeldig e-mailadres')
+        return v
 
 
 class ApplicationOut(BaseModel):
