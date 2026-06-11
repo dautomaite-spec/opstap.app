@@ -27,6 +27,9 @@ export default function PrivacyPage() {
             <li><strong>Profielgegevens</strong>: naam, woonplaats, gewenste functie, beschikbaarheid, uren per week, werklocatie</li>
             <li><strong>CV-bestand</strong>: PDF of Word-bestand dat je uploadt (optioneel)</li>
             <li><strong>Sollicitatie-inhoud</strong>: de door de AI gegenereerde motivatiebrieven die je verstuurt</li>
+            <li><strong>Creditgegevens</strong>: saldo en transactiegeschiedenis van je credits</li>
+            <li><strong>Betalingsgegevens</strong>: betaalreferentie en status van aankopen via Mollie (geen bankgegevens — die verwerkt Mollie direct)</li>
+            <li><strong>Verwijzingsgegevens</strong>: als je via een uitnodigingslink registreert of zelf vrienden uitnodigt, leggen wij de verwijzingsrelatie vast om de creditbeloning te kunnen toekennen</li>
             <li><strong>Gebruiksgegevens</strong>: tijdstip van laatste activiteit (voor automatische verwijdering na 90 dagen inactiviteit)</li>
           </ul>
         </Section>
@@ -39,6 +42,9 @@ export default function PrivacyPage() {
               ['Motivatiebrief genereren via AI', 'Uitvoering overeenkomst (art. 6 lid 1 b)'],
               ['Sollicitatie versturen per e-mail', 'Uitvoering overeenkomst (art. 6 lid 1 b)'],
               ['Uploaden en opslaan van cv-bestand (optioneel)', 'Toestemming (art. 6 lid 1 a) — gegeven vóór upload'],
+              ['Verwerken van betalingen via Mollie iDEAL', 'Uitvoering overeenkomst (art. 6 lid 1 b)'],
+              ['Bijhouden van creditstransacties', 'Uitvoering overeenkomst (art. 6 lid 1 b)'],
+              ['Verwijzingskoppeling (referral) — creditbeloning toekennen', 'Gerechtvaardigd belang (art. 6 lid 1 f) — beide partijen profiteren van de beloning'],
               ['Herinneringsmail voor cv-vervaldatum', 'Gerechtvaardigd belang (art. 6 lid 1 f)'],
               ['Verwijdering bij inactiviteit', 'Wettelijke verplichting + gerechtvaardigd belang'],
             ]}
@@ -50,6 +56,7 @@ export default function PrivacyPage() {
             <li><strong>CV-bestand</strong>: je kiest zelf de bewaartermijn bij het uploaden: 7, 30 of 90 dagen. Je ontvangt 7 dagen vóór de vervaldatum een e-mail. Het bestand wordt automatisch verwijderd op de vervaldatum, tenzij je de termijn verlengt.</li>
             <li><strong>Profielgegevens en sollicitaties</strong>: tot je je account verwijdert, of na 90 dagen aaneengesloten inactiviteit. Je ontvangt 30 dagen vóór automatische verwijdering een e-mail ter waarschuwing.</li>
             <li><strong>Accountgegevens</strong>: tot je je account verwijdert.</li>
+            <li><strong>Betalingsgegevens</strong>: 7 jaar bewaard conform wettelijke fiscale bewaarplicht (art. 6 lid 1 c AVG). Betalingsrecords worden bij accountverwijdering niet meegewist — alleen de koppeling met je persoonsprofiel vervalt.</li>
           </ul>
           <p className="mt-3">Je kunt je cv of je volledige account op elk moment zelf verwijderen via Instellingen. Verwijdering is permanent en onmiddellijk.</p>
         </Section>
@@ -61,6 +68,7 @@ export default function PrivacyPage() {
             rows={[
               ['Supabase (PostgreSQL + Storage)', 'Database en cv-opslag', 'EU (eu-central-1, Frankfurt)'],
               ['Anthropic Claude API', 'Genereren van motivatiebrieven', 'Verwerking in transit — geen opslag (Anthropic API privacybeleid)'],
+              ['Mollie B.V.', 'Betalingsverwerking (iDEAL)', 'EU (Nederland) — verwerkersovereenkomst afgesloten'],
               ['SendGrid (Twilio)', 'Versturen van e-mails', 'VS — beschermd via standaardcontractbepalingen (SCC)'],
             ]}
           />

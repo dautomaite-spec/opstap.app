@@ -363,6 +363,19 @@ Opstap App
 - [x] Letter bug fix: Claude meta-commentary stripped post-generation; "enthousiast" writing style works
 - [x] DB migration: posted_at column added to jobs table
 - [x] Decision: web form auto-filling not in MVP scope (high maintenance, legal risk)
+- [x] Credits system: 5 free on signup, deducted per letter, atomic debit via PG stored proc (debit_one_credit)
+- [x] Referral system: double-sided (referee +3 bonus credits, referrer +3 on first letter) via referral_code URL param
+- [x] Monthly engagement reward: +1 credit/month for active users (cron logic prepared, uses last_active_at)
+- [x] Mollie iDEAL payment integration: /credits/purchase → Mollie checkout → webhook → atomic claim_payment_credits
+- [x] Credit bundles: 10/€2,99 · 30/€6,99 · 75/€14,99 — credits never expire
+- [x] Profile-complete bonus: +1 credit when all 6 profile fields are filled (one-time, CAS-guarded)
+- [x] CreditsWidget in sidebar: live balance + "Koop" → BuyCreditsModal
+- [x] 402 handling in DashboardClient: no credits → BuyCreditsModal (not error message)
+- [x] /dashboard/betaling/terug: Mollie redirect-back page
+- [x] ReferralSection in Settings: shows unique link, copy-to-clipboard
+- [x] DB migrations 006 + 007: credits_balance, referral_code, credit_transactions, referral_uses, mollie_payments, grant_credits/debit_one_credit/claim_payment_credits RPCs
+- [x] Privacy policy updated: referral, Mollie, betalingsgegevens 7-jaar retention, delete cascade fixed
+- [x] Security: debit ordered after job/profile validation; claim_payment_credits atomic PG transaction; webhook HMAC validation (optional); delete cascade now includes credit_transactions + referral_uses
 
 ### Traction milestone — 500 MAU
 > Unlock Play Store + App Store submissions once 500 unique monthly active users have completed at least one job search on the website.

@@ -31,12 +31,13 @@ export async function register(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const naam = formData.get('naam') as string
+  const ref = (formData.get('ref') as string | null) || undefined
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { naam },
+      data: { naam, ...(ref ? { ref_code: ref } : {}) },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/auth/confirm`,
     },
   })

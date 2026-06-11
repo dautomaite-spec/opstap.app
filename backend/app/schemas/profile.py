@@ -14,6 +14,7 @@ class ProfileCreate(BaseModel):
     salaris_max: Optional[int] = Field(None, ge=0, le=50_000)
     werklocatie: Optional[str] = Field(None, max_length=50)
     extra_info: Optional[str] = Field(None, max_length=2000)
+    opleidingsniveau: Optional[str] = Field(None, max_length=50)
 
 
 class ProfileUpdate(ProfileCreate):
@@ -29,5 +30,8 @@ class ProfileOut(ProfileCreate):
     last_active_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+    credits_balance: int = 0
+    referral_code: Optional[str] = None
+    profile_bonus_given: bool = False
 
     model_config = {"from_attributes": True}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
+import BuyCreditsModal from './components/BuyCreditsModal'
 
 type SortKey = 'match' | 'salary' | 'date'
 type ApplyState = { job: Job; letter: string; sending: boolean; copied: boolean } | null
@@ -67,6 +68,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [applyError, setApplyError] = useState('')
   const [applySuccess, setApplySuccess] = useState('')
   const [writingStyle, setWritingStyle] = useState('formeel')
+  const [showBuyCredits, setShowBuyCredits] = useState(false)
 
   useEffect(() => {
     api.profile.get()
@@ -139,7 +141,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       const res = await api.apply.generateLetter({ job_id: job.id, profile_id: profile.id, writing_style: writingStyle })
       setApplyState({ job, letter: res.letter_nl, sending: false, copied: false })
     } catch (err) {
-      setApplyError(err instanceof ApiError ? err.message : 'Kon brief niet genereren.')
+      if (err instanceof ApiError && err.status === 402) {
+        setShowBuyCredits(true)
+      } else {
+        setApplyError(err instanceof ApiError ? err.message : 'Kon brief niet genereren.')
+      }
     } finally {
       setGeneratingLetter(false)
     }
@@ -268,6 +274,8 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       {searchError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{searchError}</p>}
       {applySuccess && <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{applySuccess}</p>}
       {applyError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{applyError}</p>}
+
+      {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}
 
       {/* Letter modal */}
       {applyState && (

@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     cv_max_size_mb: int = 10
     cv_default_retention_days: int = 30
 
+    # Mollie payments
+    mollie_api_key: str = ""
+    mollie_webhook_secret: str = ""  # optional HMAC secret for webhook signature validation
+    app_base_url: str = "https://opstapapp.nl"
+    api_base_url: str = "https://api.opstapapp.nl"
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
