@@ -173,6 +173,64 @@ async def delete_user(
 
 # ── Cron endpoints ─────────────────────────────────────────────────────────────
 
+@router.post("/cron/monthly-credits")
+async def cron_monthly_credits(
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """
+    Grant +1 credit to every user active in the last 30 days.
+    Deduped per user per calendar month — safe to call multiple times.
+    Run on the 1st of each month.
+    """
+    from datetime import date
+    month_key = date.today().strftime("%Y-%m")
+    since = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+
+    profiles_result = (
+        supabase.table("profiles")
+        .select("user_id")
+        .gte("last_active_at", since)
+        .execute()
+    )
+    profiles = profiles_result.data or []
+    if not profiles:
+        return {"granted": 0, "skipped": 0}
+
+    granted = 0
+    skipped = 0
+
+    for p in profiles:
+        uid = p["user_id"]
+        try:
+            insert_result = supabase.table("notifications").insert({
+                "user_id": uid,
+                "type": "monthly_credit",
+                "reference_id": month_key,
+            }).execute()
+            if not insert_result.data:
+                skipped += 1
+                continue
+        except Exception:
+            skipped += 1
+            continue
+
+        try:
+            supabase.rpc("grant_credits", {
+                "p_user_id": uid,
+                "p_delta": 1,
+                "p_reason": "monthly_engagement",
+                "p_reference_id": month_key,
+            }).execute()
+            granted += 1
+        except Exception:
+            logger.warning("Monthly credit grant failed for user %s", uid, exc_info=True)
+            skipped += 1
+
+    logger.info("Monthly credits cron: granted=%d skipped=%d month=%s", granted, skipped, month_key)
+    return {"granted": granted, "skipped": skipped, "month": month_key}
+
+
 @router.post("/cron/follow-up")
 async def cron_follow_up_reminder(
     _: None = Depends(_check_admin_key),
