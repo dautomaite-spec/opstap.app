@@ -261,11 +261,8 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   if (showProfileForm) {
     return (
       <div className="max-w-md mx-auto mt-8">
-        <div className="flex items-start justify-between mb-1">
+        <div className="mb-1">
           <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Profiel aanmaken</h2>
-          <button onClick={() => setShowProfileForm(false)} className="text-xs underline ml-4 mt-1" style={{ color: 'var(--color-text-muted)' }}>
-            Overslaan
-          </button>
         </div>
         <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>Vul je gegevens in zodat we de juiste vacatures en brieven voor je kunnen vinden.</p>
         <p className="text-xs mb-5" style={{ color: 'var(--color-text-muted)' }}>Velden met * zijn verplicht</p>
