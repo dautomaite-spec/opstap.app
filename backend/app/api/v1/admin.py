@@ -284,7 +284,10 @@ async def cron_follow_up_reminder(
         try:
             auth_user = supabase.auth.admin.get_user_by_id(uid)
             user_email = auth_user.user.email if auth_user.user else None
-            profile_result = supabase.table("profiles").select("naam").eq("user_id", uid).single().execute()
+            profile_result = supabase.table("profiles").select("naam,email_reminders_enabled").eq("user_id", uid).single().execute()
+            if not profile_result.data or not profile_result.data.get("email_reminders_enabled", True):
+                skipped += 1
+                continue
             naam = profile_result.data.get("naam", "") if profile_result.data else ""
             if user_email:
                 ok = send_follow_up_reminder(user_email, naam, fresh_apps)
@@ -316,6 +319,7 @@ async def cron_job_digest(
         supabase.table("profiles")
         .select("user_id,naam,functietitel,woonplaats")
         .gte("updated_at", since)
+        .eq("email_digest_enabled", True)
         .execute()
     )
     profiles = profiles_result.data or []

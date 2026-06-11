@@ -91,6 +91,8 @@ export interface Profile {
   credits_balance?: number
   referral_code?: string
   profile_bonus_given?: boolean
+  email_digest_enabled?: boolean
+  email_reminders_enabled?: boolean
 }
 
 export interface BalanceOut {
@@ -117,6 +119,8 @@ export interface ProfileCreate {
   werklocatie?: string
   extra_info?: string
   opleidingsniveau?: string
+  email_digest_enabled?: boolean
+  email_reminders_enabled?: boolean
 }
 
 export interface Job {

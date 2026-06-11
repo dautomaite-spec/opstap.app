@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import { api, ApiError } from '@/lib/api'
-import type { Profile } from '@/lib/api'
+import type { Profile, TransactionOut } from '@/lib/api'
 import ReferralSection from './ReferralSection'
 
 export default function SettingsClient({ userId, userEmail }: { userId: string; userEmail: string }) {
@@ -26,6 +26,16 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
   const [retentionDays, setRetentionDays] = useState(30)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Credit history state
+  const [transactions, setTransactions] = useState<TransactionOut[]>([])
+  const [txLoading, setTxLoading] = useState(false)
+  const [txLoaded, setTxLoaded] = useState(false)
+
+  // Email preferences state
+  const [emailDigest, setEmailDigest] = useState(true)
+  const [emailReminders, setEmailReminders] = useState(true)
+  const [savingPrefs, setSavingPrefs] = useState(false)
+
   // Account delete state
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -33,10 +43,41 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
 
   useEffect(() => {
     api.profile.get()
-      .then(setProfile)
+      .then(p => {
+        setProfile(p)
+        setEmailDigest(p.email_digest_enabled ?? true)
+        setEmailReminders(p.email_reminders_enabled ?? true)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  async function loadTransactions() {
+    if (txLoaded) return
+    setTxLoading(true)
+    try {
+      const tx = await api.credits.transactions()
+      setTransactions(tx)
+      setTxLoaded(true)
+    } catch {
+      // ignore
+    } finally {
+      setTxLoading(false)
+    }
+  }
+
+  async function handleSaveEmailPrefs(digest: boolean, reminders: boolean) {
+    setSavingPrefs(true)
+    try {
+      await api.profile.update({ email_digest_enabled: digest, email_reminders_enabled: reminders })
+    } catch {
+      // revert on failure
+      setEmailDigest(profile?.email_digest_enabled ?? true)
+      setEmailReminders(profile?.email_reminders_enabled ?? true)
+    } finally {
+      setSavingPrefs(false)
+    }
+  }
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -293,6 +334,76 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
           <ReferralSection />
         </section>
 
+        {/* Credits & betalingen */}
+        <section className="mb-10 pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>Credits & betalingen</h2>
+            {!txLoaded && (
+              <button
+                onClick={loadTransactions}
+                disabled={txLoading}
+                className="text-xs underline disabled:opacity-50"
+                style={{ color: 'var(--color-indigo-primary)' }}
+              >
+                {txLoading ? 'Laden…' : 'Toon geschiedenis'}
+              </button>
+            )}
+          </div>
+          {txLoaded && transactions.length === 0 && (
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen transacties gevonden.</p>
+          )}
+          {txLoaded && transactions.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {transactions.slice(0, 20).map(tx => {
+                const positive = tx.delta > 0
+                return (
+                  <div key={tx.id} className="flex items-center justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--color-lavender-card)' }}>
+                    <div>
+                      <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{tx.reason.replace(/_/g, ' ')}</p>
+                      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                        {new Date(tx.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold" style={{ color: positive ? '#16a34a' : '#dc2626' }}>
+                      {positive ? '+' : ''}{tx.delta}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* E-mailmeldingen */}
+        <section className="mb-10 pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>E-mailmeldingen</h2>
+          <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>
+            Je kunt je op elk moment afmelden. We sturen nooit spam.
+          </p>
+          <div className="flex flex-col gap-4">
+            <Toggle
+              label="Wekelijkse vacaturedigest"
+              description="Elke maandag een overzicht van nieuwe vacatures die bij je profiel passen."
+              checked={emailDigest}
+              disabled={savingPrefs}
+              onChange={v => {
+                setEmailDigest(v)
+                handleSaveEmailPrefs(v, emailReminders)
+              }}
+            />
+            <Toggle
+              label="Sollicitatie herinneringen"
+              description="Een herinnering als je 2 weken na een sollicitatie nog niets hebt gehoord."
+              checked={emailReminders}
+              disabled={savingPrefs}
+              onChange={v => {
+                setEmailReminders(v)
+                handleSaveEmailPrefs(emailDigest, v)
+              }}
+            />
+          </div>
+        </section>
+
         {/* Danger zone */}
         <section className="pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
           <h2 className="text-base font-bold mb-2" style={{ color: '#ef4444' }}>Account verwijderen</h2>
@@ -352,6 +463,38 @@ function Field({ label, name, type = 'text', placeholder, required, defaultValue
         className="px-3 py-2 rounded-lg border text-sm outline-none"
         style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
       />
+    </div>
+  )
+}
+
+function Toggle({ label, description, checked, disabled, onChange }: {
+  label: string; description: string; checked: boolean; disabled?: boolean; onChange: (v: boolean) => void
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <button
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className="relative mt-0.5 shrink-0 transition disabled:opacity-50"
+        style={{
+          width: 40, height: 22, borderRadius: 11,
+          background: checked ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+        }}
+      >
+        <span
+          className="absolute transition-all"
+          style={{
+            width: 16, height: 16, borderRadius: '50%', background: 'white', top: 3,
+            left: checked ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+          }}
+        />
+      </button>
+      <div>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{description}</p>
+      </div>
     </div>
   )
 }

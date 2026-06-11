@@ -15,6 +15,8 @@ class ProfileCreate(BaseModel):
     werklocatie: Optional[str] = Field(None, max_length=50)
     extra_info: Optional[str] = Field(None, max_length=2000)
     opleidingsniveau: Optional[str] = Field(None, max_length=50)
+    email_digest_enabled: bool = True
+    email_reminders_enabled: bool = True
 
 
 class ProfileUpdate(ProfileCreate):
