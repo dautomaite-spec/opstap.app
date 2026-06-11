@@ -19,6 +19,11 @@ _letter_usage: dict = defaultdict(lambda: {"date": None, "daily_count": 0, "per_
 # {ip: [timestamp, ...]}  — sliding window of request timestamps
 _ip_requests: dict = defaultdict(list)
 
+# ── Purchase rate limiting ─────────────────────────────────────────────────────
+# {user_id: [timestamp, ...]}  — sliding 1-hour window
+_purchase_requests: dict = defaultdict(list)
+PURCHASE_HOUR_LIMIT = 5  # max purchase attempts per user per hour
+
 # Limits
 LETTER_DAILY_LIMIT = 10      # total letter generations per user per day
 LETTER_PER_JOB_LIMIT = 5    # regenerations for the same job (style changes count)
@@ -45,6 +50,18 @@ def check_ip_flood(ip: str) -> bool:
         if len(_ip_requests[ip]) >= IP_MAX_REQUESTS:
             return True
         _ip_requests[ip].append(now)
+        return False
+
+
+def check_purchase_rate(user_id: str) -> bool:
+    """Returns True (= blocked) if user has exceeded PURCHASE_HOUR_LIMIT in the last hour."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=1)
+    with _lock:
+        _purchase_requests[user_id] = [t for t in _purchase_requests[user_id] if t > cutoff]
+        if len(_purchase_requests[user_id]) >= PURCHASE_HOUR_LIMIT:
+            return True
+        _purchase_requests[user_id].append(now)
         return False
 
 

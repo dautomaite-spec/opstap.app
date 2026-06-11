@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.core.config import settings
+from app.core.rate_limiter import check_purchase_rate
 from app.schemas.credits import BalanceOut, PurchaseRequest, PurchaseOut, TransactionOut
 from app.services.mollie import create_ideal_payment, handle_webhook
 
@@ -60,6 +61,11 @@ async def create_purchase(
 ):
     if not settings.mollie_api_key:
         raise HTTPException(status_code=503, detail="Betalingen zijn momenteel niet beschikbaar.")
+    if check_purchase_rate(user_id):
+        raise HTTPException(
+            status_code=429,
+            detail="Te veel betaalpogingen. Probeer het over een uur opnieuw.",
+        )
     try:
         checkout_url = await create_ideal_payment(user_id, body.bundle, supabase)
     except (httpx.HTTPStatusError, httpx.RequestError):
