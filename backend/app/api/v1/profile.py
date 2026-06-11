@@ -7,6 +7,12 @@ import re
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.profile import ProfileCreate, ProfileUpdate, ProfileOut
+from app.services.credits import (
+    award_signup_credits,
+    award_referral_signup_credits,
+    check_and_award_profile_bonus,
+    generate_referral_code,
+)
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
@@ -38,10 +44,28 @@ async def create_profile(
 ):
     data = body.model_dump()
     data["user_id"] = user_id
+    data["referral_code"] = generate_referral_code()
     result = supabase.table("profiles").insert(data).execute()
     if not result.data:
         raise HTTPException(status_code=500, detail="Profile creation failed")
-    return _attach_cv_url(result.data[0], supabase)
+    profile = result.data[0]
+
+    # Award 5 signup credits
+    try:
+        await award_signup_credits(user_id, supabase)
+    except Exception:
+        pass
+
+    # Award referral bonus if user signed up via a referral link
+    try:
+        auth_user = supabase.auth.admin.get_user_by_id(user_id)
+        ref_code = (auth_user.user.user_metadata or {}).get("ref_code", "")
+        if ref_code:
+            await award_referral_signup_credits(user_id, ref_code, supabase)
+    except Exception:
+        pass
+
+    return _attach_cv_url(profile, supabase)
 
 
 @router.get("/me", response_model=ProfileOut)
@@ -70,7 +94,15 @@ async def update_profile(
     )
     if not result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
-    return _attach_cv_url(result.data[0], supabase)
+    profile = result.data[0]
+
+    # Award 1-credit profile-complete bonus if all fields are now filled
+    try:
+        await check_and_award_profile_bonus(user_id, profile, supabase)
+    except Exception:
+        pass
+
+    return _attach_cv_url(profile, supabase)
 
 
 @router.delete("/me", status_code=200)
@@ -89,8 +121,13 @@ async def delete_account(
     # Delete auth user first — if this fails, DB rows are still intact (safe to retry)
     supabase.auth.admin.delete_user(user_id)
 
-    # Then delete application and profile rows
+    # Delete application rows, credit ledger, referral links, and profile
+    # mollie_payments are NOT deleted — 7-year Dutch tax retention obligation
     supabase.table("applications").delete().eq("user_id", user_id).execute()
+    supabase.table("credit_transactions").delete().eq("user_id", user_id).execute()
+    supabase.table("referral_uses").delete().or_(
+        f"referrer_user_id.eq.{user_id},referee_user_id.eq.{user_id}"
+    ).execute()
     supabase.table("profiles").delete().eq("user_id", user_id).execute()
 
     return {"message": "Account deleted"}

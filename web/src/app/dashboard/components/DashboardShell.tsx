@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import ThemeToggle from '@/app/components/ThemeToggle'
+import CreditsWidget from './CreditsWidget'
 
 const navItems = [
   {
@@ -189,6 +190,9 @@ export default function DashboardShell({
           )
         })}
       </nav>
+
+      {/* Credits widget */}
+      <CreditsWidget collapsed={collapsed} />
 
       {/* Footer */}
       <div

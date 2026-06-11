@@ -26,6 +26,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
+  credits: {
+    balance: () => request<BalanceOut>('GET', '/api/v1/credits/balance'),
+    transactions: () => request<TransactionOut[]>('GET', '/api/v1/credits/transactions'),
+    purchase: (bundle: '10' | '30' | '75') =>
+      request<{ checkout_url: string }>('POST', '/api/v1/credits/purchase', { bundle }),
+  },
   profile: {
     get: () => request<Profile>('GET', '/api/v1/profile/me'),
     create: (body: ProfileCreate) => request<Profile>('POST', '/api/v1/profile/', body),
@@ -80,6 +86,22 @@ export interface Profile {
   cv_url?: string
   cv_expires_at?: string
   opleidingsniveau?: string
+  credits_balance?: number
+  referral_code?: string
+  profile_bonus_given?: boolean
+}
+
+export interface BalanceOut {
+  balance: number
+  referral_code: string | null
+}
+
+export interface TransactionOut {
+  id: string
+  delta: number
+  reason: string
+  reference_id?: string
+  created_at: string
 }
 
 export interface ProfileCreate {

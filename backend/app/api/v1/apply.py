@@ -27,6 +27,7 @@ from app.services.prompt_guard import (
     PromptInjectionError,
     sanitize_and_check_profile_text,
 )
+from app.services.credits import maybe_award_referrer_credit
 
 router = APIRouter(prefix="/apply", tags=["apply"])
 
@@ -42,6 +43,7 @@ async def generate_motivation_letter(
     if not allowed:
         raise HTTPException(status_code=429, detail=reason)
 
+    # Fetch and validate job + profile before debiting — prevents losing a credit on a 404
     job_result = supabase.table("jobs").select("*").eq("id", str(body.job_id)).single().execute()
     if not job_result.data:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -58,6 +60,17 @@ async def generate_motivation_letter(
     if not profile_result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = profile_result.data
+
+    # ── Credit check (atomic debit — 402 if insufficient) ─────────────────────
+    debit_result = supabase.rpc("debit_one_credit", {
+        "p_user_id": user_id,
+        "p_reference": str(body.job_id),
+    }).execute()
+    if debit_result.data is False:
+        raise HTTPException(
+            status_code=402,
+            detail="Onvoldoende credits. Koop credits om verder te gaan.",
+        )
 
     if body.custom_notes:
         # Injection-check custom_notes before merging into the profile that
@@ -90,6 +103,12 @@ async def generate_motivation_letter(
                 "Controleer de vacature- en profielgegevens en probeer opnieuw."
             ),
         )
+
+    # Award referrer credit on the referee's first ever letter (fire-and-forget)
+    try:
+        await maybe_award_referrer_credit(user_id, supabase)
+    except Exception:
+        pass
 
     quota = get_letter_usage(user_id, str(body.job_id))
     return MotivationLetterOut(

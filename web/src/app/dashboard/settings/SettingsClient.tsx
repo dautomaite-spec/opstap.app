@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import { api, ApiError } from '@/lib/api'
 import type { Profile } from '@/lib/api'
+import ReferralSection from './ReferralSection'
 
 export default function SettingsClient({ userId, userEmail }: { userId: string; userEmail: string }) {
   const router = useRouter()
@@ -281,6 +282,15 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
               <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>PDF of DOCX, max 10 MB</p>
             </>
           )}
+        </section>
+
+        {/* Referral section */}
+        <section className="mb-10 pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>Vrienden uitnodigen</h2>
+          <p className="text-sm mb-3" style={{ color: 'var(--color-text-muted)' }}>
+            Deel jouw link. Jij ontvangt 3 credits zodra je vriend zijn eerste brief genereert. Je vriend start met 8 credits in plaats van 5.
+          </p>
+          <ReferralSection />
         </section>
 
         {/* Danger zone */}
