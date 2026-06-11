@@ -1,15 +1,22 @@
 """
-Admin cron endpoints — protected by X-Admin-Key header.
+Admin endpoints — protected by X-Admin-Key header.
 
-Call these from an external scheduler (cron-job.org, GitHub Actions, etc.):
-  POST /api/v1/admin/cron/follow-up   — Sundays, triggers follow-up reminder emails
-  POST /api/v1/admin/cron/job-digest  — Mondays, sends weekly job digest to active users
+Cron endpoints (called by external scheduler):
+  POST /api/v1/admin/cron/follow-up   — Sundays
+  POST /api/v1/admin/cron/job-digest  — Mondays
+
+User management endpoints (called by admin frontend):
+  GET    /api/v1/admin/users
+  POST   /api/v1/admin/users/{user_id}/credits
+  DELETE /api/v1/admin/users/{user_id}
+  PATCH  /api/v1/admin/users/{user_id}/suspend
 """
 
 import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Header
+from pydantic import BaseModel
 from typing import Optional
 
 from app.core.config import settings
@@ -21,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+CV_BUCKET = "cvs"
+
 
 def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
     if not settings.admin_api_key:
@@ -28,6 +37,143 @@ def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
     if x_admin_key != settings.admin_api_key:
         raise HTTPException(status_code=403, detail="Forbidden")
 
+
+# ── User management ────────────────────────────────────────────────────────────
+
+class CreditAdjust(BaseModel):
+    delta: int          # positive = grant, negative = debit
+    reason: str         # shown in credit_transactions ledger
+
+
+class SuspendUpdate(BaseModel):
+    suspended: bool
+
+
+@router.get("/users")
+async def list_users(
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """Return all users with profile data, credit balance, and application count."""
+    profiles_result = supabase.table("profiles").select(
+        "user_id,naam,credits_balance,is_suspended,referral_code,created_at,last_active_at"
+    ).order("created_at", desc=True).execute()
+    profiles = profiles_result.data or []
+
+    # Build user_id → email map from auth
+    try:
+        auth_users = supabase.auth.admin.list_users()
+        email_map: dict[str, str] = {}
+        users_list = auth_users if isinstance(auth_users, list) else getattr(auth_users, 'users', [])
+        for u in users_list:
+            uid = getattr(u, 'id', None) or (u.get('id') if isinstance(u, dict) else None)
+            email = getattr(u, 'email', None) or (u.get('email') if isinstance(u, dict) else None)
+            if uid and email:
+                email_map[uid] = email
+    except Exception:
+        logger.warning("Could not fetch auth users for email map", exc_info=True)
+        email_map = {}
+
+    # Get application counts per user
+    try:
+        apps_result = supabase.table("applications").select("user_id").execute()
+        app_count_map: dict[str, int] = {}
+        for row in (apps_result.data or []):
+            uid = row["user_id"]
+            app_count_map[uid] = app_count_map.get(uid, 0) + 1
+    except Exception:
+        app_count_map = {}
+
+    return [
+        {
+            "user_id": p["user_id"],
+            "email": email_map.get(p["user_id"], "—"),
+            "naam": p.get("naam") or "—",
+            "credits_balance": p.get("credits_balance", 0),
+            "is_suspended": p.get("is_suspended", False),
+            "referral_code": p.get("referral_code"),
+            "created_at": p.get("created_at"),
+            "last_active_at": p.get("last_active_at"),
+            "application_count": app_count_map.get(p["user_id"], 0),
+        }
+        for p in profiles
+    ]
+
+
+@router.post("/users/{user_id}/credits")
+async def adjust_credits(
+    user_id: str,
+    body: CreditAdjust,
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """Grant (positive delta) or debit (negative delta) credits. Recorded in ledger."""
+    if body.delta == 0:
+        raise HTTPException(status_code=422, detail="delta cannot be 0")
+
+    # Verify user exists
+    profile_result = supabase.table("profiles").select("credits_balance").eq("user_id", user_id).maybe_single().execute()
+    if not profile_result.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    supabase.rpc("grant_credits", {
+        "p_user_id": user_id,
+        "p_delta": body.delta,
+        "p_reason": body.reason,
+        "p_reference_id": None,
+    }).execute()
+
+    new_balance_result = supabase.table("profiles").select("credits_balance").eq("user_id", user_id).single().execute()
+    return {
+        "user_id": user_id,
+        "delta": body.delta,
+        "new_balance": new_balance_result.data.get("credits_balance") if new_balance_result.data else None,
+    }
+
+
+@router.patch("/users/{user_id}/suspend")
+async def toggle_suspend(
+    user_id: str,
+    body: SuspendUpdate,
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """Suspend or unsuspend a user account."""
+    result = supabase.table("profiles").update({"is_suspended": body.suspended}).eq("user_id", user_id).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"user_id": user_id, "is_suspended": body.suspended}
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """Permanently delete a user account and all their data."""
+    # Delete CV from storage if present
+    profile_result = supabase.table("profiles").select("cv_path").eq("user_id", user_id).maybe_single().execute()
+    if profile_result.data and profile_result.data.get("cv_path"):
+        try:
+            supabase.storage.from_(CV_BUCKET).remove([profile_result.data["cv_path"]])
+        except Exception:
+            pass
+
+    supabase.auth.admin.delete_user(user_id)
+
+    supabase.table("applications").delete().eq("user_id", user_id).execute()
+    supabase.table("credit_transactions").delete().eq("user_id", user_id).execute()
+    supabase.table("referral_uses").delete().or_(
+        f"referrer_user_id.eq.{user_id},referee_user_id.eq.{user_id}"
+    ).execute()
+    # mollie_payments NOT deleted — 7-year Dutch tax retention obligation
+    supabase.table("profiles").delete().eq("user_id", user_id).execute()
+
+    return {"deleted": user_id}
+
+
+# ── Cron endpoints ─────────────────────────────────────────────────────────────
 
 @router.post("/cron/follow-up")
 async def cron_follow_up_reminder(
@@ -55,7 +201,6 @@ async def cron_follow_up_reminder(
     if not applications:
         return {"sent": 0, "skipped": 0}
 
-    # Group by user
     by_user: dict[str, list[dict]] = {}
     for app in applications:
         by_user.setdefault(app["user_id"], []).append(app)
@@ -63,13 +208,12 @@ async def cron_follow_up_reminder(
     sent = 0
     skipped = 0
 
-    for user_id, user_apps in by_user.items():
-        # Dedup per application — skip already-reminded ones
+    for uid, user_apps in by_user.items():
         fresh_apps = []
         for app in user_apps:
             try:
                 insert_result = supabase.table("notifications").insert({
-                    "user_id": user_id,
+                    "user_id": uid,
                     "type": "follow_up_reminder",
                     "reference_id": app["id"],
                 }).execute()
@@ -82,18 +226,16 @@ async def cron_follow_up_reminder(
             continue
 
         try:
-            auth_user = supabase.auth.admin.get_user_by_id(user_id)
+            auth_user = supabase.auth.admin.get_user_by_id(uid)
             user_email = auth_user.user.email if auth_user.user else None
-            profile_result = supabase.table("profiles").select("naam").eq("user_id", user_id).single().execute()
+            profile_result = supabase.table("profiles").select("naam").eq("user_id", uid).single().execute()
             naam = profile_result.data.get("naam", "") if profile_result.data else ""
             if user_email:
                 ok = send_follow_up_reminder(user_email, naam, fresh_apps)
-                if ok:
-                    sent += 1
-                else:
-                    skipped += 1
+                sent += 1 if ok else 0
+                skipped += 0 if ok else 1
         except Exception:
-            logger.warning("Follow-up reminder failed for user %s", user_id, exc_info=True)
+            logger.warning("Follow-up reminder failed for user %s", uid, exc_info=True)
             skipped += 1
 
     logger.info("Follow-up cron: sent=%d skipped=%d", sent, skipped)
@@ -128,7 +270,7 @@ async def cron_job_digest(
     skipped = 0
 
     for profile in profiles:
-        user_id = profile["user_id"]
+        uid = profile["user_id"]
         keywords = profile.get("functietitel") or ""
         location = profile.get("woonplaats") or ""
         naam = profile.get("naam") or ""
@@ -137,10 +279,9 @@ async def cron_job_digest(
             skipped += 1
             continue
 
-        # Dedup — one digest per user per week
         try:
             insert_result = supabase.table("notifications").insert({
-                "user_id": user_id,
+                "user_id": uid,
                 "type": "job_digest",
                 "reference_id": week_key,
             }).execute()
@@ -157,22 +298,19 @@ async def cron_job_digest(
                 skipped += 1
                 continue
 
-            auth_user = supabase.auth.admin.get_user_by_id(user_id)
+            auth_user = supabase.auth.admin.get_user_by_id(uid)
             user_email = auth_user.user.email if auth_user.user else None
             if not user_email:
                 skipped += 1
                 continue
 
             ok = send_job_digest(user_email, naam, jobs[:5])
-            if ok:
-                sent += 1
-            else:
-                skipped += 1
+            sent += 1 if ok else 0
+            skipped += 0 if ok else 1
         except Exception:
-            logger.warning("Job digest failed for user %s", user_id, exc_info=True)
+            logger.warning("Job digest failed for user %s", uid, exc_info=True)
             skipped += 1
 
-        # Small delay to respect Adzuna rate limits
         await asyncio.sleep(0.5)
 
     logger.info("Job digest cron: sent=%d skipped=%d week=%s", sent, skipped, week_key)
