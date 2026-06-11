@@ -29,7 +29,7 @@ export default function VoorwaardenPage() {
         </Section>
 
         <Section title="2. Account">
-          Je bent verantwoordelijk voor de beveiliging van je account en wachtwoord. Gebruik Opstap alleen voor legitieme sollicitatiedoeleinden. Misbruik — waaronder het versturen van spam of het solliciteren op vacatures die je niet serieus overweegt — is niet toegestaan en kan leiden tot blokkering van je account.
+          Je bent verantwoordelijk voor de beveiliging van je account en wachtwoord. Gebruik Opstap alleen voor legitieme sollicitatiedoeleinden. Misbruik, waaronder het versturen van spam of het solliciteren op vacatures die je niet serieus overweegt, is niet toegestaan en kan leiden tot blokkering van je account.
         </Section>
 
         <Section title="3. Gebruik van de dienst">

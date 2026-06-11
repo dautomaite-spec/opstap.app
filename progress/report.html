@@ -49,14 +49,14 @@
 
   <header>
     <h1>Opstap — Progress Report</h1>
-    <div class="meta">Updated: 2026-06-10 &nbsp;·&nbsp; Phase 3: Polish &amp; Launch &nbsp;·&nbsp; Deploy batch pending</div>
+    <div class="meta">Updated: 2026-06-10 (Session 6) &nbsp;·&nbsp; Phase 3: Polish &amp; Launch &nbsp;·&nbsp; Deploy batch pending</div>
   </header>
 
   <!-- Summary stats -->
   <div class="card">
     <h2>Where we are</h2>
     <div class="summary-grid">
-      <div class="stat"><div class="stat-num">26+</div><div class="stat-label">PRs merged</div></div>
+      <div class="stat"><div class="stat-num">28+</div><div class="stat-label">PRs merged</div></div>
       <div class="stat"><div class="stat-num">✅</div><div class="stat-label">opstapapp.nl live</div></div>
       <div class="stat"><div class="stat-num">✅</div><div class="stat-label">Public pages live</div></div>
       <div class="stat"><div class="stat-num">3</div><div class="stat-label">manual steps left</div></div>
@@ -76,7 +76,14 @@
       <tr><td class="label">Job search (NL boards)</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">Auto-apply (email + web form)</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">AI motivation letter (Dutch)</td><td><span class="badge-done">DONE</span></td></tr>
-      <tr><td class="label">Writing style selector (Formeel/Informeel/Enthousiast)</td><td><span class="badge-done">DONE</span></td></tr>
+      <tr><td class="label">Writing style selector (Formeel/Informeel/Enthousiast/Luchtig)</td><td><span class="badge-done">DONE — bug fixed (enthousiast was breaking)</span></td></tr>
+      <tr><td class="label">Letter meta-commentary stripped (Claude was appending "Opmerking:" notes)</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Profiel page: tabbed (Mijn gegevens + Prestaties/Achievements)</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Dashboard sidebar: Home + correct order + Over Opstap/FAQ group</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Vacatures: sorted by match % by default, user can switch to salary/date</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Vacatures: posting date per card (from Adzuna API)</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">"Solliciteer via site" — copy letter + open URL + track application</td><td><span class="badge-done">DONE — pending deploy</span></td></tr>
+      <tr><td class="label">Test CV uploaded to test@opstapapp.nl (Verpleegkundige, PDF)</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">Legal pages (privacy, voorwaarden, misbruik)</td><td><span class="badge-done">DONE</span></td></tr>
       <tr><td class="label">Custom domain opstapapp.nl</td><td><span class="badge-done">DONE — DNS live</span></td></tr>
       <tr><td class="label">Email sending (SendGrid)</td><td><span class="badge-done">DONE — needs domain auth</span></td></tr>
@@ -183,6 +190,21 @@
             <li><code>/faq</code> — accordion FAQ across 4 sections: Aan de slag, Motivatiebrieven, Privacy &amp; gegevens, Kosten</li>
           </ul>
           <br>Deploy batched — pending one PR to ship all changes at once.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 10, 2026 — Session 6</div>
+        <div class="tl-tag code">Code</div>
+        <div class="tl-title">UX polish — sort, letter fix, profiel tabs, sidebar</div>
+        <div class="tl-desc">
+          <strong>Vacatures overhaul:</strong> jobs now sorted by match % by default; sortable by salary and date. Posting date shown per card (captured from Adzuna API <code>created</code> field). DB migration for <code>posted_at</code> applied.<br><br>
+          <strong>Letter bug fixed:</strong> two bugs — (1) "enthousiast" writing style failed Pydantic validation (422 → "Kon brief niet genereren"), now accepted; (2) Claude was appending a "---\n*Opmerking:*" meta-note about sparse profiles — stripped in post-processing, also removed from prompt instruction.<br><br>
+          <strong>Apply flow:</strong> "email/form" radio removed — replaced with "Kopieer &amp; Solliciteer via site" button. Copies letter to clipboard, records as pending application, opens job URL in new tab. Decision: web form auto-filling not in MVP (high maintenance, legal risk, low ROI vs link tracking).<br><br>
+          <strong>Profiel page:</strong> converted from redirect stub to a real tabbed page — "Mijn gegevens" (edit form) and "Prestaties" (Achievements component with profile completeness + gamification).<br><br>
+          <strong>Sidebar:</strong> Home button added (→ /dashboard), nav reordered to match spec, second group (Over Opstap, Help &amp; FAQ) added. "Opstap" logo made into a link to public homepage.<br><br>
+          <strong>Test account:</strong> CV uploaded to test@opstapapp.nl — Dutch-language PDF (Verpleegkundige, Amsterdam UMC + Spaarne Gasthuis history, HBO opleiding, BIG-registered). Achievements tab now shows "CV geüpload" unlocked.
         </div>
       </div>
 

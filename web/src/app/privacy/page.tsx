@@ -70,7 +70,7 @@ export default function PrivacyPage() {
         <Section title="6. Beveiliging">
           <ul className="flex flex-col gap-1.5 list-disc list-inside">
             <li>Alle data wordt versleuteld opgeslagen (AES-256 at rest, TLS 1.3 in transit)</li>
-            <li>CV-bestanden worden opgeslagen in een private bucket — alleen toegankelijk met jouw JWT</li>
+            <li>CV-bestanden worden opgeslagen in een private bucket, alleen toegankelijk met jouw JWT</li>
             <li>Row-Level Security (RLS) zorgt ervoor dat je uitsluitend je eigen gegevens kunt inzien</li>
             <li>Wachtwoorden worden gehashed opgeslagen via Supabase Auth (bcrypt)</li>
           </ul>
@@ -91,11 +91,11 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="8. Cookies en tracking">
-          <p>Opstap gebruikt <strong>geen</strong> cookies of advertentietrackers. Voor anonieme bezoekersstatistieken gebruiken wij <strong>Plausible Analytics</strong> — een privacyvriendelijke dienst zonder cookies, zonder persoonlijk identificeerbare informatie en zonder tracking over websites heen. Plausible voldoet volledig aan de AVG en slaat geen persoonsgegevens op. Er is geen Google Analytics, Firebase Analytics of vergelijkbare advertentiedienst actief.</p>
+          <p>Opstap gebruikt <strong>geen</strong> cookies of advertentietrackers. Voor anonieme bezoekersstatistieken gebruiken wij <strong>Plausible Analytics</strong>, een privacyvriendelijke dienst zonder cookies, zonder persoonlijk identificeerbare informatie en zonder tracking over websites heen. Plausible voldoet volledig aan de AVG en slaat geen persoonsgegevens op. Er is geen Google Analytics, Firebase Analytics of vergelijkbare advertentiedienst actief.</p>
         </Section>
 
         <Section title="9. Geautomatiseerde besluitvorming">
-          <p>De AI genereert motivatiebrieven op basis van jouw profiel en de vacaturetekst. Dit is een <strong>ondersteunende</strong> functie — jij ziet de brief altijd vóór hij verstuurd wordt en kunt hem aanpassen of weigeren. Er worden geen juridisch significante beslissingen genomen op basis van uitsluitend geautomatiseerde verwerking.</p>
+          <p>De AI genereert motivatiebrieven op basis van jouw profiel en de vacaturetekst. Dit is een <strong>ondersteunende</strong> functie: jij ziet de brief altijd vóór hij verstuurd wordt en kunt hem aanpassen of weigeren. Er worden geen juridisch significante beslissingen genomen op basis van uitsluitend geautomatiseerde verwerking.</p>
         </Section>
 
         <Section title="10. Wijzigingen">
