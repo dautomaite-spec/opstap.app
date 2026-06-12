@@ -1,0 +1,26 @@
+# Changelog — Opstap
+
+## 2026-06-12
+- fix: update Daan testimonial to career-change-from-unhappy-job story (#50)
+- fix: fixed-position blobs and always-visible sidebar on public pages (#49)
+- feat: organic hero blobs, fix sidebar sticky scroll regression (#48)
+- feat: organic sidebar wave + decorative circles, Opstap email footer (#47)
+- fix: remove duplicate /dashboard nav item causing React key warning (#46)
+- feat: contact form type/subject dropdowns, remove exposed email addresses (#45)
+- feat: replace Fatima testimonial with Roemer S. (TV bijrol via Opstap) (#44)
+- feat: contact page, fix testimonials, remove em dashes, drop Voor werkgevers section (#43)
+- fix: change CTA from 'Gratis beginnen' to 'Begin nu' (#42)
+- fix: remove pricing from homepage, show it only after credits run out (#41)
+- docs: convert PLANNING/ROADMAP/GUIDE from MD to styled HTML
+- feat: add stats, testimonials and company contact to home page (#40)
+- feat: add mobile hamburger menu to public pages (#39)
+- fix: keep mobile header pinned when scrolling (#38)
+- fix: remove skip button from profile creation form (#37)
+- feat: multi-apply, onboarding wizard, email apply (#36)
+- feat: saved jobs, credit history, email prefs, profile completion (#35)
+- fix: permanently delete middleware.ts (deprecated in Next.js 16, replaced by proxy.ts) (#34)
+- feat: purchase rate limiting, monthly credits cron, pricing section (#33)
+- fix: move admin guard to proxy.ts, delete deprecated middleware.ts (#32)
+- feat: admin panel — user list, credits, suspend, delete (#31)
+- feat: email notifications, hourly salary, manual reply logging (#30)
+- feat: credits system, Mollie iDEAL payments, and referral program (#29)

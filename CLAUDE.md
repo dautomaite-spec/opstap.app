@@ -85,6 +85,7 @@ These agents live in `.claude/agents/`. Run them automatically at the points bel
 | `/dutch-copy` | After finishing any Flutter screen — before marking it done |
 | `/stylist` | After generating or editing any Stitch screen |
 | `/developer` | When deciding what to do next, choosing between approaches, or hitting a blocker |
+| `/updater` | **Before every `git push`** — updates planning, wiki, roadmap, changelog, and cleans temp files |
 
 - If an agent reports a violation or score below 7/10, fix the issues before continuing.
 - Do not skip agents to save time — they exist because these errors have real consequences (legal, security, UX).

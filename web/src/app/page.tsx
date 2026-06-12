@@ -148,7 +148,7 @@ export default function Home() {
             Wat gebruikers zeggen
           </h2>
           <p className="text-center text-sm mb-10" style={{ color: 'var(--color-text-muted)' }}>
-            Van schoolverlaters tot ervaren professionals
+            Van net afgestudeerden tot ervaren professionals
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
