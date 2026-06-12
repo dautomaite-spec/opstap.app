@@ -17,8 +17,8 @@ export default async function PublicShell({ children }: { children: React.ReactN
 
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col shrink-0 sticky top-0 h-screen"
-        style={{ width: 220, background: 'var(--color-indigo-primary)', position: 'relative', overflow: 'hidden' }}
+        className="hidden md:flex shrink-0 sticky top-0 h-screen"
+        style={{ width: 220, position: 'relative' }}
       >
         {/* Decorative background circles */}
         <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 220 800" preserveAspectRatio="xMidYMid slice">
@@ -34,7 +34,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
         </svg>
 
         {/* Content */}
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', background: 'var(--color-indigo-primary)' }}>
           <div className="px-6 pt-8 pb-6">
             <Link href="/" className="font-bold text-xl text-white tracking-tight hover:opacity-90 transition">Opstap</Link>
             <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Meer kansen. Minder moeite.</p>
