@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Wiki</title>
+<style>
+  :root {
+    --indigo: #3d3a8c;
+    --indigo-light: #6c67c4;
+    --lavender: #eeedf8;
+    --lavender-card: #e2e0f5;
+    --text: #1a1830;
+    --muted: #6b6880;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --gray-bg: #f9fafb;
+    --border: #e5e3f5;
+    --white: #fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--lavender);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  .toc {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--indigo);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .toc-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .toc-header h1 { font-size: 16px; font-weight: 700; color: white; }
+  .toc-header p { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+
+  .toc-nav { padding: 12px 0; flex: 1; }
+  .toc-nav a {
+    display: block;
+    padding: 7px 20px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 12.5px;
+    transition: color .15s, background .15s;
+  }
+  .toc-nav a:hover { color: white; background: rgba(255,255,255,0.08); }
+  .toc-nav .section-label {
+    display: block;
+    padding: 14px 20px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+  }
+
+  .main { flex: 1; padding: 40px 48px; max-width: 860px; }
+
+  h2 { font-size: 20px; font-weight: 700; color: var(--indigo); margin: 40px 0 12px; padding-top: 8px; border-top: 2px solid var(--border); }
+  h2:first-of-type { border-top: none; margin-top: 0; }
+  h3 { font-size: 14px; font-weight: 700; color: var(--text); margin: 20px 0 6px; }
+
+  p { color: var(--muted); margin-bottom: 8px; }
+  ul { margin: 6px 0 12px 18px; color: var(--muted); }
+  li { margin-bottom: 3px; }
+
+  code {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    background: var(--lavender-card);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--indigo);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-right: 4px;
+  }
+  .tag-web { background: #e0e7ff; color: #3730a3; }
+  .tag-backend { background: #fef3c7; color: #92400e; }
+  .tag-db { background: #d1fae5; color: #065f46; }
+
+  .gotcha {
+    background: var(--amber-bg);
+    border-left: 3px solid var(--amber);
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin: 8px 0;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .gotcha strong { color: var(--amber); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="toc">
+    <div class="toc-header">
+      <h1>Opstap Wiki</h1>
+      <p>Architecture &amp; decisions</p>
+    </div>
+    <div class="toc-nav">
+      <span class="section-label">Stack</span>
+      <a href="#auth">Auth flow</a>
+      <a href="#dashboard">Dashboard shell</a>
+      <a href="#public">Public pages</a>
+      <a href="#design">Design system</a>
+      <span class="section-label">Backend</span>
+      <a href="#api">Backend API</a>
+      <a href="#avg">AVG / GDPR</a>
+      <span class="section-label">Features</span>
+      <a href="#contact">Contact form</a>
+      <a href="#sidebar">Sidebar</a>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <h2 id="auth">Auth flow</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Supabase SSR auth — cookies set server-side via <code>@supabase/ssr</code></li>
+      <li>Login: <code>/login</code> → email/password or OAuth (Google, Outlook, Meta)</li>
+      <li>Register: <code>/register</code> → creates user + shows AVG consent before CV upload</li>
+      <li>Server actions in <code>web/src/app/actions/auth.ts</code></li>
+      <li>Route protection: <code>web/src/lib/supabase/server.ts</code> <code>createClient()</code> in server components</li>
+    </ul>
+
+    <h2 id="dashboard">Dashboard shell</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li><code>web/src/app/dashboard/components/DashboardShell.tsx</code> — client component, wraps all dashboard pages</li>
+      <li>Layout: <code>h-screen overflow-hidden</code> wrapper + collapsible sidebar + <code>overflow-auto</code> main</li>
+      <li>Sidebar collapses to 64px icon-only mode; expanded width 240px</li>
+      <li>Organic wave SVG on sidebar right edge; decorative circles in SVG background</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> <code>overflow: hidden</code> on <code>position: sticky</code> elements breaks sticky behaviour. Keep overflow on the inner wrapper div, not the <code>&lt;aside&gt;</code>.</div>
+
+    <h2 id="public">Public pages</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li><code>PublicShell.tsx</code> — server component, handles auth state for nav CTA</li>
+      <li>Layout: <code>h-screen overflow-hidden</code> + <code>overflow-auto</code> on <code>&lt;main&gt;</code> — sidebar always visible</li>
+      <li>Fixed decorative blobs (<code>position: fixed, z-index: 0</code>) in PublicShell — stay in place while content scrolls</li>
+      <li>Mobile: top bar fixed + hamburger → <code>PublicMobileMenu.tsx</code> drawer</li>
+      <li>Pages: <code>/</code>, <code>/login</code>, <code>/register</code>, <code>/faq</code>, <code>/contact</code>, <code>/over-ons</code>, <code>/privacy</code></li>
+    </ul>
+
+    <h2 id="design">Design system</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Tailwind v4 — config in <code>web/src/app/globals.css</code></li>
+      <li>CSS variables: <code>--color-indigo-primary</code>, <code>--color-lavender-bg</code>, <code>--color-lavender-card</code>, <code>--color-text-primary</code>, <code>--color-text-muted</code>, <code>--color-white</code></li>
+      <li>Dark mode supported via <code>.dark</code> class on <code>&lt;html&gt;</code></li>
+      <li>Organic blob shapes: CSS <code>border-radius</code> morphing e.g. <code>62% 38% 46% 54% / 58% 44% 56% 42%</code></li>
+      <li>Sidebar wave: 40px wide SVG overlay at <code>right: 0</code> painting <code>--color-lavender-bg</code> in a wave path</li>
+    </ul>
+
+    <h2 id="api">Backend API</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Python FastAPI at <code>https://opstapapp-production.up.railway.app</code></li>
+      <li>API client: <code>web/src/lib/api.ts</code></li>
+      <li>Admin routes protected by <code>x-admin-key</code> header (set in Railway env: <code>ADMIN_API_KEY</code>)</li>
+      <li>Proxy: <code>web/src/app/proxy.ts</code> — replaced deprecated <code>middleware.ts</code></li>
+    </ul>
+
+    <h2 id="avg">AVG / GDPR</h2>
+    <p><span class="tag tag-db">supabase</span><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Explicit consent gate before any CV upload</li>
+      <li>EU servers only — Supabase EU West, Railway EU</li>
+      <li>CV retention: user-defined 7 / 30 / 90 days (default 30). Auto-deleted on expiry</li>
+      <li>7-day warning email before auto-delete (Supabase Edge Function + cron)</li>
+      <li>Account delete: wipes all data including CV and application history</li>
+      <li>No data used for AI training, no sharing with third parties</li>
+    </ul>
+
+    <h2 id="contact">Contact form</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Route: <code>/contact</code> — server component + <code>ContactForm.tsx</code> client component</li>
+      <li>Type dropdown: Gebruiker / Bedrijf; conditional subject list per type</li>
+      <li>Captcha: Cloudflare Turnstile (<code>@marsidev/react-turnstile</code>) — GDPR-friendly, free up to 1M/month</li>
+      <li>Honeypot: hidden <code>name="website"</code> input to catch bots</li>
+      <li>Server action: <code>web/src/app/contact/actions.ts</code> — validates, verifies captcha, sends via SendGrid</li>
+      <li>Sends to <code>info@opstapapp.nl</code> from <code>noreply@opstapapp.nl</code></li>
+      <li>Env vars needed: <code>TURNSTILE_SECRET_KEY</code>, <code>SENDGRID_API_KEY</code> (set on Vercel)</li>
+    </ul>
+
+    <h2 id="sidebar">Sidebar design</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Organic right edge: 40px SVG overlay at <code>right: 0</code> with <code>preserveAspectRatio="none"</code> — adapts to any viewport height</li>
+      <li>Decorative circles: SVG in sidebar background, <code>zIndex: 0</code>, low opacity (3–6%)</li>
+      <li>Background colour on inner <code>&lt;div&gt;</code> (not <code>&lt;aside&gt;</code>) to keep sticky/fixed behaviour intact</li>
+    </ul>
+
+  </main>
+</div>
+</body>
+</html>
