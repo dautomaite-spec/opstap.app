@@ -1,7 +1,16 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+
+async function siteUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL
+  const h = await headers()
+  const host = h.get('host') ?? 'opstapapp.nl'
+  const proto = host.startsWith('localhost') ? 'http' : 'https'
+  return `${proto}://${host}`
+}
 
 function dutchAuthError(msg: string): string {
   const m = msg.toLowerCase()
@@ -38,7 +47,7 @@ export async function register(formData: FormData) {
     password,
     options: {
       data: { naam, ...(ref ? { ref_code: ref } : {}) },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/auth/confirm`,
+      emailRedirectTo: `${await siteUrl()}/auth/confirm`,
     },
   })
   if (error) {
@@ -56,7 +65,7 @@ export async function forgotPassword(formData: FormData) {
   const email = formData.get('email') as string
 
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/auth/reset`,
+    redirectTo: `${await siteUrl()}/auth/reset`,
   })
   // Always redirect to "sent" page — don't reveal whether email exists (enumeration protection)
   redirect('/forgot-password?sent=1')
