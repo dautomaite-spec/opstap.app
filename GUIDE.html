@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Developer Guide</title>
+<style>
+  :root {
+    --indigo: #3d3a8c; --indigo-light: #6c67c4;
+    --lavender: #eeedf8; --lavender-card: #e2e0f5;
+    --text: #1a1830; --muted: #6b6880;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --amber: #d97706; --amber-bg: #fffbeb;
+    --gray-bg: #f9fafb; --border: #e5e3f5; --white: #fff;
+    --code-bg: #1e1c3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--lavender); color: var(--text); line-height: 1.6; font-size: 14px; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 220px; flex-shrink: 0; background: var(--indigo); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+  .sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .sidebar-header h1 { font-size: 16px; font-weight: 700; color: white; }
+  .sidebar-header p { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+  .sidebar nav { padding: 12px 10px; flex: 1; }
+  .sidebar a { display: block; padding: 6px 10px; border-radius: 7px; font-size: 12px; color: rgba(255,255,255,0.65); text-decoration: none; transition: background 0.15s; line-height: 1.4; }
+  .sidebar a:hover { background: rgba(255,255,255,0.1); color: white; }
+  .sidebar a.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
+  .nav-section { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 10px 4px; }
+
+  .content { flex: 1; max-width: 860px; margin: 0 auto; padding: 40px 36px 80px; min-width: 0; }
+
+  .page-header { background: var(--indigo); border-radius: 16px; padding: 28px 32px; margin-bottom: 36px; }
+  .page-header h1 { font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .page-header p { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--indigo); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .section-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--indigo); color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+  p { color: var(--muted); margin-bottom: 8px; }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--text); font-weight: 600; }
+  a { color: var(--indigo); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--lavender-card); color: var(--indigo); font-weight: 600; padding: 8px 12px; text-align: left; font-size: 12px; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td code { background: var(--lavender-card); padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: 'SF Mono', monospace; }
+
+  pre {
+    background: var(--code-bg); color: #c9d1d9; border-radius: 10px;
+    padding: 18px 20px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
+    overflow-x: auto; line-height: 1.7; margin: 10px 0;
+  }
+
+  code { background: var(--lavender-card); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; font-family: 'SF Mono', monospace; color: var(--indigo); }
+
+  .card { background: var(--white); border-radius: 10px; padding: 16px 20px; border: 1px solid var(--border); margin-bottom: 10px; }
+
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-green { background: var(--green-bg); color: var(--green); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber); }
+  .tag-gray { background: var(--lavender-card); color: var(--muted); }
+
+  ol, ul { padding-left: 20px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  li { line-height: 1.5; }
+
+  @media (max-width: 720px) { .sidebar { display: none; } .content { padding: 24px 18px 60px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Opstap</h1>
+      <p>Developer Guide</p>
+    </div>
+    <nav>
+      <div class="nav-section">Documenten</div>
+      <a href="PLANNING.html">📋 Planning</a>
+      <a href="ROADMAP.html">🗺 Roadmap</a>
+      <a href="GUIDE.html" class="active">📖 Developer Guide</a>
+
+      <div class="nav-section">Inhoud</div>
+      <a href="#s1">Stack</a>
+      <a href="#s2">Repo-structuur</a>
+      <a href="#s3">Lokaal draaien</a>
+      <a href="#s4">Navigatie (Flutter)</a>
+      <a href="#s5">State (Riverpod)</a>
+      <a href="#s6">API-eindpunten</a>
+      <a href="#s7">Supabase-schema</a>
+      <a href="#s8">Edge Functions</a>
+      <a href="#s9">AVG-compliance</a>
+      <a href="#s10">Omgevingsvariabelen</a>
+      <a href="#s11">Nieuwe schermen / endpoints</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="page-header">
+      <h1>📖 Developer Guide</h1>
+      <p>Dutch job application automation — Opstap</p>
+    </div>
+
+    <p style="margin-bottom:24px">Opstap helpt gebruikers een CV te uploaden of een profiel in te vullen, zoekt Nederlandse vacatureboards, en verstuurt AI-gegenereerde motivatiebrieven.</p>
+
+    <!-- 1 Stack -->
+    <section id="s1">
+      <div class="section-title"><span class="section-num">1</span>Stack at a glance</div>
+      <table>
+        <thead><tr><th>Laag</th><th>Technologie</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Web frontend</strong></td><td>Next.js 16.2.7 (App Router, Turbopack) + Tailwind v4</td></tr>
+          <tr><td><strong>Mobile app</strong></td><td>Flutter 3.x — iOS + Android</td></tr>
+          <tr><td><strong>State (Flutter)</strong></td><td>Riverpod 2.x</td></tr>
+          <tr><td><strong>Navigation (Flutter)</strong></td><td>go_router 14.x</td></tr>
+          <tr><td><strong>Backend API</strong></td><td>Python FastAPI op Railway (europe-west4, EU)</td></tr>
+          <tr><td><strong>AI</strong></td><td>Anthropic Claude API (<code>claude-sonnet-4-6</code>)</td></tr>
+          <tr><td><strong>Database + Auth</strong></td><td>Supabase (EU — <code>eu-central-1</code>), project <code>rwwumtwelwncdqmvhdkt</code></td></tr>
+          <tr><td><strong>CV-opslag</strong></td><td>Supabase Storage, bucket <code>cvs</code> (privé, max 10 MB)</td></tr>
+          <tr><td><strong>E-mail</strong></td><td>SendGrid — <code>sollicitaties@opstap.nl</code> (recruiters) / <code>info@opstapapp.nl</code> (gebruikers)</td></tr>
+          <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL</td></tr>
+          <tr><td><strong>Job scraping</strong></td><td>Adzuna NL API</td></tr>
+          <tr><td><strong>Scheduled jobs</strong></td><td>Supabase pg_cron + Edge Functions (Deno)</td></tr>
+          <tr><td><strong>Analytics</strong></td><td>Plausible (cookieloos, AVG-veilig)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 2 Repo -->
+    <section id="s2">
+      <div class="section-title"><span class="section-num">2</span>Repository-structuur</div>
+      <pre>Opstap.App/
+├── web/                         # Next.js web-app (primary)
+│   └── src/app/
+│       ├── dashboard/           # Authenticated pages
+│       │   ├── DashboardClient.tsx   # Vacatures + multi-apply
+│       │   ├── components/
+│       │   │   ├── DashboardShell.tsx   # Sidebar + mobile nav
+│       │   │   ├── MultiApplyModal.tsx  # Bulk apply flow
+│       │   │   └── BuyCreditsModal.tsx
+│       │   ├── profiel/         # Profile page + progress bar
+│       │   ├── opgeslagen/      # Saved jobs (localStorage)
+│       │   ├── settings/        # Credits, email prefs, referral
+│       │   ├── sollicitaties/   # Application history
+│       │   └── welkom/          # Onboarding wizard (3 steps)
+│       ├── admin/               # Admin panel (/admin/login, /admin)
+│       ├── components/
+│       │   ├── PublicShell.tsx  # Public pages shell
+│       │   └── PublicMobileMenu.tsx  # Mobile hamburger drawer
+│       └── api/                 # Route handlers
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py              # FastAPI app, CORS, router mount
+│   │   ├── core/
+│   │   │   ├── auth.py          # JWT → user_id, touches last_active_at
+│   │   │   ├── config.py        # pydantic-settings, reads env vars
+│   │   │   ├── rate_limiter.py  # Per-user + per-IP rate limits
+│   │   │   └── supabase.py      # Supabase service-role client
+│   │   ├── api/v1/
+│   │   │   ├── apply.py         # POST /apply/letter, /apply/send
+│   │   │   ├── jobs.py          # POST /jobs/search
+│   │   │   ├── profile.py       # GET/PATCH /profile, POST /profile/cv
+│   │   │   ├── credits.py       # GET /credits, POST /credits/purchase
+│   │   │   └── admin.py         # Admin + cron endpoints
+│   │   └── services/
+│   │       ├── letter_generator.py  # Claude API → Dutch letter
+│   │       ├── email_sender.py      # SendGrid wrapper
+│   │       └── prompt_guard.py      # Injection detection
+│   └── supabase/
+│       ├── migrations/          # 001–009 SQL (apply in order)
+│       └── functions/           # 4 Edge Functions (Deno)
+│
+├── PLANNING.html                # This file's siblings
+├── ROADMAP.html
+└── GUIDE.html</pre>
+    </section>
+
+    <!-- 3 Local dev -->
+    <section id="s3">
+      <div class="section-title"><span class="section-num">3</span>Lokaal draaien</div>
+
+      <p style="font-weight:600;color:var(--text);margin-bottom:6px">Web (Next.js)</p>
+      <pre>cd web
+npm install
+npm run dev        # http://localhost:3000</pre>
+
+      <p style="font-weight:600;color:var(--text);margin:14px 0 6px">Backend (FastAPI)</p>
+      <pre>cd backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+pip install -r requirements.txt</pre>
+
+      <p style="margin:10px 0 4px">Maak <code>backend/.env</code> aan:</p>
+      <pre>SUPABASE_URL=https://rwwumtwelwncdqmvhdkt.supabase.co
+SUPABASE_SERVICE_KEY=&lt;service role key van Supabase dashboard&gt;
+ANTHROPIC_API_KEY=&lt;van console.anthropic.com&gt;
+APP_SECRET_KEY=&lt;willekeurige string&gt;
+APP_ENV=development
+SENDGRID_API_KEY=&lt;optioneel voor lokale dev&gt;
+CORS_ORIGINS=["http://localhost:3000"]
+ADMIN_API_KEY=&lt;kies een geheim voor lokale dev&gt;</pre>
+
+      <pre>uvicorn app.main:app --reload
+# API docs: http://localhost:8000/docs</pre>
+
+      <p style="font-weight:600;color:var(--text);margin:14px 0 6px">Flutter app</p>
+      <pre>cd opstap
+flutter pub get
+flutter run</pre>
+      <p>De app verbindt direct met het productie-Supabase project. Voor lokale backend: pas <code>AppConfig.backendUrl</code> aan in <code>lib/core/config.dart</code>.</p>
+    </section>
+
+    <!-- 4 Navigation -->
+    <section id="s4">
+      <div class="section-title"><span class="section-num">4</span>Navigatie (Flutter)</div>
+      <p>Alle routes staan in <code>lib/core/router.dart</code>.</p>
+      <pre>/welcome                    → WelcomeScreen
+/login                      → LoginScreen
+/register                   → RegisterScreen
+
+/avg-toestemming            → AvgConsentScreen
+  /avg-toestemming/cv       → CvUploadScreen (child, niet deep-linkable)
+
+/onboarding/start           → OnboardingStartScreen
+/onboarding/profiel         → ProfileFormScreen
+
+ShellRoute (bottom nav)
+  /zoeken                   → JobSearchScreen
+    /zoeken/resultaten      → JobResultsScreen
+    /zoeken/detail          → JobDetailScreen
+      /zoeken/detail/brief  → LetterPreviewScreen
+  /sollicitaties            → ApplicationsScreen
+  /profiel                  → ProfileScreen
+  /instellingen             → SettingsScreen
+
+/bevestigd                  → ConfirmationScreen</pre>
+      <p><strong>Auth guard</strong> (in <code>GoRouter.redirect</code>): niet-ingelogde gebruikers gaan naar <code>/welcome</code>; ingelogde gebruikers worden teruggestuurd van auth-routes naar <code>/zoeken</code>.</p>
+    </section>
+
+    <!-- 5 State -->
+    <section id="s5">
+      <div class="section-title"><span class="section-num">5</span>State (Riverpod providers)</div>
+      <table>
+        <thead><tr><th>Provider</th><th>Bestand</th><th>Wat het bevat</th></tr></thead>
+        <tbody>
+          <tr><td><code>authNotifierProvider</code></td><td>auth_provider.dart</td><td>Supabase-sessie, signIn/Up/Out, deleteAccount</td></tr>
+          <tr><td><code>authStateProvider</code></td><td>auth_provider.dart</td><td>Raw <code>Stream&lt;AuthState&gt;</code> — stuurt router-refresh aan</td></tr>
+          <tr><td><code>profileProvider</code></td><td>profile_provider.dart</td><td><code>AsyncValue&lt;UserProfile?&gt;</code>, CRUD, deleteCv</td></tr>
+          <tr><td><code>jobSearchProvider</code></td><td>jobs_provider.dart</td><td><code>AsyncValue&lt;List&lt;Job&gt;&gt;</code> — zoekresultaten</td></tr>
+          <tr><td><code>selectedJobProvider</code></td><td>jobs_provider.dart</td><td><code>StateProvider&lt;Job?&gt;</code> — vacature die gebruiker selecteert</td></tr>
+          <tr><td><code>letterGenerationProvider</code></td><td>jobs_provider.dart</td><td><code>AsyncValue&lt;String&gt;</code> — gegenereerde brieftekst</td></tr>
+          <tr><td><code>apiClientProvider</code></td><td>jobs_provider.dart</td><td><code>ApiClient</code>-instantie (leest auth-token)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6 API endpoints -->
+    <section id="s6">
+      <div class="section-title"><span class="section-num">6</span>Backend API-eindpunten</div>
+      <p>Base path: <code>/api/v1</code> — Railway: <code>https://opstapapp-production.up.railway.app</code></p>
+      <table style="margin-top:10px">
+        <thead><tr><th>Methode</th><th>Pad</th><th>Auth</th><th>Beschrijving</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/health</code></td><td>—</td><td>Health check</td></tr>
+          <tr><td>GET</td><td><code>/profile</code></td><td>JWT</td><td>Eigen profiel ophalen</td></tr>
+          <tr><td>POST</td><td><code>/profile</code></td><td>JWT</td><td>Profiel aanmaken</td></tr>
+          <tr><td>PATCH</td><td><code>/profile</code></td><td>JWT</td><td>Profiel updaten (partial)</td></tr>
+          <tr><td>POST</td><td><code>/profile/cv</code></td><td>JWT</td><td>CV uploaden</td></tr>
+          <tr><td>POST</td><td><code>/jobs/search</code></td><td>JWT</td><td>Adzuna NL zoeken</td></tr>
+          <tr><td>POST</td><td><code>/apply/letter</code></td><td>JWT</td><td>Motivatiebrief genereren (1 credit)</td></tr>
+          <tr><td>POST</td><td><code>/apply/send</code></td><td>JWT</td><td>Sollicitatie versturen (e-mail / site)</td></tr>
+          <tr><td>GET</td><td><code>/apply/history</code></td><td>JWT</td><td>Geschiedenis van sollicitaties</td></tr>
+          <tr><td>GET</td><td><code>/credits</code></td><td>JWT</td><td>Huidige creditbalans + transacties</td></tr>
+          <tr><td>POST</td><td><code>/credits/purchase</code></td><td>JWT</td><td>Mollie-betaling aanmaken</td></tr>
+          <tr><td>POST</td><td><code>/abuse/report</code></td><td>—</td><td>Misbruik melden</td></tr>
+          <tr><td>GET</td><td><code>/admin/users</code></td><td>X-Admin-Key</td><td>Gebruikerslijst (admin)</td></tr>
+          <tr><td>POST</td><td><code>/admin/cron/job-digest</code></td><td>X-Admin-Key</td><td>Maandagse vacaturedigest</td></tr>
+          <tr><td>POST</td><td><code>/admin/cron/follow-up</code></td><td>X-Admin-Key</td><td>Zondagse follow-up-reminder</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px">Rate limits (in-memory, per gebruiker): <code>/apply/letter</code> — 10/dag, 3 per vacature · <code>/apply/send</code> — 20/dag, 1 per bedrijf per 7 dagen.</p>
+    </section>
+
+    <!-- 7 Supabase -->
+    <section id="s7">
+      <div class="section-title"><span class="section-num">7</span>Supabase-schema</div>
+      <p>Alle tabellen met RLS — gebruikers kunnen alleen hun eigen rijen lezen/schrijven.</p>
+      <table style="margin-top:10px">
+        <thead><tr><th>Tabel</th><th>Sleutelkolommen</th></tr></thead>
+        <tbody>
+          <tr><td><code>profiles</code></td><td>user_id, naam, functietitel, woonplaats, cv_path, cv_expires_at, writing_style, credits_balance, referral_code, email_digest_enabled, email_reminders_enabled, last_active_at</td></tr>
+          <tr><td><code>jobs</code></td><td>id, title, company, url, description_snippet, salary_min, salary_max, salary_hourly, posted_at, scraped_at</td></tr>
+          <tr><td><code>applications</code></td><td>id, job_id, user_id, letter_nl, status, send_method, sent_at, replied_at</td></tr>
+          <tr><td><code>credit_transactions</code></td><td>id, user_id, delta, reason, created_at</td></tr>
+          <tr><td><code>mollie_payments</code></td><td>id, user_id, payment_id, credits, status, created_at</td></tr>
+          <tr><td><code>referral_uses</code></td><td>referrer_id, referee_id, used_at</td></tr>
+          <tr><td><code>notifications</code></td><td>id, user_id, type, sent_at</td></tr>
+          <tr><td><code>abuse_reports</code></td><td>reporter_email, sender_email, description (service role only)</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px">Migraties draaien op volgorde: <code>001</code> → <code>009</code>. Toepassen via Supabase SQL-editor of <code>supabase db push</code>.</p>
+    </section>
+
+    <!-- 8 Edge Functions -->
+    <section id="s8">
+      <div class="section-title"><span class="section-num">8</span>Supabase Edge Functions</div>
+      <p>Alle gedeployed op project <code>rwwumtwelwncdqmvhdkt</code>.</p>
+      <table style="margin-top:10px">
+        <thead><tr><th>Functie</th><th>Trigger</th><th>Wat het doet</th></tr></thead>
+        <tbody>
+          <tr><td><code>delete-account</code></td><td>Web-app (invoke)</td><td>Verwijdert auth-gebruiker + Storage-CV + cascade profiel/sollicitaties</td></tr>
+          <tr><td><code>warn-cv-expiry</code></td><td>pg_cron dagelijks 01:00 UTC</td><td>E-mailt gebruikers wiens CV in ≤7 dagen verloopt</td></tr>
+          <tr><td><code>cleanup-expired-cvs</code></td><td>pg_cron dagelijks 02:30 UTC</td><td>Verwijdert verlopen CV-bestanden uit Storage</td></tr>
+          <tr><td><code>purge-inactive</code></td><td>pg_cron wekelijks zo 03:00 UTC</td><td>Roept admin.deleteUser aan voor 90-dagen inactieve gebruikers</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px">Secrets per functie instellen in Supabase-dashboard: alle functies vereisen <code>SUPABASE_URL</code> en <code>SUPABASE_SERVICE_ROLE_KEY</code>. <code>warn-cv-expiry</code> heeft ook <code>SENDGRID_API_KEY</code> + <code>SENDGRID_FROM_EMAIL</code> nodig.</p>
+    </section>
+
+    <!-- 9 AVG -->
+    <section id="s9">
+      <div class="section-title"><span class="section-num">9</span>AVG / GDPR-compliance</div>
+      <table>
+        <thead><tr><th>Regel</th><th>Waar afgedwongen</th></tr></thead>
+        <tbody>
+          <tr><td>1. Expliciete toestemming vóór CV-upload</td><td>AVG-modal in onboarding-wizard + profielpagina — checkbox verplicht</td></tr>
+          <tr><td>2. Alleen EU-servers</td><td>Supabase <code>eu-central-1</code>; Railway <code>europe-west4</code>; Claude verwerkt data alleen in transit</td></tr>
+          <tr><td>3. Alle data verwijderen op verzoek</td><td><code>delete-account</code> Edge Function — cascade alles</td></tr>
+          <tr><td>4. CV-bewaartermijn (7/30/90 d) + waarschuwing</td><td>Retentiekiezer bij upload; <code>warn-cv-expiry</code> edge fn; <code>cleanup-expired-cvs</code></td></tr>
+          <tr><td>5. Geen AI-training / geen derden</td><td>Anthropic API-voorwaarden; brieftekst niet gelogd</td></tr>
+          <tr><td>6. 90-dagen inactiviteitspurge</td><td><code>last_active_at</code> aangeraakt bij elke API-aanroep; <code>purge-inactive</code> edge fn</td></tr>
+          <tr><td>7. Elke geautomatiseerde beslissing zichtbaar + bewerkbaar</td><td>Brief-preview — gebruiker kan aanpassen vóór versturen</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 10 Env vars -->
+    <section id="s10">
+      <div class="section-title"><span class="section-num">10</span>Omgevingsvariabelen</div>
+
+      <p style="font-weight:600;color:var(--text);margin-bottom:8px">Backend (Railway)</p>
+      <table>
+        <thead><tr><th>Variabele</th><th>Beschrijving</th></tr></thead>
+        <tbody>
+          <tr><td><code>SUPABASE_URL</code></td><td>https://rwwumtwelwncdqmvhdkt.supabase.co</td></tr>
+          <tr><td><code>SUPABASE_SERVICE_KEY</code></td><td>Service role key (Supabase → Settings → API)</td></tr>
+          <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Van console.anthropic.com</td></tr>
+          <tr><td><code>APP_SECRET_KEY</code></td><td>Willekeurige geheime string</td></tr>
+          <tr><td><code>APP_ENV</code></td><td><code>production</code></td></tr>
+          <tr><td><code>CORS_ORIGINS</code></td><td><code>["https://opstapapp.nl"]</code></td></tr>
+          <tr><td><code>SENDGRID_API_KEY</code></td><td>Van sendgrid.com</td></tr>
+          <tr><td><code>SENDGRID_FROM_EMAIL</code></td><td>sollicitaties@opstap.nl</td></tr>
+          <tr><td><code>ADMIN_API_KEY</code></td><td>Geheime sleutel voor admin-endpoints en /admin-panel</td></tr>
+          <tr><td><code>MOLLIE_API_KEY</code></td><td>Live API-sleutel van mollie.com</td></tr>
+          <tr><td><code>MOLLIE_WEBHOOK_URL</code></td><td>https://opstapapp-production.up.railway.app/api/v1/credits/webhook</td></tr>
+        </tbody>
+      </table>
+
+      <p style="font-weight:600;color:var(--text);margin:16px 0 8px">Web (Vercel)</p>
+      <table>
+        <thead><tr><th>Variabele</th><th>Beschrijving</th></tr></thead>
+        <tbody>
+          <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>Zelfde Supabase-URL</td></tr>
+          <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>Public anon key (veilig om te committen)</td></tr>
+          <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td>Railway backend-URL</td></tr>
+          <tr><td><code>ADMIN_API_KEY</code></td><td>Zelfde waarde als Railway — voor /admin-panel login</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 11 How to add -->
+    <section id="s11">
+      <div class="section-title"><span class="section-num">11</span>Nieuw scherm of endpoint toevoegen</div>
+
+      <div class="card">
+        <p style="font-weight:600;color:var(--text);margin-bottom:8px">Nieuw Flutter-scherm</p>
+        <ol>
+          <li>Maak <code>lib/screens/&lt;area&gt;/&lt;naam&gt;_screen.dart</code> aan als <code>ConsumerWidget</code> of <code>ConsumerStatefulWidget</code></li>
+          <li>Voeg een <code>GoRoute</code> toe in <code>lib/core/router.dart</code></li>
+          <li>Draai <code>/dutch-copy</code>-agent vóórdat het scherm als klaar wordt gemarkeerd</li>
+          <li>Draai <code>/avg-checker</code> als het scherm gebruikersdata of CV-bestanden aanraakt</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <p style="font-weight:600;color:var(--text);margin-bottom:8px">Nieuw backend-endpoint</p>
+        <ol>
+          <li>Voeg functie toe in het betreffende <code>app/api/v1/*.py</code>-router</li>
+          <li>Voeg <code>user_id: str = Depends(get_current_user_id)</code> toe voor auth</li>
+          <li>Draai <code>/security</code>-agent vóórdat je merget</li>
+          <li>Draai <code>/avg-checker</code> als het endpoint persoonsgegevens verwerkt</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <p style="font-weight:600;color:var(--text);margin-bottom:8px">Nieuwe Next.js-pagina (web)</p>
+        <ol>
+          <li>Maak <code>web/src/app/&lt;pad&gt;/page.tsx</code> aan</li>
+          <li>Dashboard-pagina's erven auth via <code>DashboardShell</code> in <code>dashboard/layout.tsx</code></li>
+          <li>Publieke pagina's wikkelen in <code>&lt;PublicShell&gt;</code></li>
+          <li>Draai <code>/dutch-copy</code> voor review van Nederlandse teksten</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

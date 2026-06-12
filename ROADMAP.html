@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Roadmap</title>
+<style>
+  :root {
+    --indigo: #3d3a8c;
+    --indigo-light: #6c67c4;
+    --lavender: #eeedf8;
+    --lavender-card: #e2e0f5;
+    --text: #1a1830;
+    --muted: #6b6880;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --blue: #1d4ed8;
+    --blue-bg: #eff6ff;
+    --gray-bg: #f9fafb;
+    --border: #e5e3f5;
+    --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--lavender); color: var(--text); line-height: 1.6; font-size: 14px; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px; flex-shrink: 0; background: var(--indigo);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .sidebar-header h1 { font-size: 16px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+  .sidebar-header p { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+  .sidebar nav { padding: 12px 10px; flex: 1; }
+  .sidebar a { display: block; padding: 6px 10px; border-radius: 7px; font-size: 12px; color: rgba(255,255,255,0.65); text-decoration: none; transition: background 0.15s, color 0.15s; line-height: 1.4; }
+  .sidebar a:hover { background: rgba(255,255,255,0.1); color: white; }
+  .sidebar a.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
+  .sidebar .nav-section { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 10px 4px; }
+
+  .content { flex: 1; max-width: 860px; margin: 0 auto; padding: 40px 36px 80px; min-width: 0; }
+
+  .page-header { background: var(--indigo); border-radius: 16px; padding: 28px 32px; margin-bottom: 36px; }
+  .page-header h1 { font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .page-header p { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+  /* Phase blocks */
+  .phase-block { border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+
+  .phase-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; font-weight: 700; font-size: 14px;
+  }
+
+  .phase-done .phase-header { background: var(--green-bg); color: var(--green); }
+  .phase-active .phase-header { background: var(--blue-bg); color: var(--blue); }
+  .phase-upcoming .phase-header { background: var(--lavender-card); color: var(--indigo); }
+  .phase-future .phase-header { background: var(--gray-bg); color: var(--muted); }
+
+  .phase-badge {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .badge-done { background: var(--green); color: white; }
+  .badge-active { background: var(--blue); color: white; }
+  .badge-soon { background: var(--amber); color: white; }
+  .badge-deferred { background: var(--muted); color: white; }
+
+  .phase-body { background: var(--white); border: 1px solid var(--border); border-top: none; border-radius: 0 0 14px 14px; }
+
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 20px; border-bottom: 1px solid var(--border);
+    font-size: 13px; line-height: 1.5;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+  .check-done .check-icon { color: var(--green); }
+  .check-done span { color: var(--muted); }
+  .check-todo span { color: var(--text); }
+  .check-todo .check-icon { color: #d1d5db; }
+  .check-block .check-icon { color: var(--red); }
+  .check-block span { color: var(--red); }
+
+  .section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 20px 6px; background: var(--gray-bg); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    padding: 16px 20px; background: var(--lavender-card); border-radius: 10px;
+    font-size: 12px; color: var(--muted); margin-top: 24px;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 18px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Opstap</h1>
+      <p>Roadmap — 2026</p>
+    </div>
+    <nav>
+      <div class="nav-section">Documenten</div>
+      <a href="PLANNING.html">📋 Planning</a>
+      <a href="ROADMAP.html" class="active">🗺 Roadmap</a>
+      <a href="GUIDE.html">📖 Developer Guide</a>
+
+      <div class="nav-section">Fases</div>
+      <a href="#p1">Fase 1 — Planning</a>
+      <a href="#p2">Fase 2 — Bouwen</a>
+      <a href="#p3">Fase 3 — Launch</a>
+      <a href="#p4">Fase 4 — Post-launch</a>
+      <a href="#p5">Fase 5 — V2</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="page-header">
+      <h1>🗺 Roadmap</h1>
+      <p>Opstap — fasen & voortgang · Bijgewerkt 2026-06-12</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-block phase-done" id="p1">
+      <div class="phase-header">
+        Fase 1 — Planning
+        <span class="phase-badge badge-done">✅ Afgerond</span>
+      </div>
+      <div class="phase-body">
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>MVP-scope & doelgroep bepaald</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Concurrentieanalyse</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Gebruikersstroom & schermkaart</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Tech stack-beslissingen</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG/GDPR-regels</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Stijlgids (indigo / lavender palet)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Wireframes (Google Stitch)</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-block phase-done" id="p2">
+      <div class="phase-header">
+        Fase 2 — Bouwen
+        <span class="phase-badge badge-done">✅ Afgerond</span>
+      </div>
+      <div class="phase-body">
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>FastAPI backend + Supabase (DB, Auth, Storage)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Flutter scaffold + Riverpod + go_router</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Auth — e-mail/wachtwoord + Google OAuth</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vergeten wachtwoord-stroom</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>CV-upload (PDF/DOCX, AVG-toestemming, bewaartermijn)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Handmatig profiel aanmaken</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacature scraping (Adzuna NL API)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AI-motivatiebrief (Claude API, Nederlands, 4 schrijfstijlen)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Auto-solliciteren via e-mail (SendGrid, Reply-To patroon)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Alle 10 schermen verbonden met live API</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Instellingenscherm (account, dataverwijdering, privacy)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LLM-snelheidsbegrenzing + anti-spam guardrails</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>IP-floodprotectie + beveiligingsharding</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Project-agents (stylist, avg-checker, dutch-copy, security, developer)</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-block phase-active" id="p3">
+      <div class="phase-header">
+        Fase 3 — Deploy &amp; Launch
+        <span class="phase-badge badge-active">📍 Bezig</span>
+      </div>
+      <div class="phase-body">
+        <div class="section-label">Backend &amp; Infrastructuur</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Backend live op Railway (EU, europe-west4)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Supabase RLS geverifieerd in productie</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Migraties 001–009 toegepast</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>4 Edge Functions actief (verwijdering, CV-waarschuwing, cleanup, inactiviteit)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>E2E geverifieerd: auth · profiel · zoeken · solliciteren</span></li>
+        </ul>
+
+        <div class="section-label">Website &amp; Web-app</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Next.js 16 + Tailwind v4 op Vercel (opstapapp.nl)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dashboard — vacatures zoeken, solliciteren, history</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Blog (3 artikelen, MDX, SEO + JSON-LD)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Creditssysteem + Mollie iDEAL (10/30/75 bundels)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Referral-systeem (beide partijen +3 credits)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Meervoudig solliciteren (max 5 tegelijk, MultiApplyModal)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Onboarding-wizard (3 stappen na registratie)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Adminpaneel (/admin) — gebruikers, credits, schorsen</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Mobiele navigatie — hamburger op publieke pagina's &amp; dashboard</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Testimonials, statistieken &amp; bedrijfscontact op homepagina</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Analytics (Plausible, cookieloos, AVG-veilig)</span></li>
+        </ul>
+
+        <div class="section-label">Nog te doen</div>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl registreren (handmatig, SIDN-registrar)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>SendGrid domeinverificatie (CNAME bij TransIP)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Cron-jobs instellen op cron-job.org (digest ma, follow-up zo, credits 1e maand)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plausible-account activeren</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>500 MAU bereiken → unlock App Store-submissions</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-block phase-upcoming" id="p4">
+      <div class="phase-header">
+        Fase 4 — Post-launch (v1 stabiel)
+        <span class="phase-badge badge-soon">Binnenkort</span>
+      </div>
+      <div class="phase-body">
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Crashrapporten &amp; gebruikersfeedback monitoren</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Indeed NL + LinkedIn NL scrapers toevoegen</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Sollicitatietracker / dashboard</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Push-notificaties (verloopwaarschuwingen, bevestigingen)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Freemium-model — limieten voor gratis vs betaald tier</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Google Play Store submission</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Apple App Store submission</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase-block phase-future" id="p5">
+      <div class="phase-header">
+        Fase 5 — V2
+        <span class="phase-badge badge-deferred">Toekomst</span>
+      </div>
+      <div class="phase-body">
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Automatisch profielextractie uit CV (Claude vision)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>CV-bouwer (LLM-ondersteund)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Meertalige ondersteuning (EN, DE, FR)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Advertenties + freemium-systeem</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Uitbreiding buiten NL-vacatureboards</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Dashboard &amp; sollicitatieanalytics</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plak vacature-URL → AI-motivatiebrief</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Afgerond</span>
+      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg> Nog te doen</span>
+      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Geblokkeerd</span>
+    </div>
+  </main>
+</div>
+</body>
+</html>

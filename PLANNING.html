@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Planning</title>
+<style>
+  :root {
+    --indigo: #3d3a8c;
+    --indigo-light: #6c67c4;
+    --lavender: #eeedf8;
+    --lavender-card: #e2e0f5;
+    --text: #1a1830;
+    --muted: #6b6880;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --gray-bg: #f9fafb;
+    --border: #e5e3f5;
+    --white: #fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--lavender);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar TOC */
+  .toc {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--indigo);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .toc-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .toc-header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+
+  .toc-header p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  .toc nav { padding: 12px 10px; flex: 1; }
+
+  .toc a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
+  }
+
+  .toc a:hover { background: rgba(255,255,255,0.1); color: white; }
+
+  .toc .toc-section { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 10px 4px; }
+
+  /* Main content */
+  .content { flex: 1; max-width: 900px; margin: 0 auto; padding: 40px 36px 80px; min-width: 0; }
+
+  /* Page header */
+  .page-header {
+    background: var(--indigo);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 36px;
+  }
+
+  .page-header h1 { font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .page-header p { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot-green { background: #4ade80; }
+  .dot-amber { background: #fbbf24; }
+  .dot-gray { background: rgba(255,255,255,0.3); }
+
+  /* Section */
+  section { margin-bottom: 36px; }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--indigo);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--indigo);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  p { color: var(--muted); margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .card-indigo {
+    background: var(--indigo);
+    color: white;
+    border: none;
+  }
+
+  .card-indigo p { color: rgba(255,255,255,0.75); }
+  .card-indigo strong { color: white; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--lavender-card); color: var(--indigo); font-weight: 600; padding: 8px 12px; text-align: left; font-size: 12px; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-bg); }
+
+  /* Phase checklist */
+  .phase { margin-bottom: 28px; }
+
+  .phase-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--indigo);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .phase-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-done { background: var(--green-bg); color: var(--green); }
+  .badge-active { background: #eff6ff; color: #1d4ed8; }
+  .badge-waiting { background: var(--amber-bg); color: var(--amber); }
+  .badge-deferred { background: var(--lavender-card); color: var(--muted); }
+
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .checklist li:hover { background: var(--gray-bg); }
+
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .check-done .check-icon { color: var(--green); }
+  .check-done span { color: var(--muted); }
+  .check-todo .check-icon { color: #d1d5db; }
+  .check-todo span { color: var(--text); }
+
+  /* Code / flow box */
+  pre {
+    background: var(--text);
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-size: 11.5px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin: 10px 0;
+  }
+
+  /* Grid helpers */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* Stat cards */
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value { font-size: 28px; font-weight: 800; color: var(--indigo); line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 11px; color: var(--muted); }
+
+  /* Info callout */
+  .callout {
+    border-left: 3px solid var(--indigo);
+    background: var(--lavender);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 12px 0;
+  }
+
+  .callout p { color: var(--text); font-size: 13px; margin: 0; }
+
+  /* Milestone badge */
+  .milestone {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--amber-bg);
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: #92400e;
+    font-weight: 600;
+    margin: 8px 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .toc { display: none; }
+    .content { padding: 24px 18px 60px; }
+    .grid-2, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar TOC -->
+  <aside class="toc">
+    <div class="toc-header">
+      <h1>Opstap</h1>
+      <p>Planning — 2026-06-11</p>
+    </div>
+    <nav>
+      <div class="toc-section">Documenten</div>
+      <a href="PLANNING.html" style="color:white;font-weight:600;background:rgba(255,255,255,0.15)">📋 Planning</a>
+      <a href="ROADMAP.html">🗺 Roadmap</a>
+      <a href="GUIDE.html">📖 Developer Guide</a>
+
+      <div class="toc-section">Strategie</div>
+      <a href="#s0">0 · Website First</a>
+      <a href="#s1">1 · App Overzicht</a>
+      <a href="#s2">2 · Doelgroep</a>
+      <a href="#s3">3 · MVP Scope</a>
+
+      <div class="toc-section">Ontwerp</div>
+      <a href="#s4">4 · Gebruikersstroom</a>
+      <a href="#s5">5 · Schermkaart</a>
+      <a href="#s6">6 · Datastroom</a>
+
+      <div class="toc-section">Techniek</div>
+      <a href="#s7">7 · Tech Stack</a>
+      <a href="#s8">8 · AVG / GDPR</a>
+      <a href="#s9">9 · Concurrentiepositie</a>
+
+      <div class="toc-section">Voortgang</div>
+      <a href="#s10">10 · Bouwfasen</a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+
+    <!-- Header -->
+    <div class="page-header">
+      <h1>Opstap — Planning</h1>
+      <p>Bijgewerkt op 2026-06-11</p>
+      <div class="status-bar">
+        <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
+        <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
+        <div class="status-pill"><span class="dot dot-amber"></span>Traction: 0 / 500 MAU</div>
+        <div class="status-pill"><span class="dot dot-gray"></span>App Store: uitgesteld</div>
+      </div>
+    </div>
+
+    <!-- 0 · Strategy -->
+    <section id="s0">
+      <div class="section-title"><span class="section-num">0</span>Strategie — Website First</div>
+      <div class="card card-indigo">
+        <p><strong>Beslissing (2026-06-05):</strong> Eerst een webproduct lanceren vóórdat we naar de app stores gaan.</p>
+        <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:4px;">
+          <li style="color:rgba(255,255,255,0.75)">Snellere iteratiecyclus — geen review-wachtrij, direct deployen</li>
+          <li style="color:rgba(255,255,255,0.75)">Vraag valideren en echte gebruikers verzamelen vóór store-investeringen</li>
+          <li style="color:rgba(255,255,255,0.75)">Live domein met bezoekers versterkt Play Store / App Store submissions</li>
+          <li style="color:rgba(255,255,255,0.75)">SEO + contentmarketing mogelijk op web, niet in apps</li>
+        </ul>
+      </div>
+
+      <div class="milestone">🎯 App Store-mijlpaal: 500 unieke maandelijkse actieve gebruikers (ingelogd, minimaal één zoekopdracht)</div>
+
+      <table style="margin-top:14px">
+        <thead><tr><th>Prioriteit</th><th>Stap</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Website — Next.js, Vercel, opstapapp.nl</td><td style="color:var(--green);font-weight:600">✅ Live</td></tr>
+          <tr><td>2</td><td>Traction — 500 MAU-mijlpaal</td><td style="color:var(--amber);font-weight:600">⏳ Bezig</td></tr>
+          <tr><td>3</td><td>Play Store submission</td><td style="color:var(--muted)">⏸ Uitgesteld</td></tr>
+          <tr><td>4</td><td>Apple App Store submission</td><td style="color:var(--muted)">⏸ Uitgesteld</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 1 · App Overview -->
+    <section id="s1">
+      <div class="section-title"><span class="section-num">1</span>App Overzicht</div>
+      <table>
+        <tbody>
+          <tr><td><strong>Naam</strong></td><td>Opstap</td></tr>
+          <tr><td><strong>Platforms</strong></td><td>Android (Google Play) + iOS (App Store)</td></tr>
+          <tr><td><strong>Markt</strong></td><td>Nederland (v1), uitbreidbaar</td></tr>
+          <tr><td><strong>Taal</strong></td><td>Nederlands (v1), meertalig (v2)</td></tr>
+          <tr><td><strong>Monetisatie</strong></td><td>Credits per sollicitatie + freemium (v2)</td></tr>
+          <tr><td><strong>Framework</strong></td><td>Flutter (iOS + Android vanuit één codebase)</td></tr>
+          <tr><td><strong>Backend</strong></td><td>Python FastAPI — Railway</td></tr>
+          <tr><td><strong>AI</strong></td><td>Claude API (Anthropic, claude-sonnet-4-6)</td></tr>
+          <tr><td><strong>Database</strong></td><td>PostgreSQL via Supabase (EU regio)</td></tr>
+          <tr><td><strong>Auth / Opslag</strong></td><td>Supabase</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 2 · Target Users -->
+    <section id="s2">
+      <div class="section-title"><span class="section-num">2</span>Doelgroep</div>
+      <table>
+        <tbody>
+          <tr><td><strong>Wie</strong></td><td>Actieve & passieve werkzoekenden</td></tr>
+          <tr><td><strong>Leeftijd</strong></td><td>15–45 primair, alle leeftijden ondersteund</td></tr>
+          <tr><td><strong>Achtergrond</strong></td><td>MBO / HBO / WO — blauw- en witboord</td></tr>
+          <tr><td><strong>Regio</strong></td><td>Nederland (v1)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3 · MVP Scope -->
+    <section id="s3">
+      <div class="section-title"><span class="section-num">3</span>MVP Scope (v1 vs v2)</div>
+      <table>
+        <thead><tr><th>Functie</th><th>v1</th><th>v2</th></tr></thead>
+        <tbody>
+          <tr><td>CV uploaden</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Handmatig profiel aanmaken</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Vacatures zoeken — NL boards</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Auto-solliciteren (e-mail + formulier)</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>AI-motivatiebrief (Nederlands)</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>AVG/GDPR-toestemmingsstroom</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>CV-bouwer (LLM)</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Automatisch CV-profiel extraheren</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Dashboard / tracker</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Meertalig</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Advertenties + freemium</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Uitbreiding buiten NL</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+          <tr><td>Plak vacature-URL → AI-brief</td><td style="color:var(--muted)">—</td><td style="color:var(--green)">✅</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4 · User Flow -->
+    <section id="s4">
+      <div class="section-title"><span class="section-num">4</span>Adaptieve gebruikersstroom</div>
+      <p>Elke stap is optioneel. De gebruiker kan op elk moment stoppen, overslaan of volledig automatisch gaan.</p>
+      <pre>START
+  │
+  ▼
+┌─────────────────────────────────────┐
+│           ONBOARDING                │
+│  - Welkomstscherm                   │
+│  - AVG-toestemming                  │
+│  - Account aanmaken / inloggen      │
+└─────────────┬───────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────┐
+│     "Hoe wil je beginnen?"          │
+│  [A] Upload mijn CV                 │
+│  [B] Gegevens handmatig invoeren    │
+└──────┬──────────────────┬───────────┘
+       │                  │
+       ▼                  ▼
+┌─────────────┐    ┌─────────────────┐
+│ AVG-NOTICE  │    │  HANDMATIG      │
+│ eerst tonen │    │  Naam           │
+│             │    │  Locatie        │
+│ CV uploaden │    │  Functietype    │
+│ PDF / DOCX  │    │  Beschikbaar    │
+└──────┬──────┘    └────────┬────────┘
+       │                    │
+       └────────┬───────────┘
+                │
+                ▼
+┌─────────────────────────────────────┐
+│         PROFIEL BEVESTIGD           │
+│  Gebruiker beoordeelt voorkeuren    │
+└─────────────┬───────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────┐
+│           VACATURES ZOEKEN          │
+│  Indeed NL · LinkedIn NL            │
+│  Jobbird · Nationale Vacaturebank   │
+│  AI matcht vacatures aan profiel    │
+└─────────────┬───────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────┐
+│           AUTO-SOLLICITEREN         │
+│  AI schrijft brief per vacature     │
+│  Gebruiker keurt goed               │
+│  Methode: e-mail of webformulier    │
+└─────────────┬───────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────┐
+│         BEVESTIGING                 │
+│  "X sollicitaties verstuurd"        │
+└─────────────────────────────────────┘</pre>
+    </section>
+
+    <!-- 5 · Screen Map -->
+    <section id="s5">
+      <div class="section-title"><span class="section-num">5</span>Schermkaart</div>
+      <pre>Opstap App
+│
+├── Onboarding (eerste keer)
+│   ├── Welkom
+│   ├── AVG-toestemming
+│   └── Inloggen / Registreren
+│
+├── Home
+│   └── Snelstart + statusoverzicht
+│
+├── Profiel
+│   ├── CV uploaden
+│   ├── Handmatig invoerformulier
+│   └── Profiel bewerken
+│
+├── Zoeken
+│   ├── Zoekinstellingen
+│   ├── Vacatureresultaten
+│   └── Vacaturedetail
+│
+├── Solliciteren
+│   ├── Geselecteerde vacatures
+│   ├── Motivatiebrief (preview)
+│   └── Verzendbevestiging
+│
+└── Instellingen
+    ├── Account
+    ├── Privacy & gegevens (account verwijderen)
+    └── Over / versie</pre>
+    </section>
+
+    <!-- 6 · Data Flow -->
+    <section id="s6">
+      <div class="section-title"><span class="section-num">6</span>Datastroom</div>
+      <pre>[Gebruiker] → uploadt CV of vult formulier in
+  ↓
+[Supabase Storage] → CV versleuteld opgeslagen (EU-regio)
+  ↓
+[FastAPI Backend] → extraheert / verwerkt profiel
+  ↓
+[Claude API] → parseert CV, genereert profielvelden
+  ↓
+[PostgreSQL] → slaat gebruikersprofiel op (geen raw CV in DB)
+  ↓
+[FastAPI Backend] → scrapt NL-vacatureboards
+  ↓
+[Claude API] → matcht vacatures aan profiel, scoort ze
+  ↓
+[FastAPI Backend] → genereert motivatiebrief per vacature
+  ↓
+[FastAPI Backend] → verstuurt sollicitatie (e-mail / formulier)
+  ↓
+[PostgreSQL] → logt sollicitatierecord
+  ↓
+[Web / App] → toont bevestiging aan gebruiker</pre>
+    </section>
+
+    <!-- 7 · Tech Stack -->
+    <section id="s7">
+      <div class="section-title"><span class="section-num">7</span>Tech Stack</div>
+      <table>
+        <thead><tr><th>Laag</th><th>Tool</th><th>Doel</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Web frontend</strong></td><td>Next.js 16 + Tailwind v4</td><td>Website + dashboard</td></tr>
+          <tr><td><strong>Mobiele app</strong></td><td>Flutter 3.x</td><td>iOS + Android (v2)</td></tr>
+          <tr><td><strong>Backend API</strong></td><td>Python FastAPI · Railway</td><td>Kernlogica, scraping, LLM-aanroepen</td></tr>
+          <tr><td><strong>AI</strong></td><td>Claude API (claude-sonnet-4-6)</td><td>CV-parsing, vacaturematching, brieven</td></tr>
+          <tr><td><strong>Vacature scraping</strong></td><td>Adzuna NL API</td><td>Vacatures ophalen</td></tr>
+          <tr><td><strong>Database</strong></td><td>PostgreSQL (Supabase EU)</td><td>Gebruikers, vacatures, sollicitaties</td></tr>
+          <tr><td><strong>Auth</strong></td><td>Supabase Auth</td><td>Login, sessies</td></tr>
+          <tr><td><strong>Bestandsopslag</strong></td><td>Supabase Storage (EU)</td><td>CV-bestanden, versleuteld</td></tr>
+          <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL</td><td>Credit-aankopen</td></tr>
+          <tr><td><strong>E-mail</strong></td><td>SendGrid</td><td>Transactionele e-mails</td></tr>
+          <tr><td><strong>Analytics</strong></td><td>Plausible (cookieloos)</td><td>AVG-veilige statistieken</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8 · AVG -->
+    <section id="s8">
+      <div class="section-title"><span class="section-num">8</span>AVG / GDPR-regels (ingebouwd in v1)</div>
+      <ol style="padding-left:20px;display:flex;flex-direction:column;gap:8px;color:var(--muted)">
+        <li>Expliciete toestemmingspagina vóór elke CV-upload</li>
+        <li>Alleen EU-servers — geen data verlaat de EU</li>
+        <li>Gebruiker kan altijd alle gegevens verwijderen (Instellingen → Privacy)</li>
+        <li>CV-bewaartermijn: door gebruiker instelbaar (7 / 30 / 90 dagen, standaard 30). Waarschuwingsmail 7 dagen voor verloop; automatisch verwijderd bij verloop tenzij verlengd.</li>
+        <li>Geen CV-data gebruikt voor modeltraining of gedeeld met derden. Uitzondering: Claude API verwerkt CV voor extractie (aan gebruiker vermeld).</li>
+        <li>Retentiebeleid: accountdata automatisch verwijderd na 90 dagen inactiviteit (met 30-dagen waarschuwing)</li>
+        <li>Privacybeleid in de app (gewoon Nederlands, geen juridisch jargon)</li>
+        <li>Elke geautomatiseerde beslissing (vacaturematch, brief) is zichtbaar en bewerkbaar</li>
+        <li>Recht op gegevensexport — gebruiker kan alle data downloaden vanuit Instellingen</li>
+        <li>Elke verstuurde sollicitatie wordt gelogd en is zichtbaar voor de gebruiker</li>
+      </ol>
+    </section>
+
+    <!-- 9 · Competitive -->
+    <section id="s9">
+      <div class="section-title"><span class="section-num">9</span>Concurrentiepositie</div>
+      <table>
+        <thead><tr><th>Functie</th><th>Opstap</th><th>LazyApply</th><th>Jobbird</th><th>LinkedIn</th></tr></thead>
+        <tbody>
+          <tr><td>Nederlandse vacatureboards</td><td style="color:var(--green)">✅</td><td style="color:#dc2626">❌</td><td style="color:var(--green)">✅</td><td style="color:var(--amber)">Deels</td></tr>
+          <tr><td>AI-motivatiebrief (NL)</td><td style="color:var(--green)">✅</td><td style="color:#dc2626">❌</td><td style="color:#dc2626">❌</td><td style="color:#dc2626">❌</td></tr>
+          <tr><td>Auto-solliciteren</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:#dc2626">❌</td><td style="color:var(--amber)">Deels</td></tr>
+          <tr><td>AVG-compliant</td><td style="color:var(--green)">✅</td><td style="color:#dc2626">❌</td><td style="color:var(--green)">✅</td><td style="color:var(--amber)">Deels</td></tr>
+          <tr><td>Alles-in-één pipeline</td><td style="color:var(--green)">✅</td><td style="color:#dc2626">❌</td><td style="color:#dc2626">❌</td><td style="color:#dc2626">❌</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 10 · Phases -->
+    <section id="s10">
+      <div class="section-title"><span class="section-num">10</span>Bouwfasen</div>
+
+      <!-- Phase 1 -->
+      <div class="phase">
+        <div class="phase-title">Fase 1 — Planning <span class="phase-badge badge-done">Afgerond</span></div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Doelgroep & MVP-scope bepaald</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Concurrentieanalyse</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Visuele workflow & planning</span></li>
+        </ul>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase">
+        <div class="phase-title">Fase 2 — Bouwen <span class="phase-badge badge-done">Afgerond</span></div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Backend opgezet (FastAPI + Supabase)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Flutter-projectstructuur aangemaakt</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Auth-stroom (login + registratie, Supabase auth)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>CV-upload + profielextractie</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacature scraping (Adzuna NL API)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Motivatiebrieven genereren (Claude API, NL-prompt)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Auto-solliciteren (SendGrid e-mail)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Alle schermen verbonden met echte API</span></li>
+        </ul>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase">
+        <div class="phase-title">Fase 3 — Polish &amp; Launch <span class="phase-badge badge-active">Actief</span></div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Railway backend live — opstapapp-production.up.railway.app (/health ✅)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Supabase migraties 001–009 toegepast</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>4 Supabase Edge Functions actief (verwijdering, CV-waarschuwing, cleanup, inactiviteit)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Website op Vercel (opstapapp.nl)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Inlog / Registratie / Dashboard / Instellingen / Profiel</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Blog (3 artikelen, MDX-pipeline, SEO)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG-toestemmingsmodal voor CV-upload</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Creditssysteem: 5 gratis bij aanmelding, Mollie iDEAL, bundels 10/30/75</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Referral-systeem (beide partijen +3 credits)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Meervoudig solliciteren (max 5 vacatures tegelijk)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Onboarding-wizard (3 stappen na registratie)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Adminpaneel (/admin): gebruikerslijst, credits aanpassen, schorsen, verwijderen</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>E-mailnotificaties: credit-waarschuwing, reactie-felicitaties, follow-up-reminder, vacaturedigest</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Opgeslagen vacatures (localStorage)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profielvoortgangsbalk (6 velden, bonus bij volledig)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Analytics (Plausible — cookieloos, AVG-veilig)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Mobiele navigatie: hamburger-menu op publieke pagina's + dashboard</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl geregistreerd (handmatig, SIDN-registrar)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plausible-account geactiveerd (domein vereist)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>SendGrid domeinverificatie (opstapapp.nl + info@opstapapp.nl CNAME-records bij TransIP)</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Cron-jobs op cron-job.org (maandagse digest, zondagse follow-up, 1e van de maand credits)</span></li>
+        </ul>
+      </div>
+
+      <!-- Milestone -->
+      <div class="callout" style="margin:16px 0">
+        <p>🎯 <strong>Traction-mijlpaal:</strong> 500 unieke maandelijks actieve gebruikers (ingelogd + minimaal één zoekopdracht) → unlocked Play Store + App Store submissions</p>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="phase">
+        <div class="phase-title">Fase 4 — App Store <span class="phase-badge badge-deferred">Uitgesteld</span></div>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Google Play Store submission</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Apple App Store submission</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>v2 planning</span></li>
+        </ul>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
