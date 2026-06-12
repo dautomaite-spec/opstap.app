@@ -21,10 +21,7 @@ export default function ContactPage() {
         <ContactForm />
 
         <p className="mt-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
-          Of mail direct:{' '}
-          <a href="mailto:info@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            info@opstapapp.nl
-          </a>
+          We reageren binnen één werkdag.
         </p>
       </div>
     </PublicShell>

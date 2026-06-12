@@ -1,10 +1,31 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { submitContact, type ContactResult } from './actions'
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
+
+const SUBJECTS = {
+  gebruiker: [
+    'Vraag over Opstap',
+    'Vraag over mijn account',
+    'Probleem met een sollicitatie',
+    'Bug melden',
+    'Klacht',
+    'Terugbetaling aanvragen',
+    'Account verwijderen',
+    'Overig',
+  ],
+  bedrijf: [
+    'Samenwerking voorstellen',
+    'Vacatureplaatsing',
+    'Partnerschap / reseller',
+    'Mediaverzoek / persvraag',
+    'Voorstel voor integratie',
+    'Overig',
+  ],
+}
 
 const inputStyle = {
   width: '100%',
@@ -19,6 +40,7 @@ const inputStyle = {
 
 export default function ContactForm() {
   const [state, action, pending] = useActionState<ContactResult | null, FormData>(submitContact, null)
+  const [type, setType] = useState<'gebruiker' | 'bedrijf' | ''>('')
 
   if (state?.ok) {
     return (
@@ -34,8 +56,41 @@ export default function ContactForm() {
 
   return (
     <form action={action} className="flex flex-col gap-5">
-      {/* Honeypot — hidden from humans */}
+      {/* Honeypot */}
       <input name="website" type="text" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} aria-hidden="true" />
+
+      {/* Type */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+          Ik ben een <span aria-hidden style={{ color: 'var(--color-indigo-primary)' }}>*</span>
+        </label>
+        <select
+          name="type"
+          required
+          value={type}
+          onChange={e => setType(e.target.value as 'gebruiker' | 'bedrijf' | '')}
+          style={inputStyle}
+        >
+          <option value="">Selecteer...</option>
+          <option value="gebruiker">Gebruiker</option>
+          <option value="bedrijf">Bedrijf / werkgever</option>
+        </select>
+      </div>
+
+      {/* Subject — only shown after type is chosen */}
+      {type && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            Onderwerp <span aria-hidden style={{ color: 'var(--color-indigo-primary)' }}>*</span>
+          </label>
+          <select name="onderwerp" required style={inputStyle}>
+            <option value="">Selecteer onderwerp...</option>
+            {SUBJECTS[type].map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
@@ -46,9 +101,20 @@ export default function ContactForm() {
 
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-          Bedrijf <span className="text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(optioneel)</span>
+          {type === 'bedrijf' ? 'Bedrijfsnaam' : 'Bedrijf'}{' '}
+          {type === 'bedrijf'
+            ? <span aria-hidden style={{ color: 'var(--color-indigo-primary)' }}>*</span>
+            : <span className="text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(optioneel)</span>
+          }
         </label>
-        <input name="bedrijf" type="text" maxLength={120} autoComplete="organization" style={inputStyle} />
+        <input
+          name="bedrijf"
+          type="text"
+          maxLength={120}
+          required={type === 'bedrijf'}
+          autoComplete="organization"
+          style={inputStyle}
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -80,7 +146,7 @@ export default function ContactForm() {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || !type}
         className="px-8 py-3 text-base font-semibold rounded-xl text-white transition hover:opacity-90 disabled:opacity-60"
         style={{ background: 'var(--color-indigo-primary)' }}
       >

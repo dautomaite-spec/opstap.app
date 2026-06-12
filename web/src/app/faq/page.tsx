@@ -93,7 +93,7 @@ export default function FaqPage() {
         </h1>
         <p className="text-base mb-12" style={{ color: 'var(--color-text-muted)' }}>
           Staat je vraag er niet bij?{' '}
-          <a href="mailto:support@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
+          <a href="/contact" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
             Stuur ons een bericht
           </a>
           .

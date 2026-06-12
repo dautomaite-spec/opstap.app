@@ -24,7 +24,7 @@ async function verifyTurnstile(token: string): Promise<boolean> {
   return data.success === true
 }
 
-async function sendEmail(naam: string, bedrijf: string, email: string, bericht: string) {
+async function sendEmail(naam: string, bedrijf: string, email: string, type: string, onderwerp: string, bericht: string) {
   const apiKey = process.env.SENDGRID_API_KEY
   if (!apiKey) throw new Error('SENDGRID_API_KEY not configured')
 
@@ -38,10 +38,10 @@ async function sendEmail(naam: string, bedrijf: string, email: string, bericht: 
       personalizations: [{ to: [{ email: 'info@opstapapp.nl' }] }],
       from: { email: 'noreply@opstapapp.nl', name: 'Opstap Contact' },
       reply_to: { email, name: naam },
-      subject: `Contactformulier: ${naam}${bedrijf ? ` (${bedrijf})` : ''}`,
+      subject: `[${type}] ${onderwerp} — ${naam}`,
       content: [{
         type: 'text/plain',
-        value: `Naam: ${naam}\nBedrijf: ${bedrijf || 'Niet opgegeven'}\nE-mail: ${email}\n\n${bericht}`,
+        value: `Type: ${type}\nOnderwerp: ${onderwerp}\nNaam: ${naam}\nBedrijf: ${bedrijf || 'Niet opgegeven'}\nE-mail: ${email}\n\n${bericht}`,
       }],
     }),
   })
@@ -56,9 +56,13 @@ export async function submitContact(_: ContactResult | null, formData: FormData)
   const naam = sanitize((formData.get('naam') as string) ?? '').slice(0, MAX_NAME)
   const bedrijf = sanitize((formData.get('bedrijf') as string) ?? '').slice(0, MAX_COMPANY)
   const email = sanitize((formData.get('email') as string) ?? '').slice(0, MAX_EMAIL)
+  const type = sanitize((formData.get('type') as string) ?? '').slice(0, 20)
+  const onderwerp = sanitize((formData.get('onderwerp') as string) ?? '').slice(0, 120)
   const bericht = sanitize((formData.get('bericht') as string) ?? '').slice(0, MAX_MESSAGE)
   const captchaToken = (formData.get('cf-turnstile-response') as string) ?? ''
 
+  if (!type || !['gebruiker', 'bedrijf'].includes(type)) return { ok: false, error: 'Selecteer een type.' }
+  if (!onderwerp) return { ok: false, error: 'Selecteer een onderwerp.' }
   if (!naam) return { ok: false, error: 'Naam is verplicht.' }
   if (!email || !EMAIL_RE.test(email)) return { ok: false, error: 'Voer een geldig e-mailadres in.' }
   if (!bericht || bericht.length < 10) return { ok: false, error: 'Bericht is te kort.' }
@@ -67,7 +71,7 @@ export async function submitContact(_: ContactResult | null, formData: FormData)
   if (!captchaOk) return { ok: false, error: 'Captcha verificatie mislukt. Probeer het opnieuw.' }
 
   try {
-    await sendEmail(naam, bedrijf, email, bericht)
+    await sendEmail(naam, bedrijf, email, type, onderwerp, bericht)
     return { ok: true }
   } catch {
     return { ok: false, error: 'Verzenden mislukt. Probeer het later opnieuw.' }
