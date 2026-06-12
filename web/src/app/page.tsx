@@ -41,7 +41,7 @@ export default function Home() {
         </p>
         <div className="mt-10 flex gap-4 flex-wrap justify-center">
           <Link href="/register" className="px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
-            Gratis beginnen
+            Begin nu
           </Link>
           <Link href="/login" className="px-8 py-3 text-base font-semibold rounded-xl border transition hover:opacity-80" style={{ color: 'var(--color-indigo-primary)', borderColor: 'var(--color-indigo-primary)' }}>
             Inloggen
