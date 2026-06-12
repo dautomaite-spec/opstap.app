@@ -69,11 +69,11 @@ const SECTIONS = [
     items: [
       {
         q: 'Is Opstap gratis?',
-        a: 'Je begint gratis. Bij aanmelding krijg je direct een aantal gratis credits — genoeg om te ervaren hoe het werkt. Zodra je credits op zijn, laten we je precies zien wat het kost om door te gaan. Geen verrassing vooraf, geen abonnement.',
+        a: 'Je begint gratis. Bij aanmelding krijg je direct een aantal gratis credits, genoeg om te ervaren hoe het werkt. Zodra je credits op zijn, laten we je precies zien wat het kost om door te gaan. Geen verrassing vooraf, geen abonnement.',
       },
       {
         q: 'Hoe werkt het creditssysteem?',
-        a: '1 credit = 1 motivatiebrief. Je gebruikt credits alleen wanneer je een brief laat genereren. Als je credits op zijn, zie je de opties om bij te kopen — pas dán. Credits verlopen nooit.',
+        a: '1 credit = 1 motivatiebrief. Je gebruikt credits alleen wanneer je een brief laat genereren. Als je credits op zijn, zie je de opties om bij te kopen. Credits verlopen nooit.',
       },
       {
         q: 'Zijn er abonnementskosten?',
