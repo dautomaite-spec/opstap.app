@@ -41,7 +41,20 @@ async function sendEmail(naam: string, bedrijf: string, email: string, type: str
       subject: `[${type}] ${onderwerp} — ${naam}`,
       content: [{
         type: 'text/plain',
-        value: `Type: ${type}\nOnderwerp: ${onderwerp}\nNaam: ${naam}\nBedrijf: ${bedrijf || 'Niet opgegeven'}\nE-mail: ${email}\n\n${bericht}`,
+        value: [
+          `Type: ${type}`,
+          `Onderwerp: ${onderwerp}`,
+          `Naam: ${naam}`,
+          `Bedrijf: ${bedrijf || 'Niet opgegeven'}`,
+          `E-mail: ${email}`,
+          '',
+          bericht,
+          '',
+          '---',
+          'Dit bericht is verstuurd via Opstap (opstapapp.nl).',
+          'Opstap helpt werkzoekenden automatisch solliciteren op Nederlandse vacatures met AI-geschreven motivatiebrieven.',
+          'Geïnteresseerd in samenwerking of meer sollicitaties? Reageer op deze e-mail of ga naar opstapapp.nl/contact.',
+        ].join('\n'),
       }],
     }),
   })
