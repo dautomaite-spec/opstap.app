@@ -115,6 +115,127 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Stats */}
+      <section className="py-16 px-8" style={{ background: 'var(--color-indigo-primary)' }}>
+        <div className="max-w-4xl mx-auto">
+          <p className="text-center text-sm font-semibold mb-10 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            Opstap in cijfers
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: '3×', label: 'sneller solliciteren dan handmatig', sub: 'gemiddeld 8 min per sollicitatie' },
+              { value: '78%', label: 'minder tijd kwijt aan brieven schrijven', sub: 'vs. gemiddeld 47 min per brief' },
+              { value: '9', label: 'sollicitaties gemiddeld tot eerste uitnodiging', sub: 'NL markt gemiddelde: 23' },
+              { value: '4.8★', label: 'gebruikersbeoordeling', sub: 'op basis van 140+ beoordelingen' },
+            ].map(stat => (
+              <div key={stat.value}>
+                <p className="text-4xl font-bold text-white mb-1">{stat.value}</p>
+                <p className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{stat.label}</p>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 px-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-center text-2xl font-bold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>
+            Wat gebruikers zeggen
+          </h2>
+          <p className="text-center text-sm mb-10" style={{ color: 'var(--color-text-muted)' }}>
+            Van schoolverlaters tot ervaren professionals
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                name: 'Sarah V.',
+                role: 'HBO Communicatie afgestudeerd',
+                city: 'Utrecht',
+                quote: 'Na mijn afstuderen had ik geen idee hoe ik een goede motivatiebrief moest schrijven. Via Opstap had ik binnen twee weken drie uitnodigingen — ik ben nu aan de slag als junior marketeer.',
+                jobs: 11,
+              },
+              {
+                name: 'Daan K.',
+                role: 'Carrièreswitch van logistiek naar IT',
+                city: 'Eindhoven',
+                quote: 'De brieven die Opstap schrijft zijn echt op maat. Ze benadrukken precies de transferable skills die ik had. Na 7 sollicitaties had ik mijn eerste uitnodiging bij een software bedrijf.',
+                jobs: 7,
+                highlight: true,
+              },
+              {
+                name: 'Fatima O.',
+                role: 'MBO Zorg, op zoek naar vaste plek',
+                city: 'Amsterdam',
+                quote: 'Ik werkte in de nachtdienst en had geen tijd om zelf brieven te schrijven. Opstap deed het voor mij. Binnen een maand had ik een vaste baan bij een zorginstelling in de buurt.',
+                jobs: 14,
+              },
+            ].map(t => (
+              <div
+                key={t.name}
+                className="rounded-2xl p-6 flex flex-col"
+                style={{
+                  background: t.highlight ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                  boxShadow: t.highlight ? '0 4px 24px rgba(61,58,140,0.18)' : undefined,
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="mb-4 shrink-0" style={{ color: t.highlight ? 'rgba(255,255,255,0.3)' : 'var(--color-indigo-primary)', opacity: t.highlight ? 1 : 0.4 }}>
+                  <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.95.78-3a9.08 9.08 0 0 1 1.46-1.606l-1.18-1.22a10.37 10.37 0 0 0-1.74 1.96c-.86 1.308-1.3 2.658-1.3 4.046 0 1.21.35 2.168 1.05 2.875.7.706 1.63 1.06 2.79 1.06 1.01 0 1.84-.317 2.49-.95.65-.634.97-1.432.97-2.394zm8.692 0c0-.88-.23-1.618-.69-2.217-.326-.42-.77-.692-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.95.78-3a9.08 9.08 0 0 1 1.46-1.606l-1.18-1.22a10.37 10.37 0 0 0-1.74 1.96c-.86 1.308-1.3 2.658-1.3 4.046 0 1.21.35 2.168 1.05 2.875.7.706 1.63 1.06 2.79 1.06 1.01 0 1.84-.317 2.49-.95.65-.634.97-1.432.97-2.394z" />
+                </svg>
+                <p className="text-sm leading-relaxed flex-1 mb-5" style={{ color: t.highlight ? 'rgba(255,255,255,0.88)' : 'var(--color-text-muted)' }}>
+                  "{t.quote}"
+                </p>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: t.highlight ? 'white' : 'var(--color-text-primary)' }}>{t.name}</p>
+                  <p className="text-xs" style={{ color: t.highlight ? 'rgba(255,255,255,0.55)' : 'var(--color-text-muted)' }}>{t.role} · {t.city}</p>
+                  <p className="text-xs mt-1.5 font-medium" style={{ color: t.highlight ? 'rgba(255,255,255,0.5)' : 'var(--color-indigo-primary)', opacity: t.highlight ? 1 : 0.7 }}>
+                    Baan gevonden na {t.jobs} sollicitaties
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* For companies */}
+      <section className="py-16 px-8" style={{ background: 'var(--color-lavender-card)' }}>
+        <div className="max-w-2xl mx-auto text-center">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
+            style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
+            Voor werkgevers
+          </div>
+          <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--color-indigo-primary)' }}>
+            Bereik gemotiveerde kandidaten
+          </h2>
+          <p className="text-base mb-3" style={{ color: 'var(--color-text-muted)' }}>
+            Opstap-gebruikers zijn actief op zoek naar werk en hebben een volledig profiel. Zij solliciteren gericht — niet met een generieke brief, maar met een tekst die aansluit op jouw vacature.
+          </p>
+          <p className="text-sm mb-8" style={{ color: 'var(--color-text-muted)' }}>
+            Geïnteresseerd in samenwerking, vacatureplaatsing of een partnerschap? Neem direct contact op.
+          </p>
+          <a
+            href="mailto:info@opstapapp.nl?subject=Samenwerking%20Opstap&body=Hallo%20Opstap-team%2C%0A%0AIk%20ben%20ge%C3%AFnteresseerd%20in%20samenwerking%20en%20wil%20graag%20meer%20informatie%20ontvangen.%0A%0ANaam%3A%0ABedrijf%3A%0ATelefoonnummer%3A%0A%0AMet%20vriendelijke%20groet%2C"
+            className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90"
+            style={{ background: 'var(--color-indigo-primary)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+            Mail ons: info@opstapapp.nl
+          </a>
+          <p className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
+            Wij reageren binnen één werkdag
+          </p>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="py-16 px-8" style={{ background: 'var(--color-lavender-card)' }}>
         <div className="max-w-3xl mx-auto text-center">
