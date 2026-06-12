@@ -161,9 +161,9 @@ export default function Home() {
               },
               {
                 name: 'Daan K.',
-                role: 'Carrièreswitch van logistiek naar IT',
+                role: 'Magazijnmedewerker, klaar voor iets anders',
                 city: 'Eindhoven',
-                quote: 'De brieven die Opstap schrijft zijn echt op maat. Ze benadrukken precies de transferable skills die ik had. Na 3 sollicitaties had ik mijn eerste uitnodiging bij een software bedrijf.',
+                quote: 'Ik zat al drie jaar in een baan waar ik elke maandag tegenop zag. Geen idee hoe ik moest switchen. Met Opstap zette ik in één avond tien gerichte sollicitaties uit. Na 3 reacties had ik een gesprek, en nu werk ik bij een bedrijf waar ik echt blij van word.',
                 jobs: 3,
                 highlight: true,
               },
