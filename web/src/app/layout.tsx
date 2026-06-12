@@ -39,11 +39,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl" className={`${geist.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <Script
-          defer
-          data-domain="opstapapp.nl"
-          src="https://plausible.io/js/script.js"
-        />
+        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+          <Script
+            defer
+            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+            src="https://plausible.io/js/script.js"
+          />
+        )}
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
