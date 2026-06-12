@@ -62,7 +62,7 @@ export default function OverOnsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>Gebouwd voor de Nederlandse arbeidsmarkt</h2>
             <p>
-              Opstap zoekt op de grootste Nederlandse jobboards: Indeed, LinkedIn, Jobbird en Nationale Vacaturebank. Alle brieven zijn in het Nederlands. Alle data blijft in de EU. En je bepaalt zelf hoe lang wij jouw gegevens bewaren.
+              Opstap zoekt op de grootste Nederlandse jobboards: Indeed, LinkedIn, Jobbird en Nationale Vacaturebank. Alle brieven zijn in het Nederlands, afgestemd op de Nederlandse recruiter en de Nederlandse arbeidsmarkt.
             </p>
           </section>
 
@@ -86,6 +86,17 @@ export default function OverOnsPage() {
           </div>
 
         </div>
+
+        {/* Legal footer */}
+        <div className="mt-16 pt-8" style={{ borderTop: '1px solid var(--color-lavender-card)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--color-text-muted)' }}>Juridisch</p>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)', opacity: 0.75 }}>
+            Opstap verwerkt persoonsgegevens conform de Algemene Verordening Gegevensbescherming (AVG). Alle data wordt opgeslagen op EU-servers. Je hebt te allen tijde recht op inzage, correctie en verwijdering van je gegevens. Je kunt je account en alle bijbehorende data permanent verwijderen via Instellingen.{' '}
+            Opstap deelt geen persoonsgegevens met derden voor commerciële doeleinden en gebruikt jouw data niet voor het trainen van AI-modellen.{' '}
+            Meer informatie: <Link href="/privacy" className="underline hover:opacity-80" style={{ color: 'var(--color-text-muted)' }}>privacybeleid</Link>.
+          </p>
+        </div>
+
       </div>
     </PublicShell>
   )
