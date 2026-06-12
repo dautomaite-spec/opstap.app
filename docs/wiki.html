@@ -132,6 +132,8 @@
       <span class="section-label">Features</span>
       <a href="#contact">Contact form</a>
       <a href="#sidebar">Sidebar</a>
+      <a href="#privacy">Privacy page</a>
+      <a href="#analytics">Analytics</a>
     </div>
   </nav>
 
@@ -145,6 +147,7 @@
       <li>Register: <code>/register</code> → creates user + shows AVG consent before CV upload</li>
       <li>Server actions in <code>web/src/app/actions/auth.ts</code></li>
       <li>Route protection: <code>web/src/lib/supabase/server.ts</code> <code>createClient()</code> in server components</li>
+      <li>Email redirect URL is derived dynamically from <code>request.headers.get('host')</code> — works on localhost, preview deploys, and production without hardcoding</li>
     </ul>
 
     <h2 id="dashboard">Dashboard shell</h2>
@@ -164,7 +167,8 @@
       <li>Layout: <code>h-screen overflow-hidden</code> + <code>overflow-auto</code> on <code>&lt;main&gt;</code> — sidebar always visible</li>
       <li>Fixed decorative blobs (<code>position: fixed, z-index: 0</code>) in PublicShell — stay in place while content scrolls</li>
       <li>Mobile: top bar fixed + hamburger → <code>PublicMobileMenu.tsx</code> drawer</li>
-      <li>Pages: <code>/</code>, <code>/login</code>, <code>/register</code>, <code>/faq</code>, <code>/contact</code>, <code>/over-ons</code>, <code>/privacy</code></li>
+      <li>Pages: <code>/</code>, <code>/login</code>, <code>/register</code>, <code>/faq</code>, <code>/contact</code>, <code>/over-ons</code>, <code>/privacy</code>, <code>/blog</code></li>
+      <li>Over-ons: AVG/legal copy moved to a small collapsed "Juridisch" footer section — not prominent, meets disclosure requirements</li>
     </ul>
 
     <h2 id="design">Design system</h2>
@@ -215,6 +219,25 @@
       <li>Organic right edge: 40px SVG overlay at <code>right: 0</code> with <code>preserveAspectRatio="none"</code> — adapts to any viewport height</li>
       <li>Decorative circles: SVG in sidebar background, <code>zIndex: 0</code>, low opacity (3–6%)</li>
       <li>Background colour on inner <code>&lt;div&gt;</code> (not <code>&lt;aside&gt;</code>) to keep sticky/fixed behaviour intact</li>
+      <li>Fixed via <code>h-screen</code> layout on the shell wrapper — scroll overflow on <code>&lt;main&gt;</code> only</li>
+    </ul>
+
+    <h2 id="privacy">Privacy page</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Route: <code>/privacy</code> — static server component, no client JS needed</li>
+      <li>Full AVG-compliant Dutch privacy policy — plain language, no legalese</li>
+      <li>Covers: data collected, purpose, retention periods, user rights (inzage, correctie, verwijdering, overdraagbaarheid), contactgegevens DPO</li>
+      <li>Linked from footer on all public pages and from the over-ons "Juridisch" section</li>
+    </ul>
+
+    <h2 id="analytics">Analytics (Plausible)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Cookieless, AVG-safe — no consent banner required</li>
+      <li>Script domain driven by <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code> env var — was previously hardcoded to <code>opstapapp.nl</code></li>
+      <li>Set in Vercel env vars; falls back gracefully if not set (script not injected)</li>
+      <li>Plausible account still pending activation on live domain</li>
     </ul>
 
   </main>
