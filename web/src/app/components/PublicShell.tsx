@@ -13,12 +13,19 @@ export default async function PublicShell({ children }: { children: React.ReactN
     ?? null
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--color-lavender-bg)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-lavender-bg)' }}>
+
+      {/* Fixed decorative blobs — stay in place while content scrolls */}
+      <div aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div style={{ position: 'absolute', width: 500, height: 440, top: -80, right: -60, background: 'var(--color-indigo-primary)', opacity: 0.07, borderRadius: '62% 38% 46% 54% / 58% 44% 56% 42%', transform: 'rotate(-18deg)' }} />
+        <div style={{ position: 'absolute', width: 420, height: 380, bottom: -100, right: 120, background: 'var(--color-indigo-primary)', opacity: 0.06, borderRadius: '38% 62% 54% 46% / 42% 58% 40% 60%', transform: 'rotate(22deg)' }} />
+        <div style={{ position: 'absolute', width: 210, height: 230, top: '38%', right: '18%', background: 'var(--color-indigo-primary)', opacity: 0.04, borderRadius: '54% 46% 62% 38% / 40% 62% 38% 60%', transform: 'rotate(40deg)' }} />
+      </div>
 
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex shrink-0 sticky top-0 h-screen"
-        style={{ width: 220, position: 'relative' }}
+        className="hidden md:flex shrink-0 h-full"
+        style={{ width: 220, position: 'relative', zIndex: 2 }}
       >
         {/* Decorative background circles */}
         <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 220 800" preserveAspectRatio="xMidYMid slice">
@@ -101,8 +108,8 @@ export default async function PublicShell({ children }: { children: React.ReactN
         </div>
       </div>
 
-      {/* Page content */}
-      <main className="flex-1 flex flex-col pt-14 md:pt-0">
+      {/* Page content — scrolls internally so sidebar stays fixed */}
+      <main className="flex-1 flex flex-col overflow-auto pt-14 md:pt-0" style={{ position: 'relative', zIndex: 1 }}>
         {children}
       </main>
 
