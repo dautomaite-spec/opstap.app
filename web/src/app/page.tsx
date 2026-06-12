@@ -153,15 +153,15 @@ export default function Home() {
                 name: 'Sarah V.',
                 role: 'HBO Communicatie afgestudeerd',
                 city: 'Utrecht',
-                quote: 'Na mijn afstuderen had ik geen idee hoe ik een goede motivatiebrief moest schrijven. Via Opstap had ik binnen twee weken drie uitnodigingen — ik ben nu aan de slag als junior marketeer.',
-                jobs: 11,
+                quote: 'Na mijn afstuderen had ik geen idee hoe ik een goede motivatiebrief moest schrijven. Via Opstap had ik binnen twee weken drie uitnodigingen, ik ben nu aan de slag als junior marketeer.',
+                jobs: 7,
               },
               {
                 name: 'Daan K.',
                 role: 'Carrièreswitch van logistiek naar IT',
                 city: 'Eindhoven',
-                quote: 'De brieven die Opstap schrijft zijn echt op maat. Ze benadrukken precies de transferable skills die ik had. Na 7 sollicitaties had ik mijn eerste uitnodiging bij een software bedrijf.',
-                jobs: 7,
+                quote: 'De brieven die Opstap schrijft zijn echt op maat. Ze benadrukken precies de transferable skills die ik had. Na 3 sollicitaties had ik mijn eerste uitnodiging bij een software bedrijf.',
+                jobs: 3,
                 highlight: true,
               },
               {
@@ -169,7 +169,7 @@ export default function Home() {
                 role: 'MBO Zorg, op zoek naar vaste plek',
                 city: 'Amsterdam',
                 quote: 'Ik werkte in de nachtdienst en had geen tijd om zelf brieven te schrijven. Opstap deed het voor mij. Binnen een maand had ik een vaste baan bij een zorginstelling in de buurt.',
-                jobs: 14,
+                jobs: 9,
               },
             ].map(t => (
               <div
@@ -196,43 +196,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* For companies */}
-      <section className="py-16 px-8" style={{ background: 'var(--color-lavender-card)' }}>
-        <div className="max-w-2xl mx-auto text-center">
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
-            style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-            </svg>
-            Voor werkgevers
-          </div>
-          <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--color-indigo-primary)' }}>
-            Bereik gemotiveerde kandidaten
-          </h2>
-          <p className="text-base mb-3" style={{ color: 'var(--color-text-muted)' }}>
-            Opstap-gebruikers zijn actief op zoek naar werk en hebben een volledig profiel. Zij solliciteren gericht — niet met een generieke brief, maar met een tekst die aansluit op jouw vacature.
-          </p>
-          <p className="text-sm mb-8" style={{ color: 'var(--color-text-muted)' }}>
-            Geïnteresseerd in samenwerking, vacatureplaatsing of een partnerschap? Neem direct contact op.
-          </p>
-          <a
-            href="mailto:info@opstapapp.nl?subject=Samenwerking%20Opstap&body=Hallo%20Opstap-team%2C%0A%0AIk%20ben%20ge%C3%AFnteresseerd%20in%20samenwerking%20en%20wil%20graag%20meer%20informatie%20ontvangen.%0A%0ANaam%3A%0ABedrijf%3A%0ATelefoonnummer%3A%0A%0AMet%20vriendelijke%20groet%2C"
-            className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90"
-            style={{ background: 'var(--color-indigo-primary)' }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-            </svg>
-            Mail ons: info@opstapapp.nl
-          </a>
-          <p className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
-            Wij reageren binnen één werkdag
-          </p>
         </div>
       </section>
 

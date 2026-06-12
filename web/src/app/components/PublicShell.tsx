@@ -34,6 +34,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
           <SidebarNavLink href="/dashboard/settings" label="Voorkeuren / instellingen" />
           <SidebarNavLink href="/over-ons" label="Over Opstap" />
           <SidebarNavLink href="/faq" label="Help & FAQ" />
+          <SidebarNavLink href="/contact" label="Contact" />
         </nav>
 
         <div className="px-4 py-6 flex flex-col gap-3">
