@@ -127,7 +127,7 @@ export default function DashboardShell({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3">
+      <nav className="flex-1 overflow-y-auto py-3 pr-8">
         {navItems.map(item => {
           const active = isActive(item.href, item.exact)
           return (
@@ -235,9 +235,28 @@ export default function DashboardShell({
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex flex-col shrink-0 transition-all duration-200"
-        style={{ width: sidebarW, background: 'var(--color-indigo-primary)' }}
+        style={{ width: sidebarW, background: 'var(--color-indigo-primary)', position: 'relative', overflow: 'hidden' }}
       >
-        {sidebarContent}
+        {/* Decorative background circles — only when expanded */}
+        {!collapsed && (
+          <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 240 800" preserveAspectRatio="xMidYMid slice">
+            <circle cx="215" cy="85" r="75" fill="rgba(255,255,255,0.06)" />
+            <circle cx="190" cy="560" r="62" fill="rgba(255,255,255,0.05)" />
+            <circle cx="220" cy="330" r="40" fill="rgba(255,255,255,0.04)" />
+            <circle cx="155" cy="740" r="88" fill="rgba(255,255,255,0.03)" />
+          </svg>
+        )}
+
+        {/* Organic right-edge wave */}
+        {!collapsed && (
+          <svg aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 40, height: '100%', zIndex: 5, pointerEvents: 'none' }} viewBox="0 0 40 1000" preserveAspectRatio="none">
+            <path d="M22,0 C34,120 38,240 24,370 C16,480 32,580 22,700 C14,820 22,1000 22,1000 L40,1000 L40,0 Z" fill="var(--color-lavender-bg)" />
+          </svg>
+        )}
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          {sidebarContent}
+        </div>
       </aside>
 
       {/* Mobile drawer */}
