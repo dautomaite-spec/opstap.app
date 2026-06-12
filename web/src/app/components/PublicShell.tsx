@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 import SidebarNavLink from './SidebarNavLink'
+import PublicMobileMenu from './PublicMobileMenu'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function PublicShell({ children }: { children: React.ReactNode }) {
@@ -61,9 +62,10 @@ export default async function PublicShell({ children }: { children: React.ReactN
 
       {/* Mobile top bar */}
       <div
-        className="md:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-5 py-3 border-b"
+        className="md:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 border-b"
         style={{ background: 'var(--color-indigo-primary)', borderColor: 'rgba(255,255,255,0.1)' }}
       >
+        <PublicMobileMenu userName={userName} />
         <Link href="/" className="font-bold text-white hover:opacity-90 transition">Opstap</Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -75,8 +77,8 @@ export default async function PublicShell({ children }: { children: React.ReactN
               {userName.charAt(0).toUpperCase()}
             </div>
           ) : (
-            <Link href="/register" className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.18)' }}>
-              Aan de slag
+            <Link href="/login" className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.18)' }}>
+              Inloggen
             </Link>
           )}
         </div>
