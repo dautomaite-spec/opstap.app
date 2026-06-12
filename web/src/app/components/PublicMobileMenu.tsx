@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/over-ons', label: 'Over Opstap' },
   { href: '/faq', label: 'Help & FAQ' },
   { href: '/contact', label: 'Contact' },
+  { href: '/privacy', label: 'Privacybeleid' },
 ]
 
 export default function PublicMobileMenu({ userName }: { userName: string | null }) {
