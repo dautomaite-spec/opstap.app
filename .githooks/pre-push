@@ -1,0 +1,28 @@
+#!/bin/sh
+# Opstap pre-push hook
+# Reminds you to run /updater before pushing.
+# To install: git config core.hooksPath .githooks
+# To bypass (emergency only): git push --no-verify
+
+echo ""
+echo "┌─────────────────────────────────────────────┐"
+echo "│  Opstap pre-push check                      │"
+echo "│                                             │"
+echo "│  Have you run /updater in Claude Code?      │"
+echo "│  It updates planning, wiki, roadmap,        │"
+echo "│  changelog and cleans temp files.           │"
+echo "│                                             │"
+echo "│  Run it now if not done, then push again.   │"
+echo "│  To skip: git push --no-verify              │"
+echo "└─────────────────────────────────────────────┘"
+echo ""
+
+# Check for stray screenshot files in root
+STRAY=$(find . -maxdepth 1 -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" 2>/dev/null | grep -v "^\./\." | head -5)
+if [ -n "$STRAY" ]; then
+  echo "⚠  Temp files found in repo root — /updater should have cleaned these:"
+  echo "$STRAY"
+  echo ""
+fi
+
+exit 0
