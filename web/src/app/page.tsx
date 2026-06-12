@@ -25,7 +25,16 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-8 py-20 md:py-28">
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-8 py-20 md:py-28 relative overflow-hidden">
+
+        {/* Organic background blobs */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <div style={{ position: 'absolute', width: 420, height: 370, top: -100, left: -140, background: 'var(--color-indigo-primary)', opacity: 0.07, borderRadius: '62% 38% 46% 54% / 58% 44% 56% 42%', transform: 'rotate(-18deg)' }} />
+          <div style={{ position: 'absolute', width: 460, height: 400, bottom: -120, right: -150, background: 'var(--color-indigo-primary)', opacity: 0.06, borderRadius: '38% 62% 54% 46% / 42% 58% 40% 60%', transform: 'rotate(22deg)' }} />
+          <div style={{ position: 'absolute', width: 180, height: 200, top: '30%', right: '5%', background: 'var(--color-indigo-primary)', opacity: 0.04, borderRadius: '54% 46% 62% 38% / 40% 62% 38% 60%', transform: 'rotate(40deg)' }} />
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
           style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
@@ -56,6 +65,7 @@ export default function Home() {
               {item}
             </span>
           ))}
+        </div>
         </div>
       </section>
 

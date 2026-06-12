@@ -234,8 +234,8 @@ export default function DashboardShell({
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-lavender-bg)' }}>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col shrink-0 transition-all duration-200"
-        style={{ width: sidebarW, background: 'var(--color-indigo-primary)', position: 'relative', overflow: 'hidden' }}
+        className="hidden md:flex shrink-0 transition-all duration-200"
+        style={{ width: sidebarW, position: 'relative' }}
       >
         {/* Decorative background circles — only when expanded */}
         {!collapsed && (
@@ -254,7 +254,7 @@ export default function DashboardShell({
           </svg>
         )}
 
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', background: 'var(--color-indigo-primary)' }}>
           {sidebarContent}
         </div>
       </aside>
