@@ -1,6 +1,12 @@
 # Changelog — Opstap
 
 ## 2026-06-12
+- fix: drive Plausible analytics domain from NEXT_PUBLIC_PLAUSIBLE_DOMAIN env var (was hardcoded)
+- fix: auto-detect host for auth email redirect URLs (#55)
+- fix: move legal/AVG copy to small footer section on over-ons page (#54)
+- feat: add /privacy page with full AVG-compliant Dutch privacy policy (#53)
+- chore: consolidate all docs into docs/ folder, add wiki (#52)
+- chore: add updater agent, pre-push hook, changelog, fix schoolverlaters copy (#51)
 - fix: update Daan testimonial to career-change-from-unhappy-job story (#50)
 - fix: fixed-position blobs and always-visible sidebar on public pages (#49)
 - feat: organic hero blobs, fix sidebar sticky scroll regression (#48)
