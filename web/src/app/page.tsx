@@ -165,10 +165,10 @@ export default function Home() {
                 highlight: true,
               },
               {
-                name: 'Fatima O.',
-                role: 'MBO Zorg, op zoek naar vaste plek',
+                name: 'Roemer S.',
+                role: 'Acteur, op zoek naar zijn eerste rol',
                 city: 'Amsterdam',
-                quote: 'Ik werkte in de nachtdienst en had geen tijd om zelf brieven te schrijven. Opstap deed het voor mij. Binnen een maand had ik een vaste baan bij een zorginstelling in de buurt.',
+                quote: 'Ik had jarenlang gehoopt op een kans in de Nederlandse tv-wereld. Via Opstap stuurde ik in één avond twintig gerichte brieven naar productiebedrijven. Twee weken later speelde ik een bijrol in Flikken Maastricht.',
                 jobs: 9,
               },
             ].map(t => (
