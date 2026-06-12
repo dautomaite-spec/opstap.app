@@ -41,7 +41,7 @@ export default function Home() {
         </p>
         <div className="mt-10 flex gap-4 flex-wrap justify-center">
           <Link href="/register" className="px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
-            Aan de slag
+            Gratis beginnen
           </Link>
           <Link href="/login" className="px-8 py-3 text-base font-semibold rounded-xl border transition hover:opacity-80" style={{ color: 'var(--color-indigo-primary)', borderColor: 'var(--color-indigo-primary)' }}>
             Inloggen
@@ -232,70 +232,6 @@ export default function Home() {
           </a>
           <p className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
             Wij reageren binnen één werkdag
-          </p>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="py-16 px-8" style={{ background: 'var(--color-lavender-card)' }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>
-            Eenvoudige prijzen
-          </h2>
-          <p className="text-base mb-2" style={{ color: 'var(--color-text-muted)' }}>
-            Begin gratis — je krijgt <strong style={{ color: 'var(--color-text-primary)' }}>5 gratis sollicitaties</strong> bij aanmelding.
-          </p>
-          <p className="text-sm mb-10" style={{ color: 'var(--color-text-muted)' }}>
-            1 credit = 1 motivatiebrief. Credits verlopen nooit.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            {[
-              { credits: 10, price: '€2,99', per: '€0,30/credit', popular: false },
-              { credits: 30, price: '€6,99', per: '€0,23/credit', popular: true },
-              { credits: 75, price: '€14,99', per: '€0,20/credit', popular: false },
-            ].map(b => (
-              <div
-                key={b.credits}
-                className="relative rounded-2xl p-6 flex flex-col items-center"
-                style={{
-                  background: b.popular ? 'var(--color-indigo-primary)' : 'var(--color-white)',
-                  boxShadow: b.popular ? '0 4px 24px rgba(61,58,140,0.18)' : '0 1px 8px rgba(61,58,140,0.07)',
-                }}
-              >
-                {b.popular && (
-                  <span
-                    className="absolute -top-3 text-xs font-semibold px-3 py-1 rounded-full"
-                    style={{ background: 'white', color: 'var(--color-indigo-primary)' }}
-                  >
-                    Populairst
-                  </span>
-                )}
-                <p className="text-3xl font-bold mb-1" style={{ color: b.popular ? 'white' : 'var(--color-indigo-primary)' }}>
-                  {b.credits}
-                </p>
-                <p className="text-sm mb-3" style={{ color: b.popular ? 'rgba(255,255,255,0.75)' : 'var(--color-text-muted)' }}>
-                  credits
-                </p>
-                <p className="text-2xl font-bold mb-1" style={{ color: b.popular ? 'white' : 'var(--color-text-primary)' }}>
-                  {b.price}
-                </p>
-                <p className="text-xs" style={{ color: b.popular ? 'rgba(255,255,255,0.6)' : 'var(--color-text-muted)' }}>
-                  {b.per}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90"
-            style={{ background: 'var(--color-indigo-primary)' }}
-          >
-            Begin met 5 gratis credits
-          </Link>
-          <p className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
-            Geen abonnement · Geen verborgen kosten · Betaal via iDEAL
           </p>
         </div>
       </section>

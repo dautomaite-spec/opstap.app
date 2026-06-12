@@ -68,12 +68,16 @@ const SECTIONS = [
     title: 'Kosten',
     items: [
       {
-        q: 'Wat kost Opstap?',
-        a: 'Je betaalt per sollicitatie via een creditssysteem. Bij registratie krijg je gratis credits om het te proberen. Aanvullende credits kun je kopen via iDEAL of creditcard.',
+        q: 'Is Opstap gratis?',
+        a: 'Je begint gratis. Bij aanmelding krijg je direct een aantal gratis credits — genoeg om te ervaren hoe het werkt. Zodra je credits op zijn, laten we je precies zien wat het kost om door te gaan. Geen verrassing vooraf, geen abonnement.',
+      },
+      {
+        q: 'Hoe werkt het creditssysteem?',
+        a: '1 credit = 1 motivatiebrief. Je gebruikt credits alleen wanneer je een brief laat genereren. Als je credits op zijn, zie je de opties om bij te kopen — pas dán. Credits verlopen nooit.',
       },
       {
         q: 'Zijn er abonnementskosten?',
-        a: 'Nee. Je betaalt alleen voor wat je gebruikt. Geen maandelijkse kosten, geen verborgen kosten.',
+        a: 'Nee. Je betaalt alleen voor wat je gebruikt, wanneer je het nodig hebt. Geen maandelijkse kosten, geen verborgen kosten. Je kunt bijkopen via iDEAL.',
       },
     ],
   },
