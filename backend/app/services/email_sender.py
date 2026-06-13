@@ -38,26 +38,24 @@ class ApplicationEmail:
 _FOOTER_PLAIN = """\
 
 ---
-Deze sollicitatie is verstuurd via Opstap (opstap.nl) — een platform dat werkzoekenden \
-helpt met geautomatiseerde sollicitaties in Nederland. De sollicitant is verantwoordelijk \
-voor de inhoud. Antwoorden gaan rechtstreeks naar de sollicitant.
+Deze sollicitatie is verstuurd via Opstap (opstapapp.nl) — een platform voor \
+werkzoekenden in Nederland. Antwoorden gaan rechtstreeks naar de sollicitant.
 
-Beschouwt u dit als spam of misbruik? Meld het via opstap.nl/misbruik of mail naar \
-misbruik@opstap.nl. Wij handelen iedere melding binnen 24 uur af.
+Beschouwt u dit als spam of misbruik? Meld het via opstapapp.nl/contact of mail naar \
+misbruik@opstapapp.nl. Wij handelen iedere melding binnen 24 uur af.
 """
 
 _FOOTER_HTML = """\
   <div class="footer">
     <p>
-      Deze sollicitatie is verstuurd via <a href="https://opstap.nl">Opstap</a> &mdash;
-      een platform dat werkzoekenden helpt met geautomatiseerde sollicitaties in Nederland.
-      De sollicitant is verantwoordelijk voor de inhoud van deze brief.
+      Deze sollicitatie is verstuurd via <a href="https://www.opstapapp.nl">Opstap</a> &mdash;
+      een platform voor werkzoekenden in Nederland.
       Antwoorden gaan rechtstreeks naar de sollicitant.
     </p>
     <p>
       Beschouwt u dit als spam of misbruik?
-      <a href="https://opstap.nl/misbruik">Meld het hier</a> of mail naar
-      <a href="mailto:misbruik@opstap.nl">misbruik@opstap.nl</a>.
+      <a href="https://www.opstapapp.nl/contact">Meld het hier</a> of mail naar
+      <a href="mailto:misbruik@opstapapp.nl">misbruik@opstapapp.nl</a>.
       Wij handelen iedere melding binnen 24 uur af.
     </p>
   </div>"""
