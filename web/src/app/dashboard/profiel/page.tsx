@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Application } from '@/lib/api'
 import Achievements from '../components/Achievements'
@@ -19,6 +19,14 @@ export default function ProfielPage() {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState('')
 
+  const [cvUploading, setCvUploading] = useState(false)
+  const [cvError, setCvError] = useState('')
+  const [cvSuccess, setCvSuccess] = useState('')
+  const [cvDeleting, setCvDeleting] = useState(false)
+  const [cvConsentOpen, setCvConsentOpen] = useState(false)
+  const [cvRetentionDays, setCvRetentionDays] = useState(30)
+  const cvInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     Promise.all([
       api.profile.get().catch(() => null),
@@ -28,6 +36,40 @@ export default function ProfielPage() {
       setApplications(apps as Application[])
     }).finally(() => setLoading(false))
   }, [])
+
+  async function handleCvUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCvUploading(true)
+    setCvError('')
+    setCvSuccess('')
+    try {
+      const res = await api.profile.uploadCV(file, cvRetentionDays)
+      setCvSuccess(`CV geüpload. Wordt automatisch verwijderd op ${new Date(res.expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.`)
+      const updated = await api.profile.get().catch(() => null)
+      if (updated) setProfile(updated)
+    } catch (err) {
+      setCvError(err instanceof ApiError ? err.message : 'Uploaden mislukt. Probeer opnieuw.')
+    } finally {
+      setCvUploading(false)
+      if (cvInputRef.current) cvInputRef.current.value = ''
+    }
+  }
+
+  async function handleCvDelete() {
+    setCvDeleting(true)
+    setCvError('')
+    setCvSuccess('')
+    try {
+      await api.profile.deleteCV()
+      setCvSuccess('CV verwijderd')
+      setProfile(p => p ? { ...p, cv_url: undefined, cv_expires_at: undefined } : p)
+    } catch (err) {
+      setCvError(err instanceof ApiError ? err.message : 'Verwijderen mislukt.')
+    } finally {
+      setCvDeleting(false)
+    }
+  }
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -141,6 +183,112 @@ export default function ProfielPage() {
                 <option value="wo_master">WO Master</option>
                 <option value="phd">PhD / Promotie</option>
               </SelectField>
+              {/* CV upload section */}
+              <div className="pt-2 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</p>
+                {cvError && (
+                  <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{cvError}</p>
+                )}
+                {cvSuccess && (
+                  <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{cvSuccess}</p>
+                )}
+                {profile?.cv_url ? (
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)', flexShrink: 0 }}>
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>CV geüpload</p>
+                      {profile.cv_expires_at && (
+                        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                          Vervalt {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCvDelete}
+                      disabled={cvDeleting}
+                      className="text-xs px-3 py-1.5 rounded-lg border transition hover:opacity-80 disabled:opacity-50"
+                      style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+                    >
+                      {cvDeleting ? 'Verwijderen…' : 'Verwijder CV'}
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      ref={cvInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleCvUpload}
+                      disabled={cvUploading}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      disabled={cvUploading}
+                      onClick={() => setCvConsentOpen(true)}
+                      className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl border-2 border-dashed text-sm transition hover:opacity-80 disabled:opacity-50"
+                      style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      {cvUploading ? 'Uploaden…' : 'CV uploaden (PDF, DOC, DOCX)'}
+                    </button>
+                  </div>
+                )}
+
+                {/* AVG consent modal */}
+                {cvConsentOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+                    <div className="rounded-2xl p-6 max-w-sm w-full flex flex-col gap-4" style={{ background: 'var(--color-white)' }}>
+                      <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</h3>
+                      <div className="text-sm flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
+                        <p>Je CV wordt opgeslagen op beveiligde EU-servers (Frankfurt) en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
+                        <ul className="flex flex-col gap-1 pl-4 list-disc">
+                          <li>Je ontvangt 7 dagen van tevoren een herinnering</li>
+                          <li>Je kunt je CV op elk moment zelf verwijderen</li>
+                          <li>Niet gedeeld met derden of gebruikt voor AI-training</li>
+                        </ul>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Bewaartermijn</label>
+                        <select
+                          value={cvRetentionDays}
+                          onChange={e => setCvRetentionDays(Number(e.target.value))}
+                          className="px-3 py-2 rounded-lg border text-sm"
+                          style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                        >
+                          <option value={7}>7 dagen</option>
+                          <option value={30}>30 dagen (standaard)</option>
+                          <option value={90}>90 dagen</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCvConsentOpen(false)}
+                          className="flex-1 py-2 rounded-xl text-sm border transition hover:opacity-80"
+                          style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
+                        >
+                          Annuleren
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setCvConsentOpen(false); cvInputRef.current?.click() }}
+                          className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
+                          style={{ background: 'var(--color-indigo-primary)' }}
+                        >
+                          Akkoord en uploaden
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
                 disabled={saving}
