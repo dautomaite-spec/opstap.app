@@ -6,7 +6,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Admin route guard — checked before Supabase (no auth needed)
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const session = request.cookies.get('admin_session')?.value
     const adminKey = process.env.ADMIN_API_KEY
     if (!adminKey || session !== createHash('sha256').update(adminKey).digest('hex')) {
