@@ -7,6 +7,8 @@ class ProfileCreate(BaseModel):
     naam: str = Field(..., max_length=120)
     woonplaats: Optional[str] = Field(None, max_length=120)
     functietitel: Optional[str] = Field(None, max_length=120)
+    functietitel_2: Optional[str] = Field(None, max_length=120)
+    functietitel_3: Optional[str] = Field(None, max_length=120)
     open_voor_alles: bool = False
     beschikbaarheid: Optional[str] = Field(None, max_length=50)
     uren_per_week: Optional[int] = Field(None, ge=1, le=80)

@@ -323,7 +323,7 @@ async def cron_job_digest(
 
     profiles_result = (
         supabase.table("profiles")
-        .select("user_id,naam,functietitel,woonplaats")
+        .select("user_id,naam,functietitel,functietitel_2,functietitel_3,woonplaats")
         .gte("updated_at", since)
         .eq("email_digest_enabled", True)
         .execute()
@@ -337,7 +337,8 @@ async def cron_job_digest(
 
     for profile in profiles:
         uid = profile["user_id"]
-        keywords = profile.get("functietitel") or ""
+        titles = [t for t in [profile.get("functietitel"), profile.get("functietitel_2"), profile.get("functietitel_3")] if t]
+        keywords = " ".join(titles)
         location = profile.get("woonplaats") or ""
         naam = profile.get("naam") or ""
 

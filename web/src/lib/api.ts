@@ -78,6 +78,8 @@ export interface Profile {
   id: string
   naam: string
   functietitel?: string
+  functietitel_2?: string
+  functietitel_3?: string
   woonplaats?: string
   beschikbaarheid?: string
   uren_per_week?: number
@@ -114,6 +116,8 @@ export interface TransactionOut {
 export interface ProfileCreate {
   naam: string
   functietitel?: string
+  functietitel_2?: string
+  functietitel_3?: string
   woonplaats?: string
   beschikbaarheid?: string
   uren_per_week?: number

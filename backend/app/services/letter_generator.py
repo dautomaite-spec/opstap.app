@@ -173,8 +173,21 @@ async def generate_letter(
 
     # ── Build profile block ───────────────────────────────────────────────────
     naam = str(profile.get("naam", ""))[:100]
-    functie = str(profile.get("functietitel", ""))[:100]
     open_voor_alles = profile.get("open_voor_alles", False)
+
+    # Pick the title that best matches the job — fall back to primary if none match
+    all_titles = [
+        str(t)[:100] for t in [
+            profile.get("functietitel"),
+            profile.get("functietitel_2"),
+            profile.get("functietitel_3"),
+        ] if t
+    ]
+    job_lower = f"{job_title} {job_description}".lower()
+    functie = next(
+        (t for t in all_titles if any(w.lower() in job_lower for w in t.split())),
+        all_titles[0] if all_titles else "",
+    )
     woonplaats = str(profile.get("woonplaats", ""))[:80]
     beschikbaarheid = str(profile.get("beschikbaarheid", ""))[:80]
     uren = profile.get("uren_per_week")

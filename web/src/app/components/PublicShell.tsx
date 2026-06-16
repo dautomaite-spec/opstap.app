@@ -111,8 +111,8 @@ export default async function PublicShell({ children }: { children: React.ReactN
 
       {/* Page content — scrolls internally so sidebar stays fixed */}
       <main className="flex-1 flex flex-col overflow-auto pt-14 md:pt-0" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Desktop top bar — language switcher top-right */}
-        <div className="hidden md:flex items-center justify-end px-6 py-3">
+        {/* Desktop language switcher — top-right of content area, outside sidebar overflow:hidden */}
+        <div className="hidden md:flex justify-end px-6 py-3">
           <LanguageSwitcherPublic />
         </div>
         {children}
