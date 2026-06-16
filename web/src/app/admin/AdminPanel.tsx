@@ -1,7 +1,57 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useCallback } from 'react'
 import { adjustCredits, toggleSuspend, deleteUser, adminLogout } from './actions'
+
+function generateAdminKey(): string {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+function RotateKeyPanel() {
+  const [newKey, setNewKey] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const generate = useCallback(() => {
+    setNewKey(generateAdminKey())
+    setCopied(false)
+  }, [])
+
+  const copy = useCallback(() => {
+    if (!newKey) return
+    navigator.clipboard.writeText(newKey)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [newKey])
+
+  return (
+    <div style={{ background: 'white', borderRadius: 10, padding: '16px 20px', boxShadow: '0 1px 8px rgba(61,58,140,0.08)', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#3d3a8c' }}>Admin API-sleutel roteren</div>
+          <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Genereer een nieuwe sleutel, kopieer hem en plak in Railway → Variables → ADMIN_API_KEY.</div>
+        </div>
+        <button onClick={generate} style={S.btn('primary')}>Nieuwe sleutel genereren</button>
+      </div>
+      {newKey && (
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <code style={{ flex: 1, background: '#f5f3ff', borderRadius: 6, padding: '8px 12px', fontSize: 12, wordBreak: 'break-all', color: '#1a1a1a', border: '1.5px solid #ddd6fe' }}>
+            {newKey}
+          </code>
+          <button onClick={copy} style={S.btn(copied ? 'ghost' : 'primary')}>
+            {copied ? 'Gekopieerd!' : 'Kopiëren'}
+          </button>
+        </div>
+      )}
+      {newKey && (
+        <p style={{ margin: '8px 0 0', fontSize: 11, color: '#dc2626' }}>
+          Sla de sleutel eerst op in Railway voordat je de pagina verlaat — daarna update ook <code>.env.local</code>.
+        </p>
+      )}
+    </div>
+  )
+}
 
 interface User {
   user_id: string
@@ -207,6 +257,9 @@ export default function AdminPanel({ initialUsers }: { initialUsers: User[] }) {
           </div>
         ))}
       </div>
+
+      {/* Rotate admin key */}
+      <RotateKeyPanel />
 
       {/* Search */}
       <input
