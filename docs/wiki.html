@@ -254,7 +254,8 @@
       <li>AVG consent modal blocks upload until user explicitly accepts; stores consent timestamp in Supabase</li>
       <li>Accepted formats: PDF, DOCX. Stored in Supabase Storage EU bucket (encrypted)</li>
       <li>Retention period set at upload time: 7 / 30 / 90 days (default 30). User can change or delete at any time from profile settings</li>
-      <li>Key files: <code>web/src/app/dashboard/profile/</code> (page + CVUploadModal component)</li>
+      <li>If no CV is uploaded, profile page shows a link to cvmaker.nl (external) — helps users without an existing CV create one before uploading (#61)</li>
+      <li>Key files: <code>web/src/app/dashboard/profiel/page.tsx</code> (page + CVUploadModal component)</li>
     </ul>
     <div class="gotcha"><strong>AVG rule:</strong> The consent modal must appear before the file picker opens, not after — confirmed in avg-checker review (PR #58).</div>
 
@@ -273,6 +274,7 @@
       <li>Visible on all public pages and in the dashboard sidebar/header</li>
       <li>NL is the only active locale in v1; EN / AR / TR / UK are greyed out with "binnenkort beschikbaar" tooltip</li>
       <li>Implemented as a client component — clicking a future locale shows a toast, not a route change</li>
+      <li>Desktop sidebar (PublicShell): language switcher added directly in the sidebar nav (#62); 'Aan de slag' CTA border also fixed in this PR</li>
       <li>When multi-language is activated (v2), the switcher wires to Next.js <code>next-intl</code> or similar i18n library; Arabic will need RTL layout toggle</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> The Outlook and Meta OAuth buttons are greyed out with "binnenkort beschikbaar" — they are rendered but <code>pointer-events: none</code> / <code>opacity: 0.4</code>. Do not wire them up until OAuth apps are approved by those providers.</div>

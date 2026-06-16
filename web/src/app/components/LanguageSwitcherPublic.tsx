@@ -20,8 +20,7 @@ export default function LanguageSwitcherPublic() {
         style={{ color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.12)' }}
         title="Taal"
       >
-        <span>🇳🇱</span>
-        <span>NL</span>
+        <span style={{ fontSize: 18, lineHeight: 1 }}>🇳🇱</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6" />
         </svg>

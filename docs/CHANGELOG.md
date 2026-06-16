@@ -1,6 +1,8 @@
 # Changelog — Opstap
 
 ## 2026-06-16
+- fix: sidebar 'Aan de slag' border fix + language switcher added to desktop sidebar (#62 / 22dcdd3)
+- feat: link to cvmaker.nl on profile page for users without a CV (#61 / c2c7d9a)
 - ops: SendGrid domain verification completed for opstapapp.nl (DKIM/SPF records confirmed)
 - fix: remove privacy link from sidebar — footer-only placement
 - feat: Outlook and Meta OAuth buttons greyed out with "binnenkort beschikbaar" label
