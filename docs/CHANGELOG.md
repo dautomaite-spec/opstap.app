@@ -1,5 +1,12 @@
 # Changelog — Opstap
 
+## 2026-06-17
+- fix: make all SendGrid calls non-blocking with run_in_executor in email_sender.py and email_notifications.py (3e59998)
+- fix: dashboard profile form — 3 job titles, salary range, 409 fallback (#71)
+- feat: salary range (min/max bruto/maand) added to profile page (#70)
+- feat: email users when admin adjusts credits or suspends account (#69)
+- fix: remove EU-server location claims from AVG modals and privacy page (#68)
+
 ## 2026-06-16
 - fix: sidebar 'Aan de slag' border fix + language switcher added to desktop sidebar (#62 / 22dcdd3)
 - feat: link to cvmaker.nl on profile page for users without a CV (#61 / c2c7d9a)

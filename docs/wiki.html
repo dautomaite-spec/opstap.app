@@ -141,6 +141,8 @@
       <a href="#vercel">Vercel setup</a>
       <a href="#email-routing">Email routing</a>
       <a href="#sendgrid">SendGrid domain auth</a>
+      <a href="#async-email">Async email sender</a>
+      <a href="#salary-range">Salary range</a>
     </div>
   </nav>
 
@@ -300,6 +302,24 @@
       <li>First three were added 2026-06-13; remaining four still need to be set</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> Vercel caches the framework setting aggressively — after changing Framework Preset, trigger a manual redeploy (not just a git push) to pick up the change immediately.</div>
+
+    <h2 id="async-email">Async email sender</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key files: <code>backend/app/services/email_sender.py</code>, <code>backend/app/services/email_notifications.py</code></li>
+      <li>All SendGrid HTTP calls are now wrapped in <code>asyncio.get_event_loop().run_in_executor(None, ...)</code> — prevents the FastAPI event loop from blocking during email delivery</li>
+      <li>Applies to: application confirmation emails, credit-warning emails, admin credit/suspension notifications, CV expiry warnings</li>
+      <li>Admin-triggered emails (credit adjustment, account suspension) send immediately on the admin action endpoint response cycle — non-blocking ensures the admin API responds quickly regardless of SendGrid latency</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Do not pass coroutines into <code>run_in_executor</code> — it only accepts regular (sync) callables. Wrap the sync SendGrid SDK calls, not async wrappers around them.</div>
+
+    <h2 id="salary-range">Salary range on profile</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Added to <code>/dashboard/profiel</code> — two numeric inputs: <code>salaris_min</code> and <code>salaris_max</code> (bruto per maand, integer)</li>
+      <li>Stored on the <code>profiles</code> table; passed to the Claude API prompt as salary expectation context for motivation letter generation</li>
+      <li>Profile form also supports up to 3 job titles simultaneously (multi-functietitel, #67) — the form handles a 409 conflict gracefully by falling back to an upsert</li>
+    </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

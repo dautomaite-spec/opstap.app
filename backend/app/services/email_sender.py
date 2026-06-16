@@ -10,9 +10,11 @@ This means replies from the company land directly in the user's inbox.
 The user's email is never exposed in the From field.
 """
 
+import asyncio
 import html
 import logging
 from dataclasses import dataclass
+from functools import partial
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
     Mail, From, To, ReplyTo, Subject,
@@ -143,7 +145,8 @@ async def send_application_email(email: ApplicationEmail) -> bool:
 
     try:
         sg = SendGridAPIClient(settings.sendgrid_api_key)
-        response = sg.send(message)
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, partial(sg.send, message))
         logger.info(
             "Email sent to %s for job %r — status %s",
             email.to_email, email.job_title, response.status_code,

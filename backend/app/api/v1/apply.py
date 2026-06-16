@@ -90,7 +90,7 @@ async def generate_motivation_letter(
                 auth_user = supabase.auth.admin.get_user_by_id(user_id)
                 user_email = auth_user.user.email if auth_user.user else None
                 if user_email:
-                    send_credit_low_warning(user_email, profile.get("naam", ""), 1)
+                    await send_credit_low_warning(user_email, profile.get("naam", ""), 1)
     except Exception:
         pass  # never block the letter on notification failure
 
@@ -312,7 +312,7 @@ async def update_application_status(
             profile_result = supabase.table("profiles").select("naam").eq("user_id", user_id).single().execute()
             naam = profile_result.data.get("naam", "") if profile_result.data else ""
             if user_email:
-                send_reply_congratulations(user_email, naam, app["company"], app["job_title"])
+                await send_reply_congratulations(user_email, naam, app["company"], app["job_title"])
         except Exception:
             pass
 

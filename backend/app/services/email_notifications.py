@@ -5,8 +5,10 @@ Sends from: Opstap <info@opstapapp.nl>
 Different sender than application emails (sollicitaties@opstap.nl).
 """
 
+import asyncio
 import html as _html
 import logging
+from functools import partial
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, From, To, Subject, HtmlContent, PlainTextContent
 
@@ -41,7 +43,7 @@ def _base_html(title: str, body_html: str) -> str:
 </html>"""
 
 
-def _send(to_email: str, to_name: str, subject: str, plain: str, html: str) -> bool:
+async def _send(to_email: str, to_name: str, subject: str, plain: str, html: str) -> bool:
     if not settings.sendgrid_api_key:
         logger.warning("SENDGRID_API_KEY not set — notification skipped")
         return False
@@ -54,7 +56,8 @@ def _send(to_email: str, to_name: str, subject: str, plain: str, html: str) -> b
             html_content=HtmlContent(html),
         )
         sg = SendGridAPIClient(settings.sendgrid_api_key)
-        resp = sg.send(message)
+        loop = asyncio.get_event_loop()
+        resp = await loop.run_in_executor(None, partial(sg.send, message))
         ok = resp.status_code in (200, 201, 202)
         if ok:
             logger.info("Notification '%s' sent to %s", subject, to_email)
@@ -64,7 +67,7 @@ def _send(to_email: str, to_name: str, subject: str, plain: str, html: str) -> b
         return False
 
 
-def send_credit_low_warning(to_email: str, naam: str, balance: int) -> bool:
+async def send_credit_low_warning(to_email: str, naam: str, balance: int) -> bool:
     subject = "Je hebt nog maar 1 credit over op Opstap"
     plain = f"""\
 Hallo {naam},
@@ -85,10 +88,10 @@ Team Opstap
 <p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Credits kopen</a></p>
 <p style="margin-top:20px;font-size:13px;color:#555;">Bundels vanaf €2,99 · iDEAL · 1 credit = 1 motivatiebrief</p>
 """)
-    return _send(to_email, naam, subject, plain, html)
+    return await _send(to_email, naam, subject, plain, html)
 
 
-def send_reply_congratulations(to_email: str, naam: str, company: str, job_title: str) -> bool:
+async def send_reply_congratulations(to_email: str, naam: str, company: str, job_title: str) -> bool:
     subject = f"Antwoord van {company} gelogd!"
     plain = f"""\
 Hallo {naam},
@@ -111,10 +114,10 @@ Team Opstap
 <strong>{_job_title}</strong> gemarkeerd. Goed bezig!</p>
 <p style="margin-top:20px;"><a href="{_DASHBOARD}/sollicitaties" class="btn">Mijn reacties</a></p>
 """)
-    return _send(to_email, naam, subject, plain, html)
+    return await _send(to_email, naam, subject, plain, html)
 
 
-def send_follow_up_reminder(to_email: str, naam: str, applications: list[dict]) -> bool:
+async def send_follow_up_reminder(to_email: str, naam: str, applications: list[dict]) -> bool:
     count = len(applications)
     s = "s" if count != 1 else ""
     subject = f"Heb je al iets gehoord? {count} open sollicitatie{s}"
@@ -146,10 +149,10 @@ Team Opstap
 <p style="margin-top:16px;">Nog niets gehoord? Een beleefd follow-up bericht kan helpen!</p>
 <p style="margin-top:20px;"><a href="{_DASHBOARD}/sollicitaties" class="btn">Bekijk mijn reacties</a></p>
 """)
-    return _send(to_email, naam, subject, plain, html)
+    return await _send(to_email, naam, subject, plain, html)
 
 
-def send_credits_adjusted(to_email: str, naam: str, delta: int, reason: str, new_balance: int) -> bool:
+async def send_credits_adjusted(to_email: str, naam: str, delta: int, reason: str, new_balance: int) -> bool:
     positive = delta > 0
     subject = f"Je hebt {'+' if positive else ''}{delta} credits ontvangen" if positive else f"Je credits zijn aangepast ({delta})"
     verb = "ontvangen" if positive else "afgeschreven"
@@ -174,10 +177,10 @@ Team Opstap
 <div class="card">Reden: {_reason}<br>Nieuw saldo: <strong>{new_balance} credits</strong></div>
 <p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Naar mijn dashboard</a></p>
 """)
-    return _send(to_email, naam, subject, plain, html)
+    return await _send(to_email, naam, subject, plain, html)
 
 
-def send_account_suspended(to_email: str, naam: str, suspended: bool) -> bool:
+async def send_account_suspended(to_email: str, naam: str, suspended: bool) -> bool:
     if suspended:
         subject = "Je Opstap-account is tijdelijk geblokkeerd"
         _naam = _html.escape(naam)
@@ -216,10 +219,10 @@ Team Opstap
 <p>Je Opstap-account is hersteld. Je kunt weer normaal inloggen en solliciteren.</p>
 <p style="margin-top:20px;"><a href="https://opstapapp.nl/login" class="btn">Inloggen</a></p>
 """)
-    return _send(to_email, naam, subject, plain, html)
+    return await _send(to_email, naam, subject, plain, html)
 
 
-def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
+async def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
     count = len(jobs)
     subject = f"{count} nieuwe vacatures voor jou — weekoverzicht Opstap"
     jobs_plain = "\n".join(
@@ -253,4 +256,4 @@ Team Opstap
 {cards_html}
 <p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Bekijk alle vacatures</a></p>
 """)
-    return _send(to_email, naam, subject, plain, html)
+    return await _send(to_email, naam, subject, plain, html)
