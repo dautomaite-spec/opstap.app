@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Application } from '@/lib/api'
+import { JOB_TITLES } from '@/lib/jobTitles'
 import Achievements from '../components/Achievements'
 
 const OPLEIDINGSNIVEAU_LABELS: Record<string, string> = {
@@ -81,6 +82,8 @@ export default function ProfielPage() {
       const updated = await api.profile.update({
         naam: fd.get('naam') as string,
         functietitel: (fd.get('functietitel') as string) || undefined,
+        functietitel_2: (fd.get('functietitel_2') as string) || undefined,
+        functietitel_3: (fd.get('functietitel_3') as string) || undefined,
         woonplaats: (fd.get('woonplaats') as string) || undefined,
         uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
         werklocatie: (fd.get('werklocatie') as string) || undefined,
@@ -168,7 +171,18 @@ export default function ProfielPage() {
           {profile ? (
             <form onSubmit={handleSave} className="flex flex-col gap-4">
               <Field label="Volledige naam *" name="naam" required defaultValue={profile.naam} />
-              <Field label="Functietitel" name="functietitel" placeholder="bijv. Verpleegkundige" defaultValue={profile.functietitel} />
+              <datalist id="job-titles-list">
+                {JOB_TITLES.map(t => <option key={t} value={t} />)}
+              </datalist>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Functietitel(s)</label>
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  Voeg tot 3 rollen toe — Opstap zoekt en solliciteert voor al je titels.
+                </p>
+                <input list="job-titles-list" name="functietitel" placeholder="bijv. Software Developer" defaultValue={profile.functietitel ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input list="job-titles-list" name="functietitel_2" placeholder="Tweede functietitel (optioneel)" defaultValue={profile.functietitel_2 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input list="job-titles-list" name="functietitel_3" placeholder="Derde functietitel (optioneel)" defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              </div>
               <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
               <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" defaultValue={profile.uren_per_week?.toString()} />
               <SelectField label="Werklocatie" name="werklocatie" defaultValue={profile.werklocatie ?? ''}>

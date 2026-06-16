@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { api, ApiError } from '@/lib/api'
+import { JOB_TITLES } from '@/lib/jobTitles'
 
 const ONBOARDING_KEY = 'opstap_onboarding_done'
 
@@ -37,6 +38,8 @@ export default function WelkomPage() {
       await api.profile.create({
         naam: fd.get('naam') as string,
         functietitel: (fd.get('functietitel') as string) || undefined,
+        functietitel_2: (fd.get('functietitel_2') as string) || undefined,
+        functietitel_3: (fd.get('functietitel_3') as string) || undefined,
         woonplaats: (fd.get('woonplaats') as string) || undefined,
         extra_info: (fd.get('extra_info') as string) || undefined,
       })
@@ -103,7 +106,16 @@ export default function WelkomPage() {
           )}
           <form onSubmit={handleProfileSave} className="flex flex-col gap-4">
             <WField label="Hoe heet je? *" name="naam" required placeholder="Voor- en achternaam" />
-            <WField label="Wat voor werk zoek je?" name="functietitel" placeholder="bijv. Verpleegkundige, Software Developer" />
+            <datalist id="job-titles-list">
+              {JOB_TITLES.map(t => <option key={t} value={t} />)}
+            </datalist>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je?</label>
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Voeg tot 3 rollen toe — Opstap zoekt voor al je titels.</p>
+              <input list="job-titles-list" name="functietitel" placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <input list="job-titles-list" name="functietitel_2" placeholder="Tweede rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <input list="job-titles-list" name="functietitel_3" placeholder="Derde rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            </div>
             <WField label="Waar woon je?" name="woonplaats" placeholder="bijv. Amsterdam" />
             <WTextarea
               label="Over jezelf & wat je zoekt"
