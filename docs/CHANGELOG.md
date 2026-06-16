@@ -1,6 +1,22 @@
 # Changelog — Opstap
 
-## 2026-06-16
+## 2026-06-16 (session 2)
+- feat: multi-functietype — up to 3 job title fields with datalist autocomplete (215 Dutch job title suggestions) (#67 / f78d76e)
+- feat: extra_info textarea on welkom onboarding page (#64 / 5c6ee64)
+- fix: supabase-py v2 .select() call added to all update queries so profile save returns data correctly (#4ab8535)
+- feat: admin key rotation UI in AdminPanel — rotate ADMIN_API_KEY without redeployment (72da6fc)
+- feat: language switcher moved to main desktop top-bar; expanded to 12 EU languages (72da6fc)
+- fix: open redirect vulnerability in /auth/confirm — destination URL validated against allowlist
+- fix: CSP headers added to next.config.ts (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options)
+- fix: timing-safe comparison for admin API key (prevents timing attacks)
+- fix: UUID validation on all Supabase queries that accept user-supplied IDs
+- fix: html.escape applied to all user-controlled strings in email templates
+- fix: python-jose removed — replaced with PyJWT (python-jose has unpatched CVEs)
+- fix: Mollie webhook body parsing corrected (was silently discarding payment confirmation body)
+- fix: full security scan — critical/high/info findings resolved (#66 / 959be5b)
+- fix: security hardening pass (#4ab8535)
+
+## 2026-06-16 (session 1)
 - ops: SendGrid domain verification completed for opstapapp.nl (DKIM/SPF records confirmed)
 - fix: remove privacy link from sidebar — footer-only placement
 - feat: Outlook and Meta OAuth buttons greyed out with "binnenkort beschikbaar" label

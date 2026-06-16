@@ -137,6 +137,9 @@
       <a href="#cv-upload">CV upload</a>
       <a href="#profile-fields">Profile fields</a>
       <a href="#language-switcher">Language switcher</a>
+      <a href="#multi-functietype">Multi-functietype</a>
+      <a href="#security">Security hardening</a>
+      <a href="#admin-key-rotation">Admin key rotation</a>
       <span class="section-label">Infra</span>
       <a href="#vercel">Vercel setup</a>
       <a href="#email-routing">Email routing</a>
@@ -270,12 +273,46 @@
     <h2 id="language-switcher">Language switcher</h2>
     <p><span class="tag tag-web">web</span></p>
     <ul>
-      <li>Visible on all public pages and in the dashboard sidebar/header</li>
-      <li>NL is the only active locale in v1; EN / AR / TR / UK are greyed out with "binnenkort beschikbaar" tooltip</li>
+      <li>On desktop: renders in the main top-bar (not sidebar) — moved from sidebar in session 2 (2026-06-16)</li>
+      <li>12 EU languages listed; NL is the only active locale in v1. All others show "binnenkort beschikbaar" tooltip</li>
       <li>Implemented as a client component — clicking a future locale shows a toast, not a route change</li>
-      <li>When multi-language is activated (v2), the switcher wires to Next.js <code>next-intl</code> or similar i18n library; Arabic will need RTL layout toggle</li>
+      <li>Mobile: stays in the hamburger drawer</li>
+      <li>When multi-language is activated (v2), wire to <code>next-intl</code>; Arabic needs RTL layout toggle</li>
     </ul>
-    <div class="gotcha"><strong>Gotcha:</strong> The Outlook and Meta OAuth buttons are greyed out with "binnenkort beschikbaar" — they are rendered but <code>pointer-events: none</code> / <code>opacity: 0.4</code>. Do not wire them up until OAuth apps are approved by those providers.</div>
+    <div class="gotcha"><strong>Gotcha:</strong> The Outlook and Meta OAuth buttons are greyed out with "binnenkort beschikbaar" — rendered but <code>pointer-events: none</code> / <code>opacity: 0.4</code>. Do not wire them until OAuth apps are approved by those providers.</div>
+
+    <h2 id="multi-functietype">Multi-functietype (job titles)</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Users can enter up to 3 job title fields on the profile and welkom onboarding pages</li>
+      <li>Each field uses an HTML <code>&lt;datalist&gt;</code> for autocomplete — 215 Dutch job title suggestions baked in as a static array (no API call)</li>
+      <li>Stored in <code>profiles.functietitels</code> as a text array; the motivation letter prompt receives all active titles for better matching</li>
+      <li>Key files: <code>web/src/app/dashboard/profile/</code> and <code>web/src/app/dashboard/welkom/</code></li>
+      <li>PR #67 (commit f78d76e)</li>
+    </ul>
+
+    <h2 id="security">Security hardening</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li><strong>Open redirect (auth/confirm):</strong> destination URL now validated against an allowlist before redirect — was exploitable for phishing</li>
+      <li><strong>CSP headers:</strong> <code>Content-Security-Policy</code>, <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code> added to <code>web/next.config.ts</code> headers block</li>
+      <li><strong>Timing-safe admin key comparison:</strong> <code>hmac.compare_digest()</code> replaces string equality in the admin key guard — prevents timing attacks</li>
+      <li><strong>UUID validation:</strong> all FastAPI endpoints that accept a user-supplied ID now validate it is a valid UUID before passing to Supabase</li>
+      <li><strong>html.escape in email templates:</strong> all user-controlled strings in SendGrid templates now escaped before insertion — prevents HTML injection in emails</li>
+      <li><strong>python-jose removed:</strong> replaced with <code>PyJWT</code> — python-jose has unpatched CVEs (CVE-2022-29217 and related). No API surface change.</li>
+      <li><strong>Mollie webhook body parsing:</strong> FastAPI was consuming the raw body before Mollie's signature check — fixed so the raw bytes are read once and passed to both the parser and the verifier</li>
+      <li>Full scan: PR #66 (commit 959be5b) + hardening pass (commit 4ab8535)</li>
+    </ul>
+    <div class="gotcha"><strong>Rule:</strong> After any change to <code>backend/app/api/</code> or auth flows, run the <code>/security</code> agent before merging.</div>
+
+    <h2 id="admin-key-rotation">Admin key rotation</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>AdminPanel (<code>/admin</code>) now has a "Sleutel roteren" button that generates a new <code>ADMIN_API_KEY</code> and writes it to Railway env vars via the Railway API — no redeployment required</li>
+      <li>Old key is invalidated immediately on rotation; the new key is shown once in a modal (copy it before closing)</li>
+      <li>The Railway API token is stored as a secret on Railway itself (<code>RAILWAY_TOKEN</code>); it is never exposed to the browser</li>
+      <li>Commit 72da6fc</li>
+    </ul>
 
     <h2 id="sendgrid">SendGrid domain auth</h2>
     <p><span class="tag tag-web">web</span></p>
