@@ -38,6 +38,7 @@ export default function WelkomPage() {
         naam: fd.get('naam') as string,
         functietitel: (fd.get('functietitel') as string) || undefined,
         woonplaats: (fd.get('woonplaats') as string) || undefined,
+        extra_info: (fd.get('extra_info') as string) || undefined,
       })
       setStep(2)
     } catch (err) {
@@ -104,6 +105,11 @@ export default function WelkomPage() {
             <WField label="Hoe heet je? *" name="naam" required placeholder="Voor- en achternaam" />
             <WField label="Wat voor werk zoek je?" name="functietitel" placeholder="bijv. Verpleegkundige, Software Developer" />
             <WField label="Waar woon je?" name="woonplaats" placeholder="bijv. Amsterdam" />
+            <WTextarea
+              label="Over jezelf & wat je zoekt"
+              name="extra_info"
+              placeholder="Ik ben een enthousiaste teamspeler die graag met mensen werkt. In mijn vrije tijd speel ik voetbal. Ik zoek een uitdagende functie waarbij ik kan groeien..."
+            />
             <button
               type="submit"
               disabled={saving}
@@ -244,6 +250,27 @@ function WField({ label, name, required, placeholder }: {
         required={required}
         placeholder={placeholder}
         className="px-3 py-2.5 rounded-lg border text-sm outline-none"
+        style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+      />
+    </div>
+  )
+}
+
+function WTextarea({ label, name, placeholder }: {
+  label: string; name: string; placeholder?: string
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</label>
+      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        Hoe meer je deelt, hoe persoonlijker je motivatiebrief wordt.
+      </p>
+      <textarea
+        name={name}
+        rows={4}
+        placeholder={placeholder}
+        maxLength={2000}
+        className="px-3 py-2.5 rounded-lg border text-sm outline-none resize-none"
         style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
       />
     </div>
