@@ -13,7 +13,7 @@ class ProfileCreate(BaseModel):
     salaris_min: Optional[int] = Field(None, ge=0, le=50_000)
     salaris_max: Optional[int] = Field(None, ge=0, le=50_000)
     werklocatie: Optional[str] = Field(None, max_length=50)
-    extra_info: Optional[str] = Field(None, max_length=2000)
+    extra_info: Optional[str] = Field(None, max_length=500)
     opleidingsniveau: Optional[str] = Field(None, max_length=50)
     leeftijd: Optional[int] = Field(None, ge=14, le=99)
     brief_taal: str = Field('nl', pattern='^(nl|en)$')
