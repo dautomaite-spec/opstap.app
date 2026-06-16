@@ -131,7 +131,7 @@ async def adjust_credits(
         auth_user = supabase.auth.admin.get_user_by_id(user_id)
         user_email = auth_user.user.email if auth_user.user else None
         if user_email and new_balance is not None:
-            send_credits_adjusted(user_email, naam, body.delta, body.reason, new_balance)
+            await send_credits_adjusted(user_email, naam, body.delta, body.reason, new_balance)
     except Exception:
         logger.warning("Failed to send credits-adjusted email for user %s", user_id, exc_info=True)
 
@@ -159,7 +159,7 @@ async def toggle_suspend(
         auth_user = supabase.auth.admin.get_user_by_id(user_id)
         user_email = auth_user.user.email if auth_user.user else None
         if user_email:
-            send_account_suspended(user_email, naam, body.suspended)
+            await send_account_suspended(user_email, naam, body.suspended)
     except Exception:
         logger.warning("Failed to send suspend-notification email for user %s", user_id, exc_info=True)
 
@@ -317,7 +317,7 @@ async def cron_follow_up_reminder(
                 continue
             naam = profile_result.data.get("naam", "") if profile_result.data else ""
             if user_email:
-                ok = send_follow_up_reminder(user_email, naam, fresh_apps)
+                ok = await send_follow_up_reminder(user_email, naam, fresh_apps)
                 sent += 1 if ok else 0
                 skipped += 0 if ok else 1
         except Exception:
@@ -392,7 +392,7 @@ async def cron_job_digest(
                 skipped += 1
                 continue
 
-            ok = send_job_digest(user_email, naam, jobs[:5])
+            ok = await send_job_digest(user_email, naam, jobs[:5])
             sent += 1 if ok else 0
             skipped += 0 if ok else 1
         except Exception:
