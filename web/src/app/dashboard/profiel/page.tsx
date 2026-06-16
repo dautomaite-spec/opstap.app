@@ -301,7 +301,7 @@ export default function ProfielPage() {
                     <div className="rounded-2xl p-6 max-w-sm w-full flex flex-col gap-4" style={{ background: 'var(--color-white)' }}>
                       <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</h3>
                       <div className="text-sm flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                        <p>Je CV wordt versleuteld opgeslagen op beveiligde EU-servers en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
+                        <p>Je CV wordt versleuteld opgeslagen en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
                         <ul className="flex flex-col gap-1 pl-4 list-disc">
                           <li>Je ontvangt 7 dagen van tevoren een herinnering</li>
                           <li>Je kunt je CV op elk moment zelf verwijderen</li>

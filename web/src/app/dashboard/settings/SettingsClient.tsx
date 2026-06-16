@@ -239,7 +239,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
             <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
               <h3 className="font-bold text-base mb-3" style={{ color: 'var(--color-text-primary)' }}>Toestemming CV opslaan</h3>
               <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>
-                Opstap slaat je CV versleuteld op EU-servers op. Je CV wordt alleen gebruikt voor het genereren van sollicitatiebrieven en wordt nooit gedeeld met derden of gebruikt voor training van AI-modellen.
+                Je CV wordt versleuteld opgeslagen en uitsluitend gebruikt voor het genereren van sollicitatiebrieven. Nooit gedeeld met derden of gebruikt voor AI-training.
               </p>
               <p className="text-sm mb-1 font-medium" style={{ color: 'var(--color-text-primary)' }}>Bewaartermijn</p>
               <select
