@@ -5,6 +5,7 @@ import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
 import MultiApplyModal from './components/MultiApplyModal'
+import { JOB_TITLES } from '@/lib/jobTitles'
 
 const SAVED_JOBS_KEY = 'opstap_saved_jobs'
 
@@ -147,18 +148,34 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   async function handleProfileSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
+    const data = {
+      naam: fd.get('naam') as string,
+      functietitel: (fd.get('functietitel') as string) || undefined,
+      functietitel_2: (fd.get('functietitel_2') as string) || undefined,
+      functietitel_3: (fd.get('functietitel_3') as string) || undefined,
+      woonplaats: (fd.get('woonplaats') as string) || undefined,
+      uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
+      salaris_min: fd.get('salaris_min') ? Number(fd.get('salaris_min')) : undefined,
+      salaris_max: fd.get('salaris_max') ? Number(fd.get('salaris_max')) : undefined,
+      werklocatie: (fd.get('werklocatie') as string) || undefined,
+      opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
+    }
     try {
-      const saved = await api.profile.create({
-        naam: fd.get('naam') as string,
-        functietitel: fd.get('functietitel') as string || undefined,
-        woonplaats: fd.get('woonplaats') as string || undefined,
-        uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
-        werklocatie: fd.get('werklocatie') as string || undefined,
-        opleidingsniveau: fd.get('opleidingsniveau') as string || undefined,
-      })
+      const saved = await api.profile.create(data)
       setProfile(saved)
       setShowProfileForm(false)
-    } catch {
+    } catch (err) {
+      // Profile may already exist — fall back to update
+      if (err instanceof ApiError && err.status === 409) {
+        try {
+          const saved = await api.profile.update(data)
+          setProfile(saved)
+          setShowProfileForm(false)
+          return
+        } catch {
+          // fall through to error
+        }
+      }
       setProfileError('Opslaan mislukt. Probeer het opnieuw.')
     }
   }
@@ -269,9 +286,42 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         {profileError && <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{profileError}</p>}
         <form onSubmit={handleProfileSave} className="flex flex-col gap-4">
           <Field label="Volledige naam *" name="naam" required />
-          <Field label="Functietitel" name="functietitel" placeholder="bijv. Verpleegkundige, Developer" />
+
+          {/* Job titles */}
+          <datalist id="db-job-titles">
+            {JOB_TITLES.map(t => <option key={t} value={t} />)}
+          </datalist>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Functietitel(s) *</label>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Voeg tot 3 rollen toe — Opstap zoekt voor al je titels.
+            </p>
+            <input list="db-job-titles" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel_2" placeholder="Tweede functietitel (optioneel)" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel_3" placeholder="Derde functietitel (optioneel)" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+          </div>
+
           <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" />
-          <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" />
+
+          {/* Hours + salary on same row */}
+          <div className="flex gap-3">
+            <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Salaris (bruto/maand)</label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
+                <input name="salaris_min" type="number" min={0} max={50000} step={100} placeholder="Min" className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              </div>
+              <span className="text-sm shrink-0" style={{ color: 'var(--color-text-muted)' }}>–</span>
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
+                <input name="salaris_max" type="number" min={0} max={50000} step={100} placeholder="Max" className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Werklocatie</label>
             <select name="werklocatie" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
