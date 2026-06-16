@@ -22,7 +22,7 @@ from typing import Optional
 from app.core.config import settings
 from app.core.supabase import get_supabase
 from app.services.job_scraper import scrape_adzuna
-from app.services.email_notifications import send_follow_up_reminder, send_job_digest
+from app.services.email_notifications import send_follow_up_reminder, send_job_digest, send_credits_adjusted, send_account_suspended
 
 logger = logging.getLogger(__name__)
 
@@ -123,11 +123,22 @@ async def adjust_credits(
         "p_reference_id": None,
     }).execute()
 
-    new_balance_result = supabase.table("profiles").select("credits_balance").eq("user_id", user_id).single().execute()
+    new_balance_result = supabase.table("profiles").select("credits_balance,naam").eq("user_id", user_id).single().execute()
+    new_balance = new_balance_result.data.get("credits_balance") if new_balance_result.data else None
+    naam = (new_balance_result.data or {}).get("naam", "") or ""
+
+    try:
+        auth_user = supabase.auth.admin.get_user_by_id(user_id)
+        user_email = auth_user.user.email if auth_user.user else None
+        if user_email and new_balance is not None:
+            send_credits_adjusted(user_email, naam, body.delta, body.reason, new_balance)
+    except Exception:
+        logger.warning("Failed to send credits-adjusted email for user %s", user_id, exc_info=True)
+
     return {
         "user_id": user_id,
         "delta": body.delta,
-        "new_balance": new_balance_result.data.get("credits_balance") if new_balance_result.data else None,
+        "new_balance": new_balance,
     }
 
 
@@ -142,6 +153,16 @@ async def toggle_suspend(
     result = supabase.table("profiles").update({"is_suspended": body.suspended}).eq("user_id", user_id).select().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="User not found")
+    naam = (result.data[0] or {}).get("naam", "") or ""
+
+    try:
+        auth_user = supabase.auth.admin.get_user_by_id(user_id)
+        user_email = auth_user.user.email if auth_user.user else None
+        if user_email:
+            send_account_suspended(user_email, naam, body.suspended)
+    except Exception:
+        logger.warning("Failed to send suspend-notification email for user %s", user_id, exc_info=True)
+
     return {"user_id": user_id, "is_suspended": body.suspended}
 
 

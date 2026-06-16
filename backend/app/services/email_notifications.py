@@ -149,6 +149,76 @@ Team Opstap
     return _send(to_email, naam, subject, plain, html)
 
 
+def send_credits_adjusted(to_email: str, naam: str, delta: int, reason: str, new_balance: int) -> bool:
+    positive = delta > 0
+    subject = f"Je hebt {'+' if positive else ''}{delta} credits ontvangen" if positive else f"Je credits zijn aangepast ({delta})"
+    verb = "ontvangen" if positive else "afgeschreven"
+    _naam = _html.escape(naam)
+    _reason = _html.escape(reason.replace("_", " "))
+    plain = f"""\
+Hallo {naam},
+
+Er zijn {'+' if positive else ''}{delta} credits {verb} op je Opstap-account.
+Reden: {reason.replace('_', ' ')}
+Nieuw saldo: {new_balance} credits
+
+Bekijk je saldo: {_DASHBOARD}
+
+Met vriendelijke groet,
+Team Opstap
+"""
+    html = _base_html("Credits bijgewerkt", f"""
+<h2>Je credits zijn bijgewerkt</h2>
+<p>Hallo {_naam},</p>
+<p>Er zijn <strong>{'+' if positive else ''}{delta} credits</strong> {verb} op je account.</p>
+<div class="card">Reden: {_reason}<br>Nieuw saldo: <strong>{new_balance} credits</strong></div>
+<p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Naar mijn dashboard</a></p>
+""")
+    return _send(to_email, naam, subject, plain, html)
+
+
+def send_account_suspended(to_email: str, naam: str, suspended: bool) -> bool:
+    if suspended:
+        subject = "Je Opstap-account is tijdelijk geblokkeerd"
+        _naam = _html.escape(naam)
+        plain = f"""\
+Hallo {naam},
+
+Je Opstap-account is tijdelijk geblokkeerd. Je kunt op dit moment niet inloggen of solliciteren.
+
+Heb je vragen? Neem contact op via info@opstapapp.nl.
+
+Met vriendelijke groet,
+Team Opstap
+"""
+        html = _base_html("Account geblokkeerd", f"""
+<h2>Je account is tijdelijk geblokkeerd</h2>
+<p>Hallo {_naam},</p>
+<p>Je Opstap-account is tijdelijk geblokkeerd. Je kunt op dit moment niet inloggen of solliciteren.</p>
+<p>Heb je vragen of denk je dat dit een vergissing is? Stuur een e-mail naar <a href="mailto:info@opstapapp.nl">info@opstapapp.nl</a>.</p>
+""")
+    else:
+        subject = "Je Opstap-account is hersteld"
+        _naam = _html.escape(naam)
+        plain = f"""\
+Hallo {naam},
+
+Je Opstap-account is hersteld. Je kunt weer normaal inloggen en solliciteren.
+
+Inloggen: https://opstapapp.nl/login
+
+Met vriendelijke groet,
+Team Opstap
+"""
+        html = _base_html("Account hersteld", f"""
+<h2>Je account is hersteld</h2>
+<p>Hallo {_naam},</p>
+<p>Je Opstap-account is hersteld. Je kunt weer normaal inloggen en solliciteren.</p>
+<p style="margin-top:20px;"><a href="https://opstapapp.nl/login" class="btn">Inloggen</a></p>
+""")
+    return _send(to_email, naam, subject, plain, html)
+
+
 def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
     count = len(jobs)
     subject = f"{count} nieuwe vacatures voor jou — weekoverzicht Opstap"
