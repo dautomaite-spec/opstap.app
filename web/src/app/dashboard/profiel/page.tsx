@@ -266,6 +266,18 @@ export default function ProfielPage() {
                       </svg>
                       {cvUploading ? 'Uploaden…' : 'CV uploaden (PDF, DOC, DOCX)'}
                     </button>
+                    <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                      Nog geen CV?{' '}
+                      <a
+                        href="https://www.cvmaker.nl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:opacity-70 transition"
+                        style={{ color: 'var(--color-indigo-primary)' }}
+                      >
+                        Maak er gratis een via cvmaker.nl →
+                      </a>
+                    </p>
                   </div>
                 )}
 
