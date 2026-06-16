@@ -91,6 +91,8 @@ export default function ProfielPage() {
         extra_info: (fd.get('extra_info') as string) || undefined,
         leeftijd: fd.get('leeftijd') ? Number(fd.get('leeftijd')) : undefined,
         brief_taal: (fd.get('brief_taal') as string) || 'nl',
+        salaris_min: fd.get('salaris_min') ? Number(fd.get('salaris_min')) : undefined,
+        salaris_max: fd.get('salaris_max') ? Number(fd.get('salaris_max')) : undefined,
       })
       setProfile(updated)
       setSaveSuccess(true)
@@ -185,6 +187,40 @@ export default function ProfielPage() {
               </div>
               <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
               <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" defaultValue={profile.uren_per_week?.toString()} />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Salaris (bruto/maand)</label>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
+                    <input
+                      name="salaris_min"
+                      type="number"
+                      min={0}
+                      max={50000}
+                      step={100}
+                      placeholder="Min"
+                      defaultValue={profile.salaris_min?.toString() ?? ''}
+                      className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none"
+                      style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                    />
+                  </div>
+                  <span className="text-sm shrink-0" style={{ color: 'var(--color-text-muted)' }}>–</span>
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
+                    <input
+                      name="salaris_max"
+                      type="number"
+                      min={0}
+                      max={50000}
+                      step={100}
+                      placeholder="Max"
+                      defaultValue={profile.salaris_max?.toString() ?? ''}
+                      className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none"
+                      style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                    />
+                  </div>
+                </div>
+              </div>
               <SelectField label="Werklocatie" name="werklocatie" defaultValue={profile.werklocatie ?? ''}>
                 <option value="">Geen voorkeur</option>
                 <option value="op locatie">Op locatie</option>
