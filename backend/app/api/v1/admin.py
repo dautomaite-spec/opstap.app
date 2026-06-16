@@ -32,9 +32,10 @@ CV_BUCKET = "cvs"
 
 
 def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
+    import hmac as _hmac
     if not settings.admin_api_key:
         raise HTTPException(status_code=503, detail="Admin key not configured")
-    if x_admin_key != settings.admin_api_key:
+    if not _hmac.compare_digest(x_admin_key or "", settings.admin_api_key):
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
@@ -162,6 +163,11 @@ async def delete_user(
 
     supabase.table("applications").delete().eq("user_id", user_id).execute()
     supabase.table("credit_transactions").delete().eq("user_id", user_id).execute()
+    from uuid import UUID as _UUID
+    try:
+        _UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid user_id")
     supabase.table("referral_uses").delete().or_(
         f"referrer_user_id.eq.{user_id},referee_user_id.eq.{user_id}"
     ).execute()
