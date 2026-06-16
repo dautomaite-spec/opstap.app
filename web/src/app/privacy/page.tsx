@@ -4,7 +4,7 @@ import PublicShell from '@/app/components/PublicShell'
 
 export const metadata: Metadata = {
   title: 'Privacybeleid — Opstap',
-  description: 'Hoe Opstap omgaat met je persoonsgegevens, CV en sollicitatie-informatie. AVG-conform, EU-servers, geen trackers.',
+  description: 'Hoe Opstap omgaat met je persoonsgegevens, CV en sollicitatie-informatie. AVG-conform, geen trackers.',
 }
 
 const SECTIONS = [
@@ -100,7 +100,7 @@ const SECTIONS = [
             </thead>
             <tbody>
               {[
-                ['Supabase (PostgreSQL + Storage)', 'Database en CV-opslag — uitsluitend binnen de EU'],
+                ['Supabase (PostgreSQL + Storage)', 'Database en CV-opslag'],
                 ['Anthropic Claude API', 'Genereren van motivatiebrieven (tijdelijke verwerking, geen opslag)'],
                 ['SendGrid (Twilio)', 'Versturen van e-mails'],
               ].map(([verwerker, doel], i) => (
