@@ -85,6 +85,8 @@ export interface Profile {
   salaris_max?: number
   werklocatie?: string
   extra_info?: string
+  leeftijd?: number
+  brief_taal?: string
   cv_url?: string
   cv_expires_at?: string
   opleidingsniveau?: string
@@ -93,6 +95,7 @@ export interface Profile {
   profile_bonus_given?: boolean
   email_digest_enabled?: boolean
   email_reminders_enabled?: boolean
+  cv_expiry_reminder_enabled?: boolean
 }
 
 export interface BalanceOut {
@@ -119,8 +122,11 @@ export interface ProfileCreate {
   werklocatie?: string
   extra_info?: string
   opleidingsniveau?: string
+  leeftijd?: number
+  brief_taal?: string
   email_digest_enabled?: boolean
   email_reminders_enabled?: boolean
+  cv_expiry_reminder_enabled?: boolean
 }
 
 export interface Job {

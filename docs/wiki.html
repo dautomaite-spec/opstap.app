@@ -134,6 +134,13 @@
       <a href="#sidebar">Sidebar</a>
       <a href="#privacy">Privacy page</a>
       <a href="#analytics">Analytics</a>
+      <a href="#cv-upload">CV upload</a>
+      <a href="#profile-fields">Profile fields</a>
+      <a href="#language-switcher">Language switcher</a>
+      <span class="section-label">Infra</span>
+      <a href="#vercel">Vercel setup</a>
+      <a href="#email-routing">Email routing</a>
+      <a href="#sendgrid">SendGrid domain auth</a>
     </div>
   </nav>
 
@@ -194,7 +201,7 @@
     <p><span class="tag tag-db">supabase</span><span class="tag tag-backend">backend</span></p>
     <ul>
       <li>Explicit consent gate before any CV upload</li>
-      <li>EU servers only — Supabase EU West, Railway EU</li>
+      <li>EU servers only — Supabase EU West, Railway EU. The AVG consent modal and privacy page no longer name a specific server city (Frankfurt was removed 2026-06-16) — users are directed to contact us for specifics</li>
       <li>CV retention: user-defined 7 / 30 / 90 days (default 30). Auto-deleted on expiry</li>
       <li>7-day warning email before auto-delete (Supabase Edge Function + cron)</li>
       <li>Account delete: wipes all data including CV and application history</li>
@@ -238,6 +245,68 @@
       <li>Script domain driven by <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code> env var — was previously hardcoded to <code>opstapapp.nl</code></li>
       <li>Set in Vercel env vars; falls back gracefully if not set (script not injected)</li>
       <li>Plausible account still pending activation on live domain</li>
+    </ul>
+
+    <h2 id="cv-upload">CV upload</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Route: <code>/dashboard/profile</code> — CV upload section with AVG consent modal shown before any file is accepted</li>
+      <li>AVG consent modal blocks upload until user explicitly accepts; stores consent timestamp in Supabase</li>
+      <li>Accepted formats: PDF, DOCX. Stored in Supabase Storage EU bucket (encrypted)</li>
+      <li>Retention period set at upload time: 7 / 30 / 90 days (default 30). User can change or delete at any time from profile settings</li>
+      <li>Key files: <code>web/src/app/dashboard/profile/</code> (page + CVUploadModal component)</li>
+    </ul>
+    <div class="gotcha"><strong>AVG rule:</strong> The consent modal must appear before the file picker opens, not after — confirmed in avg-checker review (PR #58).</div>
+
+    <h2 id="profile-fields">Profile fields (extended)</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Route: <code>/dashboard/profile</code></li>
+      <li>New fields added 2026-06-16: <code>extra_info</code> (free-text "Over jezelf" textarea), <code>leeftijd</code> (integer, optional age), <code>brief_taal</code> (enum: NL | EN — language for generated motivation letters)</li>
+      <li>DB migration added columns to <code>profiles</code> table: <code>leeftijd integer</code>, <code>brief_taal text default 'NL'</code>, <code>cv_expiry_reminder_enabled boolean default true</code></li>
+      <li><code>brief_taal</code> is passed to the Claude API prompt to switch the letter language — default NL</li>
+    </ul>
+
+    <h2 id="language-switcher">Language switcher</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Visible on all public pages and in the dashboard sidebar/header</li>
+      <li>NL is the only active locale in v1; EN / AR / TR / UK are greyed out with "binnenkort beschikbaar" tooltip</li>
+      <li>Implemented as a client component — clicking a future locale shows a toast, not a route change</li>
+      <li>When multi-language is activated (v2), the switcher wires to Next.js <code>next-intl</code> or similar i18n library; Arabic will need RTL layout toggle</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The Outlook and Meta OAuth buttons are greyed out with "binnenkort beschikbaar" — they are rendered but <code>pointer-events: none</code> / <code>opacity: 0.4</code>. Do not wire them up until OAuth apps are approved by those providers.</div>
+
+    <h2 id="sendgrid">SendGrid domain auth</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Domain <code>opstapapp.nl</code> verified in SendGrid via DKIM CNAME records (2026-06-16)</li>
+      <li>Sending domains: <code>sollicitaties@opstapapp.nl</code> (job applications), <code>noreply@opstapapp.nl</code> (system mail)</li>
+      <li>SPF handled by SendGrid's include record; DKIM uses 2048-bit keys</li>
+      <li>Env var: <code>SENDGRID_API_KEY</code> — set on Vercel and Railway</li>
+      <li>Application emails use Reply-To: user's own address so employer replies go to the applicant</li>
+    </ul>
+
+    <h2 id="vercel">Vercel project setup</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Two Vercel projects exist: <code>opstap-app</code> (active, production) and a legacy project — only <code>opstap-app</code> deploys <code>opstapapp.nl</code></li>
+      <li><strong>Root Directory must be set to <code>web/</code></strong> (not repo root) — the Next.js app lives in <code>web/</code>, not at the root</li>
+      <li><strong>Framework Preset must be "Next.js"</strong> — "Other" causes build to fail silently</li>
+      <li>Site was down on 2026-06-13 because Root Directory was set to <code>opstap</code> (Flutter dir) and Framework was "Other" — both corrected via Vercel API</li>
+      <li>Required env vars on <code>opstap-app</code>: <code>NEXT_PUBLIC_SUPABASE_URL</code>, <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, <code>NEXT_PUBLIC_API_URL</code>, <code>ADMIN_API_KEY</code>, <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code>, <code>TURNSTILE_SECRET_KEY</code>, <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code>, <code>SENDGRID_API_KEY</code>, <code>MOLLIE_API_KEY</code></li>
+      <li>First three were added 2026-06-13; remaining four still need to be set</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Vercel caches the framework setting aggressively — after changing Framework Preset, trigger a manual redeploy (not just a git push) to pick up the change immediately.</div>
+
+    <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>DNS managed by Cloudflare (domain registered elsewhere, NS pointed to Cloudflare)</li>
+      <li>Cloudflare Email Routing: catch-all rule <code>*@opstapapp.nl</code> → <code>d.automaite+opstap@gmail.com</code></li>
+      <li>Gmail filter auto-labels all +opstap mail as "Opstap" and skips inbox</li>
+      <li>Outbound transactional mail via SendGrid from <code>sollicitaties@opstapapp.nl</code> (applications) and <code>noreply@opstapapp.nl</code> (system)</li>
+      <li>SendGrid domain verification for opstapapp.nl completed 2026-06-16 — DKIM/SPF records confirmed via SendGrid dashboard. Outbound mail from <code>sollicitaties@opstapapp.nl</code> is now authenticated.</li>
     </ul>
 
   </main>

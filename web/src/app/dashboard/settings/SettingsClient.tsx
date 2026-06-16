@@ -34,6 +34,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
   // Email preferences state
   const [emailDigest, setEmailDigest] = useState(true)
   const [emailReminders, setEmailReminders] = useState(true)
+  const [cvExpiryReminder, setCvExpiryReminder] = useState(true)
   const [savingPrefs, setSavingPrefs] = useState(false)
 
   // Account delete state
@@ -47,6 +48,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
         setProfile(p)
         setEmailDigest(p.email_digest_enabled ?? true)
         setEmailReminders(p.email_reminders_enabled ?? true)
+        setCvExpiryReminder(p.cv_expiry_reminder_enabled ?? true)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -66,14 +68,14 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
     }
   }
 
-  async function handleSaveEmailPrefs(digest: boolean, reminders: boolean) {
+  async function handleSaveEmailPrefs(digest: boolean, reminders: boolean, cvExpiry: boolean) {
     setSavingPrefs(true)
     try {
-      await api.profile.update({ email_digest_enabled: digest, email_reminders_enabled: reminders })
+      await api.profile.update({ email_digest_enabled: digest, email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry })
     } catch {
-      // revert on failure
       setEmailDigest(profile?.email_digest_enabled ?? true)
       setEmailReminders(profile?.email_reminders_enabled ?? true)
+      setCvExpiryReminder(profile?.cv_expiry_reminder_enabled ?? true)
     } finally {
       setSavingPrefs(false)
     }
@@ -388,7 +390,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
               disabled={savingPrefs}
               onChange={v => {
                 setEmailDigest(v)
-                handleSaveEmailPrefs(v, emailReminders)
+                handleSaveEmailPrefs(v, emailReminders, cvExpiryReminder)
               }}
             />
             <Toggle
@@ -398,7 +400,17 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
               disabled={savingPrefs}
               onChange={v => {
                 setEmailReminders(v)
-                handleSaveEmailPrefs(emailDigest, v)
+                handleSaveEmailPrefs(emailDigest, v, cvExpiryReminder)
+              }}
+            />
+            <Toggle
+              label="CV-vervaldatum herinnering"
+              description="Een e-mail 7 dagen voor je CV automatisch wordt verwijderd."
+              checked={cvExpiryReminder}
+              disabled={savingPrefs}
+              onChange={v => {
+                setCvExpiryReminder(v)
+                handleSaveEmailPrefs(emailDigest, emailReminders, v)
               }}
             />
           </div>

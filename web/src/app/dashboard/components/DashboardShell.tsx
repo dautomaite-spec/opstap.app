@@ -7,6 +7,62 @@ import { logout } from '@/app/actions/auth'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import CreditsWidget from './CreditsWidget'
 
+function LanguageSwitcher() {
+  const [open, setOpen] = useState(false)
+  const langs = [
+    { code: 'NL', flag: '🇳🇱', label: 'Nederlands', active: true },
+    { code: 'EN', flag: '🇬🇧', label: 'English', active: false },
+    { code: 'AR', flag: '🇸🇦', label: 'العربية', active: false },
+    { code: 'TR', flag: '🇹🇷', label: 'Türkçe', active: false },
+    { code: 'UK', flag: '🇺🇦', label: 'Українська', active: false },
+  ]
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition hover:opacity-80"
+        style={{ color: 'var(--color-text-primary)', background: 'var(--color-lavender-card)' }}
+        title="Taal"
+      >
+        <span>🇳🇱</span>
+        <span>NL</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="absolute right-0 top-full mt-1 rounded-xl border py-1 z-50"
+            style={{ minWidth: 180, background: 'var(--color-white)', borderColor: 'var(--color-lavender-card)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+          >
+            {langs.map(l => (
+              <div
+                key={l.code}
+                className="flex items-center gap-2.5 px-3 py-2"
+                style={{
+                  cursor: l.active ? 'pointer' : 'not-allowed',
+                  opacity: l.active ? 1 : 0.45,
+                }}
+              >
+                <span>{l.flag}</span>
+                <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', fontWeight: l.active ? 600 : 400 }}>{l.label}</span>
+                {!l.active && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>binnenkort</span>}
+                {l.active && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 const navItems = [
   {
     href: '/dashboard/profiel',
@@ -294,10 +350,22 @@ export default function DashboardShell({
             </svg>
           </button>
           <span className="font-bold" style={{ color: 'var(--color-indigo-primary)' }}>Opstap</span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </header>
+
+        {/* Desktop top bar — shows language switcher on right */}
+        <div
+          className="hidden md:flex items-center justify-end px-6 py-2 border-b shrink-0"
+          style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-white)' }}
+        >
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
+        </div>
 
         {/* Page content */}
         <main className="flex-1 overflow-auto px-4 py-8 md:px-8 max-w-4xl w-full mx-auto">
