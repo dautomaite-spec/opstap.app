@@ -60,10 +60,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
           </nav>
 
           <div className="px-4 py-6 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <LanguageSwitcherPublic />
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
             {userName ? (
               <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.1)' }}>
                 <div
@@ -114,6 +111,10 @@ export default async function PublicShell({ children }: { children: React.ReactN
 
       {/* Page content — scrolls internally so sidebar stays fixed */}
       <main className="flex-1 flex flex-col overflow-auto pt-14 md:pt-0" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Desktop top bar — language switcher top-right */}
+        <div className="hidden md:flex items-center justify-end px-6 py-3">
+          <LanguageSwitcherPublic />
+        </div>
         {children}
       </main>
 

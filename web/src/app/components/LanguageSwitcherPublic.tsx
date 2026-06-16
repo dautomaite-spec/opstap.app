@@ -5,9 +5,16 @@ import { useState } from 'react'
 const langs = [
   { code: 'NL', flag: '🇳🇱', label: 'Nederlands', active: true },
   { code: 'EN', flag: '🇬🇧', label: 'English', active: false },
-  { code: 'AR', flag: '🇸🇦', label: 'العربية', active: false },
+  { code: 'DE', flag: '🇩🇪', label: 'Deutsch', active: false },
+  { code: 'FR', flag: '🇫🇷', label: 'Français', active: false },
+  { code: 'ES', flag: '🇪🇸', label: 'Español', active: false },
+  { code: 'IT', flag: '🇮🇹', label: 'Italiano', active: false },
   { code: 'TR', flag: '🇹🇷', label: 'Türkçe', active: false },
-  { code: 'UK', flag: '🇺🇦', label: 'Українська', active: false },
+  { code: 'RO', flag: '🇷🇴', label: 'Română', active: false },
+  { code: 'BG', flag: '🇧🇬', label: 'Български', active: false },
+  { code: 'HU', flag: '🇭🇺', label: 'Magyar', active: false },
+  { code: 'RU', flag: '🇷🇺', label: 'Русский', active: false },
+  { code: 'AT', flag: '🇦🇹', label: 'Österreichisch', active: false },
 ]
 
 export default function LanguageSwitcherPublic() {
@@ -20,8 +27,7 @@ export default function LanguageSwitcherPublic() {
         style={{ color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.12)' }}
         title="Taal"
       >
-        <span>🇳🇱</span>
-        <span>NL</span>
+        <span style={{ fontSize: 18, lineHeight: 1 }}>🇳🇱</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6" />
         </svg>
