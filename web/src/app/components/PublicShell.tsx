@@ -60,7 +60,10 @@ export default async function PublicShell({ children }: { children: React.ReactN
           </nav>
 
           <div className="px-4 py-6 flex flex-col gap-3">
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcherPublic />
+              <ThemeToggle />
+            </div>
             {userName ? (
               <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.1)' }}>
                 <div
@@ -75,7 +78,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
               <Link
                 href="/register"
                 className="w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
-                style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)' }}
+                style={{ background: 'rgba(255,255,255,0.22)', border: '1.5px solid rgba(255,255,255,0.7)' }}
               >
                 Aan de slag
               </Link>
