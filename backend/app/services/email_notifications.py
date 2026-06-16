@@ -5,6 +5,7 @@ Sends from: Opstap <info@opstapapp.nl>
 Different sender than application emails (sollicitaties@opstap.nl).
 """
 
+import html as _html
 import logging
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, From, To, Subject, HtmlContent, PlainTextContent
@@ -75,9 +76,10 @@ Credits kopen: {_DASHBOARD}
 Met vriendelijke groet,
 Team Opstap
 """
+    _naam = _html.escape(naam)
     html = _base_html("Bijna op!", f"""
 <h2>Je hebt nog {balance} credit over</h2>
-<p>Hallo {naam},</p>
+<p>Hallo {_naam},</p>
 <p>Goed bezig met solliciteren! Je hebt nog maar <strong>{balance} credit</strong> over op Opstap.</p>
 <p>Credits verlopen nooit — koop ze nu zodat je door kunt gaan.</p>
 <p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Credits kopen</a></p>
@@ -99,11 +101,14 @@ Bekijk je reacties: {_DASHBOARD}/sollicitaties
 Veel succes met het vervolg,
 Team Opstap
 """
+    _naam = _html.escape(naam)
+    _company = _html.escape(company)
+    _job_title = _html.escape(job_title)
     html = _base_html("Gefeliciteerd!", f"""
 <h2>Je hebt een antwoord gelogd!</h2>
-<p>Hallo {naam},</p>
-<p>Je hebt het antwoord van <strong>{company}</strong> op je sollicitatie voor
-<strong>{job_title}</strong> gemarkeerd. Goed bezig!</p>
+<p>Hallo {_naam},</p>
+<p>Je hebt het antwoord van <strong>{_company}</strong> op je sollicitatie voor
+<strong>{_job_title}</strong> gemarkeerd. Goed bezig!</p>
 <p style="margin-top:20px;"><a href="{_DASHBOARD}/sollicitaties" class="btn">Mijn reacties</a></p>
 """)
     return _send(to_email, naam, subject, plain, html)
@@ -128,13 +133,14 @@ Bekijk je reacties: {_DASHBOARD}/sollicitaties
 Veel succes,
 Team Opstap
 """
+    _naam = _html.escape(naam)
     cards_html = "".join(
-        f'<div class="card"><strong>{a["job_title"]}</strong> · {a["company"]}</div>'
+        f'<div class="card"><strong>{_html.escape(a["job_title"])}</strong> · {_html.escape(a["company"])}</div>'
         for a in applications
     )
     html = _base_html("Nog geen antwoord?", f"""
 <h2>Heb je al iets gehoord?</h2>
-<p>Hallo {naam},</p>
+<p>Hallo {_naam},</p>
 <p>Je hebt {count} sollicitatie{s} staan die al 2 weken geleden verstuurd zijn:</p>
 {cards_html}
 <p style="margin-top:16px;">Nog niets gehoord? Een beleefd follow-up bericht kan helpen!</p>
@@ -163,15 +169,16 @@ Bekijk en solliciteer via je dashboard:
 Veel succes,
 Team Opstap
 """
+    _naam = _html.escape(naam)
     cards_html = "".join(f"""
 <div class="card">
-  <strong>{j['title']}</strong> · {j['company']}<br>
-  <span style="font-size:13px;color:#555;">{j.get('location','Nederland')}{' · ' + j['salary_range'] if j.get('salary_range') else ''}</span><br>
-  <a href="{j.get('url', _DASHBOARD)}" style="font-size:13px;color:#3d3a8c;">Bekijk vacature →</a>
+  <strong>{_html.escape(j['title'])}</strong> · {_html.escape(j['company'])}<br>
+  <span style="font-size:13px;color:#555;">{_html.escape(j.get('location','Nederland'))}{' · ' + _html.escape(j['salary_range']) if j.get('salary_range') else ''}</span><br>
+  <a href="{_html.escape(j.get('url', _DASHBOARD))}" style="font-size:13px;color:#3d3a8c;">Bekijk vacature →</a>
 </div>""" for j in jobs)
     html = _base_html("Weekoverzicht vacatures", f"""
 <h2>{count} nieuwe vacatures voor jou</h2>
-<p>Hallo {naam},</p>
+<p>Hallo {_naam},</p>
 <p>Deze week zijn er nieuwe vacatures gevonden die bij jouw profiel passen:</p>
 {cards_html}
 <p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Bekijk alle vacatures</a></p>

@@ -27,6 +27,7 @@ from app.services.email_sender import send_application_email, ApplicationEmail
 from app.services.prompt_guard import (
     PromptInjectionError,
     sanitize_and_check_profile_text,
+    validate_letter_output,
 )
 from app.services.credits import maybe_award_referrer_credit
 from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations
@@ -208,6 +209,12 @@ async def send_application(
     status = "pending"
     sent_at = None
 
+    # Validate letter content before send — client could substitute arbitrary text
+    try:
+        validate_letter_output(body.letter_nl)
+    except PromptInjectionError:
+        raise HTTPException(status_code=422, detail="Ongeldige briefinhoud. Regenereer de brief en probeer opnieuw.")
+
     if body.send_method == "email":
         contact_email = body.contact_email_override or job.get("contact_email")
         if not contact_email or not _EMAIL_RE.match(contact_email):
@@ -291,6 +298,7 @@ async def update_application_status(
         .update(update)
         .eq("id", application_id)
         .eq("user_id", user_id)
+        .select()
         .execute()
     )
     if not updated.data:

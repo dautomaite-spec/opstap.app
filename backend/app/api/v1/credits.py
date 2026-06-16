@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import logging
+from urllib.parse import parse_qs
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 import httpx
@@ -78,10 +79,10 @@ async def mollie_webhook(
     request: Request,
     supabase=Depends(get_supabase),
 ):
-    # Mollie sends form-encoded { id: "tr_xxx" } — no auth header
-    # If MOLLIE_WEBHOOK_SECRET is set, validate HMAC-SHA256 signature
+    # Buffer body first — request.form() cannot re-read an already-consumed stream
+    body = await request.body()
+
     if settings.mollie_webhook_secret:
-        body = await request.body()
         signature = request.headers.get("X-Mollie-Signature", "")
         expected = hmac.new(
             settings.mollie_webhook_secret.encode(),
@@ -91,11 +92,11 @@ async def mollie_webhook(
         if not hmac.compare_digest(signature, expected):
             logger.warning("Mollie webhook received with invalid signature — ignoring")
             return {"ok": True}  # Silent reject — still 200 to prevent retry storms
-        form = await request.form()
-    else:
-        form = await request.form()
 
-    mollie_id = form.get("id")
+    # Parse form from buffered body instead of calling request.form()
+    parsed = parse_qs(body.decode(errors="replace"))
+    mollie_id_list = parsed.get("id")
+    mollie_id = mollie_id_list[0] if mollie_id_list else None
     if mollie_id and isinstance(mollie_id, str):
         try:
             await handle_webhook(mollie_id, supabase)

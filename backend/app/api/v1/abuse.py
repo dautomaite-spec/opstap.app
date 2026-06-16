@@ -40,7 +40,7 @@ def _require_admin(x_admin_key: str = Header(default="")):
 class AbuseReport(BaseModel):
     reporter_email: EmailStr
     reporter_company: str = Field(max_length=200)
-    sender_email: str = Field(max_length=200)
+    sender_email: EmailStr  # validated email — prevents oracle probing with arbitrary strings
     description: str = Field(max_length=1000)
 
 
@@ -82,15 +82,13 @@ async def report_abuse(body: AbuseReport, request: Request, supabase=Depends(get
     if profile_result.data:
         profile = profile_result.data
         new_count = (profile.get("abuse_report_count") or 0) + 1
-        update: dict = {"abuse_report_count": new_count}
-
+        # Increment count only — suspension requires admin review via /admin/resolve
+        # Auto-suspend from unverified public reports would allow account takeover by any caller
+        supabase.table("profiles").update({"abuse_report_count": new_count}).eq("user_id", profile["user_id"]).execute()
         if new_count >= AUTO_SUSPEND_THRESHOLD:
-            update["is_suspended"] = True
             logger.warning(
-                "User %s auto-suspended after %d abuse reports", profile["user_id"], new_count
+                "User %s has %d abuse reports — flagged for admin review", profile["user_id"], new_count
             )
-
-        supabase.table("profiles").update(update).eq("user_id", profile["user_id"]).execute()
 
     logger.info("Abuse report %s received from IP %s re sender %s", report_id, reporter_ip, safe_sender)
     return {
