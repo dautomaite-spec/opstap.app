@@ -5,9 +5,16 @@ import { useState } from 'react'
 const langs = [
   { code: 'NL', flag: '🇳🇱', label: 'Nederlands', active: true },
   { code: 'EN', flag: '🇬🇧', label: 'English', active: false },
-  { code: 'AR', flag: '🇸🇦', label: 'العربية', active: false },
+  { code: 'DE', flag: '🇩🇪', label: 'Deutsch', active: false },
+  { code: 'FR', flag: '🇫🇷', label: 'Français', active: false },
+  { code: 'ES', flag: '🇪🇸', label: 'Español', active: false },
+  { code: 'IT', flag: '🇮🇹', label: 'Italiano', active: false },
   { code: 'TR', flag: '🇹🇷', label: 'Türkçe', active: false },
-  { code: 'UK', flag: '🇺🇦', label: 'Українська', active: false },
+  { code: 'RO', flag: '🇷🇴', label: 'Română', active: false },
+  { code: 'BG', flag: '🇧🇬', label: 'Български', active: false },
+  { code: 'HU', flag: '🇭🇺', label: 'Magyar', active: false },
+  { code: 'RU', flag: '🇷🇺', label: 'Русский', active: false },
+  { code: 'AT', flag: '🇦🇹', label: 'Österreichisch', active: false },
 ]
 
 export default function LanguageSwitcherPublic() {
