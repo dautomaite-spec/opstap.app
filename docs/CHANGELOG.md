@@ -1,5 +1,27 @@
 # Changelog — Opstap
 
+## 2026-06-16
+- ops: SendGrid domain verification completed for opstapapp.nl (DKIM/SPF records confirmed)
+- fix: remove privacy link from sidebar — footer-only placement
+- feat: Outlook and Meta OAuth buttons greyed out with "binnenkort beschikbaar" label
+- feat: language switcher added to public pages and dashboard (NL active; EN/AR/TR/UK coming soon)
+- feat: profile page — "Over jezelf" (extra_info) textarea added
+- feat: profile page — Leeftijd (age) field and brief_taal (letter language NL/EN) select added
+- feat: DB migration — leeftijd, brief_taal, cv_expiry_reminder_enabled columns added to profiles table
+- feat: settings — CV expiry reminder toggle added to email preferences
+- fix: AVG consent modal — removed specific server location "(Frankfurt)"
+- fix: privacy page — removed specific server location, replaced with "contact us" approach
+
+## 2026-06-13
+- fix: remove middleware.ts — conflicts with Next.js 16 proxy.ts convention; session refresh already handled by proxy.ts (#59 / 56a48f8)
+- fix: simplify application email footer, update domain to opstapapp.nl (#59 / aba826b)
+- feat: CV upload on profile page with AVG consent modal (#58 / d153ee7)
+- fix: restore middleware so Supabase session is refreshed on every request (#57 / e80e5ff)
+- fix: Plausible analytics env-var driven domain (#56 / 85bba7c)
+- ops: Vercel project Root Directory corrected to web/, Framework Preset set to Next.js — site was down
+- ops: missing Vercel env vars added (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_API_URL)
+- ops: Cloudflare Email Routing catch-all set up for @opstapapp.nl → Gmail + label created
+
 ## 2026-06-12
 - fix: drive Plausible analytics domain from NEXT_PUBLIC_PLAUSIBLE_DOMAIN env var (was hardcoded)
 - fix: auto-detect host for auth email redirect URLs (#55)

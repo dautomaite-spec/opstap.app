@@ -95,26 +95,25 @@ const SECTIONS = [
             <thead>
               <tr style={{ background: 'var(--color-lavender-card)' }}>
                 <th className="text-left px-4 py-2.5 font-semibold rounded-tl-lg" style={{ color: 'var(--color-indigo-primary)' }}>Verwerker</th>
-                <th className="text-left px-4 py-2.5 font-semibold" style={{ color: 'var(--color-indigo-primary)' }}>Doel</th>
-                <th className="text-left px-4 py-2.5 font-semibold rounded-tr-lg" style={{ color: 'var(--color-indigo-primary)' }}>Locatie</th>
+                <th className="text-left px-4 py-2.5 font-semibold rounded-tr-lg" style={{ color: 'var(--color-indigo-primary)' }}>Doel</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ['Supabase (PostgreSQL + Storage)', 'Database en CV-opslag', 'EU (Frankfurt)'],
-                ['Anthropic Claude API', 'Genereren van motivatiebrieven', 'Verwerking in transit, geen opslag'],
-                ['SendGrid (Twilio)', 'Versturen van e-mails', 'EU-servers beschikbaar'],
-              ].map(([verwerker, doel, locatie], i) => (
+                ['Supabase (PostgreSQL + Storage)', 'Database en CV-opslag — uitsluitend binnen de EU'],
+                ['Anthropic Claude API', 'Genereren van motivatiebrieven (tijdelijke verwerking, geen opslag)'],
+                ['SendGrid (Twilio)', 'Versturen van e-mails'],
+              ].map(([verwerker, doel], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--color-lavender-card)' }}>
                   <td className="px-4 py-2.5 font-medium">{verwerker}</td>
                   <td className="px-4 py-2.5" style={{ color: 'var(--color-text-muted)' }}>{doel}</td>
-                  <td className="px-4 py-2.5" style={{ color: 'var(--color-text-muted)' }}>{locatie}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p>De Claude API van Anthropic verwerkt je CV-inhoud en vacaturetekst tijdelijk om een motivatiebrief te genereren. Anthropic gebruikt deze gegevens <strong>niet</strong> voor het trainen van AI-modellen (Enterprise API-voorwaarden).</p>
+        <p className="mb-3">De Claude API van Anthropic verwerkt je CV-inhoud en vacaturetekst tijdelijk om een motivatiebrief te genereren. Anthropic gebruikt deze gegevens <strong>niet</strong> voor het trainen van AI-modellen (Enterprise API-voorwaarden).</p>
+        <p>Vragen over de specifieke opslag van je gegevens? Mail naar <strong>privacy@opstapapp.nl</strong>.</p>
       </>
     ),
   },

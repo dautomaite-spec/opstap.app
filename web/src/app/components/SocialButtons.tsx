@@ -69,20 +69,18 @@ export default function SocialButtons({ redirectTo, showSkip = false }: SocialBu
         Doorgaan met Google
       </button>
 
-      {/* Outlook / Meta — compact row */}
+      {/* Outlook / Meta — coming soon, greyed out */}
       <div className="flex gap-2">
         {SECONDARY_PROVIDERS.map((p) => (
-          <button
+          <div
             key={p.id}
-            type="button"
-            onClick={() => handleOAuth(p.id)}
-            title={`Doorgaan met ${p.label}`}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition hover:opacity-80"
-            style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', background: 'var(--color-white)' }}
+            title={`${p.label} — binnenkort beschikbaar`}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium cursor-not-allowed select-none"
+            style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)', background: 'var(--color-lavender-bg)', opacity: 0.5 }}
           >
             {p.icon}
             <span>{p.label}</span>
-          </button>
+          </div>
         ))}
       </div>
 

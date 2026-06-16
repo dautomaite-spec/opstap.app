@@ -2,6 +2,7 @@ import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 import SidebarNavLink from './SidebarNavLink'
 import PublicMobileMenu from './PublicMobileMenu'
+import LanguageSwitcherPublic from './LanguageSwitcherPublic'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function PublicShell({ children }: { children: React.ReactNode }) {
@@ -53,11 +54,9 @@ export default async function PublicShell({ children }: { children: React.ReactN
             <SidebarNavLink href="/dashboard" label="Vind vacatures" />
             <SidebarNavLink href="/dashboard/opgeslagen" label="Opgeslagen vacatures" />
             <div className="my-2 mx-3 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
-            <SidebarNavLink href="/dashboard/settings" label="Voorkeuren / instellingen" />
             <SidebarNavLink href="/over-ons" label="Over Opstap" />
             <SidebarNavLink href="/faq" label="Help & FAQ" />
             <SidebarNavLink href="/contact" label="Contact" />
-            <SidebarNavLink href="/privacy" label="Privacybeleid" />
           </nav>
 
           <div className="px-4 py-6 flex flex-col gap-3">
@@ -93,6 +92,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
         <PublicMobileMenu userName={userName} />
         <Link href="/" className="font-bold text-white hover:opacity-90 transition">Opstap</Link>
         <div className="flex items-center gap-2">
+          <LanguageSwitcherPublic />
           <ThemeToggle />
           {userName ? (
             <div

@@ -85,6 +85,9 @@ export default function ProfielPage() {
         uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
         werklocatie: (fd.get('werklocatie') as string) || undefined,
         opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
+        extra_info: (fd.get('extra_info') as string) || undefined,
+        leeftijd: fd.get('leeftijd') ? Number(fd.get('leeftijd')) : undefined,
+        brief_taal: (fd.get('brief_taal') as string) || 'nl',
       })
       setProfile(updated)
       setSaveSuccess(true)
@@ -183,6 +186,32 @@ export default function ProfielPage() {
                 <option value="wo_master">WO Master</option>
                 <option value="phd">PhD / Promotie</option>
               </SelectField>
+
+              {/* About me */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Over jezelf</label>
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  Vertel iets over wie je bent — je hobby's, interesses, hoe jij werkt, wat je drijft. Hoe meer je deelt, hoe persoonlijker je motivatiebrief wordt.
+                </p>
+                <textarea
+                  name="extra_info"
+                  rows={5}
+                  placeholder="Ik ben een enthousiaste teamspeler die graag met mensen werkt. In mijn vrije tijd speel ik voetbal en lees ik over technologie. Ik ben proactief, houd van uitdagingen en leer snel..."
+                  defaultValue={profile.extra_info ?? ''}
+                  maxLength={2000}
+                  className="px-3 py-2 rounded-lg border text-sm outline-none resize-none"
+                  style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Field label="Leeftijd" name="leeftijd" type="number" placeholder="28" defaultValue={profile.leeftijd?.toString()} />
+                <SelectField label="Taal motivatiebrief" name="brief_taal" defaultValue={profile.brief_taal ?? 'nl'}>
+                  <option value="nl">Nederlands</option>
+                  <option value="en">Engels</option>
+                </SelectField>
+              </div>
+
               {/* CV upload section */}
               <div className="pt-2 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
                 <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</p>
@@ -246,7 +275,7 @@ export default function ProfielPage() {
                     <div className="rounded-2xl p-6 max-w-sm w-full flex flex-col gap-4" style={{ background: 'var(--color-white)' }}>
                       <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</h3>
                       <div className="text-sm flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                        <p>Je CV wordt opgeslagen op beveiligde EU-servers (Frankfurt) en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
+                        <p>Je CV wordt versleuteld opgeslagen op beveiligde EU-servers en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
                         <ul className="flex flex-col gap-1 pl-4 list-disc">
                           <li>Je ontvangt 7 dagen van tevoren een herinnering</li>
                           <li>Je kunt je CV op elk moment zelf verwijderen</li>

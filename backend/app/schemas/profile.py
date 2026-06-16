@@ -15,8 +15,11 @@ class ProfileCreate(BaseModel):
     werklocatie: Optional[str] = Field(None, max_length=50)
     extra_info: Optional[str] = Field(None, max_length=2000)
     opleidingsniveau: Optional[str] = Field(None, max_length=50)
+    leeftijd: Optional[int] = Field(None, ge=14, le=99)
+    brief_taal: str = Field('nl', pattern='^(nl|en)$')
     email_digest_enabled: bool = True
     email_reminders_enabled: bool = True
+    cv_expiry_reminder_enabled: bool = True
 
 
 class ProfileUpdate(ProfileCreate):

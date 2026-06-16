@@ -299,7 +299,7 @@
   <aside class="toc">
     <div class="toc-header">
       <h1>Opstap</h1>
-      <p>Planning — 2026-06-12</p>
+      <p>Planning — 2026-06-16</p>
     </div>
     <nav>
       <div class="toc-section">Documenten</div>
@@ -334,7 +334,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Planning</h1>
-      <p>Bijgewerkt op 2026-06-12</p>
+      <p>Bijgewerkt op 2026-06-16</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -654,10 +654,48 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Over-ons: juridische footer verplaatst naar kleine "Juridisch"-sectie</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Hero blobs vast gepositioneerd (position: fixed) — geen verschuiving bij scrollen</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sidebar-fix via h-screen layout — altijd zichtbaar op publieke pagina's</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vercel project geconfigureerd: Root Directory = web/, Framework = Next.js (was fout ingesteld)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>middleware.ts verwijderd — conflicteerde met Next.js 16 proxy.ts convention; sessie-refresh al gedaan door proxy.ts</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Cloudflare Email Routing: catch-all @opstapapp.nl → d.automaite+opstap@gmail.com + Gmail label "Opstap"</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid domeinverificatie voltooid (opstapapp.nl)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Privacylink verwijderd uit sidebar — staat alleen nog in footer (minder visuele rommel)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Outlook / Meta OAuth-knoppen grijs weergegeven met label "binnenkort beschikbaar"</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Taalkiezer toegevoegd aan publieke pagina's en dashboard (NL actief; EN/AR/TR/UK binnenkort)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profielpagina: "Over jezelf" textarea (extra_info), Leeftijd-veld en brief_taal-select (NL/EN) toegevoegd</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>DB-migraties: kolommen leeftijd, brief_taal, cv_expiry_reminder_enabled toegevoegd aan profiles-tabel</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Instellingen: CV-verlooptoggle toegevoegd aan e-mailvoorkeuren</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG-toestemmingsmodal: specifieke serverlocatie "(Frankfurt)" verwijderd — vervangen door contactbenadering</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Privacypagina: specifieke serverlocatie verwijderd — vervangen door "contacteer ons"-benadering</span></li>
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl geregistreerd (handmatig, SIDN-registrar)</span></li>
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plausible-account geactiveerd (domein vereist)</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>SendGrid domeinverificatie (opstapapp.nl + info@opstapapp.nl CNAME-records bij TransIP)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid domeinverificatie voltooid (opstapapp.nl DKIM/SPF-records geverifieerd)</span></li>
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Cron-jobs op cron-job.org (maandagse digest, zondagse follow-up, 1e van de maand credits)</span></li>
+        </ul>
+      </div>
+
+      <!-- Pre-launch blockers -->
+      <div class="phase" style="margin-top:20px">
+        <div class="phase-title">Pre-launch checklist <span class="phase-badge badge-active">Actief</span></div>
+
+        <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;padding:6px 0 2px">Gebruikers-blokkers (hard blockers)</p>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><strong>SendGrid DKIM/SPF domeinauth</strong> — domeinverificatie voor opstapapp.nl voltooid via SendGrid dashboard.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Mollie iDEAL productietest</strong> — volledig end-to-end betaalflow testen met echte iDEAL-betaling (credits kopen → credits bijgeschreven).</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Cron-jobs actief op cron-job.org</strong> — 4 Edge Functions zijn live maar crons zijn nog niet ingesteld. Zonder crons: geen CV-verwijderingswaarschuwingen, geen vacaturedigest, geen inactiviteitsverwijdering.</span></li>
+        </ul>
+
+        <p style="font-size:11px;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 2px">Admin-behoeften</p>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Vercel env vars completeren: <code>ADMIN_API_KEY</code>, <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code>, <code>TURNSTILE_SECRET_KEY</code>, <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code> nog niet ingesteld op opstap-app Vercel project.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plausible-account activeren op opgegeven domein (vereist live domein + account op plausible.io).</span></li>
+        </ul>
+
+        <p style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 2px">Post-launch verificaties</p>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Volledige sollicitatieflow testen: zoeken → brief genereren → sollicitatie versturen → e-mail ontvangen bij werkgever.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>AVG-verwijderingsstroom testen: account verwijderen → Supabase Storage CV verwijderd + Edge Function bevestigd.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Adminpaneel verifiëren (/admin): gebruikerslijst zichtbaar, credits aanpassen werkt, schorsing werkt.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>SendGrid bezorgbaarheid controleren: testmail versturen en headers/spamscore controleren via mail-tester.com.</span></li>
         </ul>
       </div>
 
