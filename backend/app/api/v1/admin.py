@@ -5,6 +5,9 @@ Cron endpoints (called by external scheduler):
   POST /api/v1/admin/cron/follow-up   — Sundays
   POST /api/v1/admin/cron/job-digest  — Mondays
 
+n8n ingest endpoint (called by n8n vacancy-polling workflow):
+  POST /api/v1/admin/ingest/jobs
+
 User management endpoints (called by admin frontend):
   GET    /api/v1/admin/users
   POST   /api/v1/admin/users/{user_id}/credits
@@ -16,8 +19,8 @@ import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Header
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field, AnyHttpUrl
+from typing import Optional, List
 
 from app.core.config import settings
 from app.core.supabase import get_supabase
@@ -33,8 +36,6 @@ CV_BUCKET = "cvs"
 
 def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
     import hmac as _hmac
-    if not settings.admin_api_key:
-        raise HTTPException(status_code=503, detail="Admin key not configured")
     if not _hmac.compare_digest(x_admin_key or "", settings.admin_api_key):
         raise HTTPException(status_code=403, detail="Forbidden")
 
@@ -173,6 +174,12 @@ async def delete_user(
     supabase=Depends(get_supabase),
 ):
     """Permanently delete a user account and all their data."""
+    from uuid import UUID as _UUID
+    try:
+        _UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid user_id")
+
     profile_result = supabase.table("profiles").select("cv_path").eq("user_id", user_id).maybe_single().execute()
     if profile_result.data and profile_result.data.get("cv_path"):
         try:
@@ -184,14 +191,8 @@ async def delete_user(
 
     supabase.table("applications").delete().eq("user_id", user_id).execute()
     supabase.table("credit_transactions").delete().eq("user_id", user_id).execute()
-    from uuid import UUID as _UUID
-    try:
-        _UUID(user_id)
-    except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid user_id")
-    supabase.table("referral_uses").delete().or_(
-        f"referrer_user_id.eq.{user_id},referee_user_id.eq.{user_id}"
-    ).execute()
+    supabase.table("referral_uses").delete().eq("referrer_user_id", user_id).execute()
+    supabase.table("referral_uses").delete().eq("referee_user_id", user_id).execute()
     # mollie_payments NOT deleted — 7-year Dutch tax retention obligation
     supabase.table("profiles").delete().eq("user_id", user_id).execute()
 
@@ -462,3 +463,70 @@ async def cron_prefetch_jobs(
 
     logger.info("Job prefetch cron: upserted=%d keywords=%d", total_upserted, len(_POPULAR_NL_SEARCHES))
     return {"upserted": total_upserted, "keywords": len(_POPULAR_NL_SEARCHES)}
+
+
+# ── n8n ingest endpoint ────────────────────────────────────────────────────────
+
+class IngestJob(BaseModel):
+    title: str = Field(..., max_length=300)
+    company: str = Field(..., max_length=200)
+    url: AnyHttpUrl = Field(...)
+    location: Optional[str] = Field(None, max_length=200)
+    source: str = Field("adzuna", max_length=50)
+    description_snippet: Optional[str] = Field(None, max_length=500)
+    salary_range: Optional[str] = Field(None, max_length=100)
+    salary_min_raw: Optional[int] = None
+    salary_max_raw: Optional[int] = None
+    contract_type: Optional[str] = Field(None, max_length=50)
+    posted_at: Optional[str] = Field(None, max_length=50)
+    scraped_at: Optional[str] = Field(None, max_length=50)
+
+
+class IngestJobsBody(BaseModel):
+    jobs: List[IngestJob] = Field(..., max_length=200)
+    source_keyword: Optional[str] = Field(None, max_length=200)
+
+
+@router.post("/ingest/jobs")
+async def ingest_jobs(
+    body: IngestJobsBody,
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """
+    Receive a batch of vacancy objects from n8n and upsert to the shared jobs pool.
+    Deduplicates by URL. Called by the n8n vacancy-polling workflow every 4 hours.
+    """
+    from uuid import uuid4 as _uuid4
+    from datetime import datetime as _dt, timezone as _tz
+
+    now = _dt.now(_tz.utc).isoformat()
+    rows = []
+    for j in body.jobs:
+        if not j.title or not j.url:
+            continue
+        rows.append({
+            "id": str(_uuid4()),
+            "title": j.title,
+            "company": j.company,
+            "location": j.location or "Nederland",
+            "source": j.source,
+            "url": str(j.url),
+            "description_snippet": j.description_snippet,
+            "salary_range": j.salary_range,
+            "salary_min_raw": j.salary_min_raw,
+            "salary_max_raw": j.salary_max_raw,
+            "contract_type": j.contract_type,
+            "posted_at": j.posted_at,
+            "scraped_at": j.scraped_at or now,
+        })
+
+    if rows:
+        supabase.table("jobs").upsert(rows, on_conflict="url").execute()
+
+    logger.info(
+        "n8n ingest: upserted=%d keyword=%s",
+        len(rows),
+        body.source_keyword or "—",
+    )
+    return {"upserted": len(rows), "source_keyword": body.source_keyword}
