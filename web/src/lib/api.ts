@@ -27,6 +27,21 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
+  invite: {
+    joinWaitlist: (body: { email: string; naam?: string }) =>
+      request<{ message: string }>('POST', '/api/v1/invite/waitlist', body),
+    validate: (code: string) =>
+      request<{ valid: boolean; code: string }>('GET', `/api/v1/invite/validate/${code}`),
+    redeem: (code: string) =>
+      request<{ redeemed: boolean }>('POST', '/api/v1/invite/redeem', { code }),
+    // Admin
+    generateCodes: (body: { count?: number; notes?: string; max_uses?: number }) =>
+      request<{ codes: string[]; count: number }>('POST', '/api/v1/invite/codes', body),
+    listCodes: () => request<InviteCode[]>('GET', '/api/v1/invite/codes'),
+    listWaitlist: () => request<WaitlistEntry[]>('GET', '/api/v1/invite/waitlist'),
+    inviteWaitlistEntry: (id: string, notes?: string) =>
+      request<{ code: string; invite_url: string; email: string }>('POST', `/api/v1/invite/waitlist/${id}/invite`, { notes }),
+  },
   credits: {
     balance: () => request<BalanceOut>('GET', '/api/v1/credits/balance'),
     transactions: () => request<TransactionOut[]>('GET', '/api/v1/credits/transactions'),
@@ -195,6 +210,36 @@ export interface SendRequest {
   letter_nl: string
   send_method?: string
   contact_email_override?: string
+}
+
+export interface InviteCode {
+  id: string
+  code: string
+  notes?: string
+  max_uses: number
+  use_count: number
+  created_at: string
+  expires_at?: string
+  invite_url: string
+  users: InviteUser[]
+}
+
+export interface InviteUser {
+  user_id: string
+  naam: string
+  used_at: string
+  applications: number
+  interviews: number
+  last_active_at?: string
+}
+
+export interface WaitlistEntry {
+  id: string
+  email: string
+  naam?: string
+  created_at: string
+  invited_at?: string
+  invite_code?: string
 }
 
 export interface Application {

@@ -77,3 +77,41 @@ export async function deleteUser(userId: string) {
   if (!res.ok) throw new Error('Verwijderen mislukt')
   return res.json()
 }
+
+export async function fetchInviteCodes() {
+  const res = await fetch(`${API}/api/v1/invite/codes`, {
+    headers: adminHeaders(),
+    cache: 'no-store',
+  })
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function generateInviteCodes(count: number, notes: string, maxUses: number) {
+  const res = await fetch(`${API}/api/v1/invite/codes`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ count, notes, max_uses: maxUses }),
+  })
+  if (!res.ok) throw new Error('Genereren mislukt')
+  return res.json()
+}
+
+export async function fetchWaitlist() {
+  const res = await fetch(`${API}/api/v1/invite/waitlist`, {
+    headers: adminHeaders(),
+    cache: 'no-store',
+  })
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function inviteWaitlistEntry(id: string) {
+  const res = await fetch(`${API}/api/v1/invite/waitlist/${id}/invite`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({}),
+  })
+  if (!res.ok) throw new Error('Uitnodigen mislukt')
+  return res.json()
+}

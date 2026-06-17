@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; ref?: string }>
+  searchParams: Promise<{ error?: string; ref?: string; invite?: string }>
 }) {
-  const { error, ref } = await searchParams
+  const { error, ref, invite } = await searchParams
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--color-lavender-bg)' }}>
@@ -39,6 +39,7 @@ export default async function RegisterPage({
 
           <form action={register} className="flex flex-col gap-4">
             {ref && <input type="hidden" name="ref" value={ref} />}
+            {invite && <input type="hidden" name="invite" value={invite} />}
             <div className="flex flex-col gap-1">
               <label htmlFor="naam" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                 Volledige naam

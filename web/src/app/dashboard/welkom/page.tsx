@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { api, ApiError } from '@/lib/api'
 import { JOB_TITLES } from '@/lib/jobTitles'
 
@@ -15,7 +15,16 @@ type Step = 1 | 2 | 3
 
 export default function WelkomPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<Step>(1)
+
+  // Silently redeem invite code if present in URL
+  useEffect(() => {
+    const invite = searchParams.get('invite')
+    if (invite) {
+      api.invite.redeem(invite).catch(() => {})
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Step 1 — profile
   const [saving, setSaving] = useState(false)
