@@ -1,6 +1,18 @@
 # Changelog — Opstap
 
 ## 2026-06-17
+- fix: SSRF HIGH x2 — /apply/from-url now resolves hostname to IP, blocks private/loopback ranges, disables redirect-following with re-validation of redirect targets (apply.py)
+- fix: route shadowing MEDIUM — GET /jobs/saved/list declared before /{job_id} in jobs.py
+- fix: credit race condition MEDIUM — /apply/from-url uses atomic debit_one_credit RPC before fetch+generation
+- fix: unbounded job_data MEDIUM — SavedJobData Pydantic model replaces bare dict on POST /jobs/saved
+- fix: writing_style injection MEDIUM — UrlLetterRequest.writing_style uses _WritingStyle Literal type
+- fix: PromptInjectionError LOW — no credit refund on injection, returns 422 instead of 500
+- fix: Indeed href injection MEDIUM — only /vacatures/, /rc/ etc. URL prefixes accepted in scrape_indeed_nl
+- feat: Indeed NL HTML scraper (BeautifulSoup) added alongside Adzuna; double Adzuna call removed — now single scrape_adzuna + scrape_indeed_nl in parallel (job_scraper.py, jobs.py)
+- feat: saved jobs persist to Supabase (saved_jobs table) — GET /saved/list, POST /saved, DELETE /saved/{job_id}; localStorage kept as fast local cache (DashboardClient.tsx, api.ts)
+- feat: sollicitaties status dropdown (sent/pending/replied/accepted/rejected) replaces "markeer als beantwoord" button (sollicitaties/page.tsx)
+- feat: POST /apply/from-url — fetch job posting URL, extract title/company/description, generate motivation letter for 1 credit; SSRF-protected (http/https + netloc required) (apply.py)
+- feat: URL-to-letter collapsible UI below search bar with copy button (DashboardClient.tsx)
 - feat: beschikbaarheid (availability) select field (fulltime/parttime/both) added to /dashboard/profiel and profile creation form (d30f7a6)
 - fix: make all SendGrid calls non-blocking with run_in_executor in email_sender.py and email_notifications.py (3e59998)
 - fix: dashboard profile form — 3 job titles, salary range, 409 fallback (#71)

@@ -144,6 +144,11 @@
       <a href="#async-email">Async email sender</a>
       <a href="#salary-range">Salary range</a>
       <a href="#beschikbaarheid">Beschikbaarheid field</a>
+      <a href="#job-scrapers">Job scrapers</a>
+      <a href="#saved-jobs">Saved jobs</a>
+      <a href="#application-status">Application status</a>
+      <a href="#url-to-letter">URL-to-letter</a>
+      <a href="#security-session12">Security fixes (session 12)</a>
     </div>
   </nav>
 
@@ -331,6 +336,62 @@
       <li>Passed to the Claude API prompt as availability context so generated motivation letters can reference the candidate's preferred contract type</li>
       <li>Key files: <code>web/src/app/dashboard/profiel/page.tsx</code>, profile creation form component</li>
     </ul>
+
+    <h2 id="job-scrapers">Job scrapers</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key file: <code>backend/app/services/job_scraper.py</code>, wired in <code>backend/app/api/jobs.py</code></li>
+      <li>Two scrapers run in parallel via <code>asyncio.gather</code>: <code>scrape_adzuna()</code> (Adzuna NL REST API) and <code>scrape_indeed_nl()</code> (Indeed NL HTML via BeautifulSoup)</li>
+      <li>The previous code called <code>scrape_adzuna</code> twice — removed; results are now deduplicated by job URL before returning</li>
+      <li><code>beautifulsoup4</code> added to <code>requirements.txt</code></li>
+      <li>Indeed NL scraper parses <code>https://nl.indeed.com/jobs?q=...&amp;l=...</code> HTML — may need periodic selector updates if Indeed changes its markup</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Indeed NL blocks requests without a realistic <code>User-Agent</code> header. The scraper sets a browser UA; if Indeed adds more bot detection this scraper will silently return 0 results — monitor job count in logs.</div>
+
+    <h2 id="saved-jobs">Saved jobs</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Backend endpoints in <code>backend/app/api/jobs.py</code>: <code>GET /jobs/saved/list</code>, <code>POST /jobs/saved</code>, <code>DELETE /jobs/saved/{job_id}</code></li>
+      <li>Supabase table: <code>saved_jobs</code> (migration already applied) — columns: <code>user_id</code>, <code>job_id</code>, <code>job_data jsonb</code>, <code>saved_at</code></li>
+      <li>Frontend in <code>web/src/app/dashboard/components/DashboardClient.tsx</code> — saves to Supabase on bookmark click; also keeps a copy in <code>localStorage</code> for instant UI feedback before the API round-trip</li>
+      <li>API client helpers: <code>jobs.listSaved</code>, <code>jobs.save</code>, <code>jobs.unsave</code> in <code>web/src/lib/api.ts</code></li>
+    </ul>
+
+    <h2 id="application-status">Application status dropdown</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/sollicitaties/page.tsx</code></li>
+      <li>Replaces the single "markeer als beantwoord" button with a full status <code>&lt;select&gt;</code></li>
+      <li>Statuses: <code>sent</code> (verzonden), <code>pending</code> (in behandeling), <code>replied</code> (beantwoord), <code>accepted</code> (geaccepteerd), <code>rejected</code> (afgewezen)</li>
+      <li>Status change fires a PATCH request to the backend and updates Supabase <code>applications</code> row inline</li>
+    </ul>
+
+    <h2 id="url-to-letter">URL-to-letter (POST /apply/from-url)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Endpoint: <code>POST /apply/from-url</code> in <code>backend/app/api/apply.py</code></li>
+      <li>Flow: fetch the job posting URL → extract title, company, description (via BeautifulSoup) → pass to Claude API → return motivation letter. Costs 1 credit.</li>
+      <li>SSRF protection (hardened in session 12): scheme must be <code>http</code>/<code>https</code>; <code>netloc</code> non-empty; hostname resolved to IP via <code>socket.getaddrinfo</code>; IP checked against private/loopback/link-local ranges; redirect-following disabled (<code>allow_redirects=False</code>); any 3xx redirect target is re-validated through the same SSRF checks before following</li>
+      <li>Credit debit is atomic: <code>debit_one_credit</code> Supabase RPC is called before the fetch — prevents double-spending in concurrent requests</li>
+      <li><code>writing_style</code> field validated as a <code>Literal</code> type (<code>_WritingStyle</code>) — rejects any value not in the allowed enum, preventing prompt injection via that field</li>
+      <li><code>PromptInjectionError</code> returns 422 and does not refund the credit (injection is user-caused, not a system failure)</li>
+      <li>Frontend: collapsible UI panel below the search bar in <code>DashboardClient.tsx</code> — text input for URL, Generate button, copy-to-clipboard on result</li>
+      <li>API client helper: <code>apply.fromUrl</code> in <code>web/src/lib/api.ts</code></li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Some job boards (LinkedIn, Nationale Vacaturebank) require a logged-in session or have JS-rendered content — the scraper may return partial data. Claude still generates a letter but quality depends on how much text was extracted.</div>
+
+    <h2 id="security-session12">Security hardening — session 12</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li><strong>SSRF HIGH x2</strong> — /apply/from-url: (1) hostname resolved to IP via <code>socket.getaddrinfo</code> before request; private/loopback/link-local ranges rejected. (2) redirects disabled; each 3xx <code>Location</code> header re-validated through the same IP check before following. File: <code>backend/app/api/apply.py</code></li>
+      <li><strong>Route shadowing MEDIUM</strong> — FastAPI matched <code>GET /jobs/{job_id}</code> before <code>GET /jobs/saved/list</code>. Fixed by declaring <code>/saved/list</code> before <code>/{job_id}</code> in <code>backend/app/api/jobs.py</code></li>
+      <li><strong>Credit race condition MEDIUM</strong> — /apply/from-url previously fetched the page before debiting, allowing a race where two concurrent requests both passed the credit check. Fixed by calling <code>debit_one_credit</code> RPC atomically first; if the RPC fails (insufficient credits) the request aborts before any fetch or LLM call</li>
+      <li><strong>Unbounded job_data MEDIUM</strong> — <code>POST /jobs/saved</code> accepted a bare <code>dict</code> for <code>job_data</code>, allowing arbitrarily large payloads. Replaced with <code>SavedJobData</code> Pydantic model with explicit field types and max-length constraints</li>
+      <li><strong>writing_style injection MEDIUM</strong> — <code>UrlLetterRequest.writing_style</code> was a free <code>str</code>; replaced with <code>_WritingStyle = Literal["professioneel", "enthousiast", "bondig", "creatief"]</code> — Pydantic rejects anything else with a 422 before the field reaches the prompt</li>
+      <li><strong>PromptInjectionError LOW</strong> — previously triggered a 500 and the credit had already been debited. Now returns 422; no refund (injection is a user input issue, not a system error)</li>
+      <li><strong>Indeed href injection MEDIUM</strong> — <code>scrape_indeed_nl</code> extracted all <code>&lt;a href&gt;</code> values from Indeed HTML. A malicious Indeed page could inject arbitrary URLs. Fixed: only hrefs starting with <code>/vacatures/</code>, <code>/rc/</code>, <code>/pagead/</code>, or <code>https://nl.indeed.com/</code> are accepted</li>
+    </ul>
+    <div class="gotcha"><strong>Pattern:</strong> The atomic-debit-first pattern (RPC before external calls) should be applied to any future endpoint that consumes credits. Never check-then-debit in separate DB calls — always use the <code>debit_one_credit</code> RPC which is wrapped in a transaction.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

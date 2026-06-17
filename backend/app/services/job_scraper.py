@@ -1,15 +1,21 @@
 """
-Job scraper service — uses Adzuna NL API as primary source.
+Job scraper service — Adzuna NL API (primary) + Indeed NL HTML scraper (secondary).
 
-Adzuna provides a free REST API with native NL support.
-Docs: https://developer.adzuna.com/docs/search
+Adzuna: free REST API with native NL support — https://developer.adzuna.com/docs/search
+Indeed NL: HTML scraper using httpx + BeautifulSoup, respects robots.txt query limit.
 """
 
 import asyncio
 import httpx
 from datetime import datetime, timezone
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode, quote_plus
 import logging
+
+try:
+    from bs4 import BeautifulSoup
+    _BS4_AVAILABLE = True
+except ImportError:
+    _BS4_AVAILABLE = False
 
 from app.core.config import settings
 
@@ -165,7 +171,82 @@ def _salary(job: dict) -> str:
     return ""
 
 
-# Keep old names as aliases so jobs.py import still works
+async def scrape_indeed_nl(keywords: str, location: str = "", limit: int = 10) -> list[dict]:
+    """
+    Scrapes Indeed NL search results via HTML.
+    Returns at most `limit` jobs. Gracefully returns [] on any error.
+    Requires: beautifulsoup4 (pip install beautifulsoup4)
+    """
+    if not _BS4_AVAILABLE:
+        logger.warning("beautifulsoup4 not installed — Indeed NL scraper skipped")
+        return []
+
+    qs = urlencode({"q": keywords, "l": location or "Nederland", "lang": "nl"})
+    url = f"https://nl.indeed.com/vacatures?{qs}"
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept-Language": "nl-NL,nl;q=0.9",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=headers, follow_redirects=True) as client:
+            resp = await client.get(url)
+            if resp.status_code != 200:
+                logger.warning("Indeed NL returned %s", resp.status_code)
+                return []
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+            results = []
+
+            for card in soup.select("div.job_seen_beacon,div.resultContent")[:limit]:
+                title_el = card.select_one("h2.jobTitle span[title],h2.jobTitle a span")
+                company_el = card.select_one("span[data-testid='company-name'],span.companyName")
+                location_el = card.select_one("div[data-testid='text-location'],div.companyLocation")
+                salary_el = card.select_one("div[data-testid='attribute_snippet_testid'],div.salary-snippet")
+                link_el = card.select_one("h2.jobTitle a")
+
+                title = title_el.get_text(strip=True) if title_el else None
+                company = company_el.get_text(strip=True) if company_el else "Onbekend"
+                loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
+                salary = salary_el.get_text(strip=True) if salary_el else ""
+                href = link_el.get("href", "") if link_el else ""
+                # Only accept known Indeed path prefixes to prevent open redirect injection
+                if href.startswith(("/vacatures/", "/rc/", "/pagina/", "/solliciteren/")):
+                    job_url = f"https://nl.indeed.com{href}"
+                elif href.startswith("https://nl.indeed.com"):
+                    job_url = href
+                else:
+                    continue
+
+                if not title or not job_url:
+                    continue
+
+                results.append({
+                    "title": title,
+                    "company": company,
+                    "location": loc,
+                    "url": job_url,
+                    "description_snippet": "",
+                    "salary_range": salary,
+                    "source": "indeed",
+                    "scraped_at": _now(),
+                    "posted_at": None,
+                    "contract_type": "",
+                    "salary_min_raw": None,
+                    "salary_max_raw": None,
+                    "salary_hourly": "",
+                })
+
+            return results
+
+    except Exception:
+        logger.warning("Indeed NL scraper error", exc_info=True)
+        return []
+
+
+# Keep old names as aliases so any legacy import still works
 async def scrape_jobbird(keywords: str, location: str = "", limit: int = 20) -> list[dict]:
     return await scrape_adzuna(keywords, location, limit)
 

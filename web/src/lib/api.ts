@@ -57,9 +57,13 @@ export const api = {
   },
   jobs: {
     search: (params: JobSearchParams) => request<Job[]>('POST', '/api/v1/jobs/search', params),
+    listSaved: () => request<{ job_id: string; job_data: Job; saved_at: string }[]>('GET', '/api/v1/jobs/saved/list'),
+    save: (job_id: string, job_data: Job) => request<{ saved: boolean }>('POST', '/api/v1/jobs/saved', { job_id, job_data }),
+    unsave: (job_id: string) => request<void>('DELETE', `/api/v1/jobs/saved/${job_id}`),
   },
   apply: {
     generateLetter: (body: LetterRequest) => request<LetterResponse>('POST', '/api/v1/apply/letter', body),
+    fromUrl: (url: string, writing_style?: string) => request<{ job_title: string; company: string; description_snippet: string; letter: string }>('POST', '/api/v1/apply/from-url', { url, writing_style: writing_style ?? 'formeel' }),
     send: (body: SendRequest) => request<Application>('POST', '/api/v1/apply/send', body),
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
     updateStatus: (id: string, status: string) =>
