@@ -1,6 +1,7 @@
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 from uuid import uuid4
 
 from app.core.supabase import get_supabase
@@ -28,7 +29,6 @@ async def search_jobs(
     )
     raw = adzuna_results + indeed_results
     if not raw:
-        # Scrapers returned nothing — fall back to cached jobs in DB for this user
         existing = supabase.table("jobs").select("*").eq("scraped_for_user", user_id).limit(params.limit).execute()
         return existing.data or []
 
@@ -64,23 +64,25 @@ async def search_jobs(
     return rows[: params.limit]
 
 
-@router.get("/{job_id}", response_model=JobOut)
-async def get_job(
-    job_id: str,
-    user_id: str = Depends(get_current_user_id),
-    supabase=Depends(get_supabase),
-):
-    result = supabase.table("jobs").select("*").eq("id", job_id).eq("scraped_for_user", user_id).single().execute()
-    if not result.data:
-        raise HTTPException(status_code=404, detail="Job not found")
-    return result.data
+# ── Saved jobs (declared BEFORE /{job_id} to prevent route shadowing) ───────
 
+class SavedJobData(BaseModel):
+    """Strict schema for job data stored in saved_jobs — prevents unbounded blob storage."""
+    title: str = Field(..., max_length=300)
+    company: str = Field(..., max_length=200)
+    url: str = Field(..., max_length=1000)
+    location: Optional[str] = Field(None, max_length=200)
+    source: Optional[str] = Field(None, max_length=50)
+    description_snippet: Optional[str] = Field(None, max_length=500)
+    salary_range: Optional[str] = Field(None, max_length=100)
+    contract_type: Optional[str] = Field(None, max_length=50)
+    posted_at: Optional[str] = Field(None, max_length=50)
+    scraped_at: Optional[str] = Field(None, max_length=50)
 
-# ── Saved jobs ─────────────────────────────────────────────────────────────
 
 class SaveJobBody(BaseModel):
-    job_id: str
-    job_data: dict
+    job_id: str = Field(..., max_length=100)
+    job_data: SavedJobData
 
 
 @router.get("/saved/list")
@@ -99,7 +101,7 @@ async def save_job(
     supabase=Depends(get_supabase),
 ):
     supabase.table("saved_jobs").upsert(
-        {"user_id": user_id, "job_id": body.job_id, "job_data": body.job_data},
+        {"user_id": user_id, "job_id": body.job_id, "job_data": body.job_data.model_dump()},
         on_conflict="user_id,job_id",
     ).execute()
     return {"saved": True}
@@ -113,3 +115,17 @@ async def unsave_job(
 ):
     supabase.table("saved_jobs").delete().eq("user_id", user_id).eq("job_id", job_id).execute()
     return None
+
+
+# ── Single job lookup (AFTER /saved/* to avoid route shadowing) ─────────────
+
+@router.get("/{job_id}", response_model=JobOut)
+async def get_job(
+    job_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    result = supabase.table("jobs").select("*").eq("id", job_id).eq("scraped_for_user", user_id).single().execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return result.data

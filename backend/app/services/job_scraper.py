@@ -212,7 +212,13 @@ async def scrape_indeed_nl(keywords: str, location: str = "", limit: int = 10) -
                 loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
                 salary = salary_el.get_text(strip=True) if salary_el else ""
                 href = link_el.get("href", "") if link_el else ""
-                job_url = f"https://nl.indeed.com{href}" if href.startswith("/") else href
+                # Only accept known Indeed path prefixes to prevent open redirect injection
+                if href.startswith(("/vacatures/", "/rc/", "/pagina/", "/solliciteren/")):
+                    job_url = f"https://nl.indeed.com{href}"
+                elif href.startswith("https://nl.indeed.com"):
+                    job_url = href
+                else:
+                    continue
 
                 if not title or not job_url:
                     continue

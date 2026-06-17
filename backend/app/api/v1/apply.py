@@ -1,9 +1,12 @@
+import ipaddress
 import re
+import socket
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
+from urllib.parse import urlparse
 
 try:
     from bs4 import BeautifulSoup
@@ -329,9 +332,12 @@ async def update_application_status(
 
 # ── URL → letter ────────────────────────────────────────────────────────────
 
+from app.schemas.application import _WritingStyle  # reuse validated Literal type  # noqa: E402
+
+
 class UrlLetterRequest(BaseModel):
     url: str
-    writing_style: str = "formeel"
+    writing_style: _WritingStyle = "formeel"
 
 
 class UrlLetterResponse(BaseModel):
@@ -350,47 +356,84 @@ _URL_HEADERS = {
 _ALLOWED_SCHEMES = {"http", "https"}
 
 
+def _is_safe_url(url: str) -> tuple[bool, str]:
+    """
+    Returns (safe, reason). Blocks:
+    - non-HTTP/S schemes
+    - missing netloc
+    - hostnames that resolve to private/loopback/link-local/reserved IPs (SSRF guard)
+    """
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False, "Ongeldige URL"
+    if parsed.scheme not in _ALLOWED_SCHEMES:
+        return False, "Ongeldige URL"
+    hostname = parsed.hostname
+    if not hostname:
+        return False, "Ongeldige URL"
+    try:
+        ip = ipaddress.ip_address(socket.gethostbyname(hostname))
+    except Exception:
+        return False, "Hostnaam kon niet worden omgezet"
+    if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+        return False, "Ongeldige URL"
+    return True, ""
+
+
+async def _fetch_job_page(url: str) -> str:
+    """Fetch a job page without following redirects. Validates the redirect target if one occurs."""
+    async with httpx.AsyncClient(timeout=15, headers=_URL_HEADERS, follow_redirects=False) as client:
+        resp = await client.get(url)
+        if resp.status_code in (301, 302, 303, 307, 308):
+            location = resp.headers.get("location", "")
+            safe, _ = _is_safe_url(location)
+            if not safe:
+                raise ValueError("Redirect naar ongeldige URL")
+            resp = await client.get(location)
+        resp.raise_for_status()
+        return resp.text
+
+
 @router.post("/from-url", response_model=UrlLetterResponse)
 async def letter_from_url(
     body: UrlLetterRequest,
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    """
-    Fetch a job posting from a URL, extract title/company/description,
-    and generate a motivation letter. Costs 1 credit.
-    """
+    """Fetch a job posting from a URL, extract title/company/description, generate a letter. 1 credit."""
     if not _BS4:
         raise HTTPException(status_code=503, detail="Scraper not available")
 
-    # Validate URL scheme to prevent SSRF
-    from urllib.parse import urlparse
-    parsed = urlparse(body.url)
-    if parsed.scheme not in _ALLOWED_SCHEMES or not parsed.netloc:
-        raise HTTPException(status_code=422, detail="Ongeldige URL")
+    safe, reason = _is_safe_url(body.url)
+    if not safe:
+        raise HTTPException(status_code=422, detail=reason or "Ongeldige URL")
 
-    # Rate-limit: same letter limit applies
+    parsed = urlparse(body.url)
+
     profile_result = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
     if not profile_result.data:
         raise HTTPException(status_code=400, detail="Profiel ontbreekt")
     profile = profile_result.data
 
-    credits = profile.get("credits_balance", 0)
-    if credits < 1:
-        raise HTTPException(status_code=402, detail="Onvoldoende credits")
+    # Atomic credit debit — 402 if insufficient (same pattern as /letter)
+    debit_result = supabase.rpc("debit_one_credit", {
+        "p_user_id": user_id,
+        "p_reference": f"url:{body.url[:100]}",
+    }).execute()
+    if debit_result.data is False:
+        raise HTTPException(status_code=402, detail="Onvoldoende credits. Koop credits om verder te gaan.")
 
-    # Fetch page
+    # Fetch the job page (no redirect-following — redirect target re-validated above)
     try:
-        async with httpx.AsyncClient(timeout=15, headers=_URL_HEADERS, follow_redirects=True) as client:
-            resp = await client.get(body.url)
-            resp.raise_for_status()
-            html = resp.text
+        html = await _fetch_job_page(body.url)
     except Exception:
+        # Refund — fetch failure is not the user's fault
+        supabase.rpc("adjust_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_fetch_refund", "p_reference_id": None}).execute()
         raise HTTPException(status_code=422, detail="Vacaturepagina kon niet worden geladen")
 
     soup = BeautifulSoup(html, "html.parser")
 
-    # Extract title — try common selectors
     title = ""
     for sel in ["h1.jobTitle", "h1[class*='title']", "h1", "title"]:
         el = soup.select_one(sel)
@@ -398,7 +441,6 @@ async def letter_from_url(
             title = el.get_text(strip=True)[:200]
             break
 
-    # Extract company
     company = ""
     for sel in ["[class*='company']", "[class*='employer']", "[itemprop='name']"]:
         el = soup.select_one(sel)
@@ -408,25 +450,17 @@ async def letter_from_url(
                 company = text
                 break
     if not company:
-        company = parsed.netloc.lstrip("www.").split(".")[0].capitalize()
+        company = (parsed.hostname or "").lstrip("www.").split(".")[0].capitalize()
 
-    # Extract description — largest text block
     for tag in soup(["script", "style", "nav", "header", "footer"]):
         tag.decompose()
-    description = (soup.get_text(separator=" ", strip=True))[:2000]
+    description = soup.get_text(separator=" ", strip=True)[:2000]
 
     if not title:
+        supabase.rpc("adjust_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_no_title_refund", "p_reference_id": None}).execute()
         raise HTTPException(status_code=422, detail="Geen functietitel gevonden op de pagina")
 
-    # Deduct credit
-    supabase.rpc("adjust_credits", {
-        "p_user_id": user_id,
-        "p_delta": -1,
-        "p_reason": "letter_from_url",
-        "p_reference_id": None,
-    }).execute()
-
-    # Generate letter
+    # Generate letter — PromptInjectionError: no refund (malicious input), other errors: refund
     try:
         letter = await generate_letter(
             job_title=title,
@@ -435,14 +469,10 @@ async def letter_from_url(
             profile=profile,
             writing_style=body.writing_style,
         )
+    except PromptInjectionError:
+        raise HTTPException(status_code=422, detail="De vacaturepagina bevat ongeldige inhoud")
     except Exception as exc:
-        # Refund credit on letter failure
-        supabase.rpc("adjust_credits", {
-            "p_user_id": user_id,
-            "p_delta": 1,
-            "p_reason": "letter_from_url_refund",
-            "p_reference_id": None,
-        }).execute()
+        supabase.rpc("adjust_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "letter_from_url_refund", "p_reference_id": None}).execute()
         raise HTTPException(status_code=500, detail="Briefgeneratie mislukt") from exc
 
     return {
