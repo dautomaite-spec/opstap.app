@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # App
     app_env: str = "development"
     app_secret_key: str  # required — no default, must be set in env
-    admin_api_key: str = ""  # set in production to protect admin endpoints
+    admin_api_key: str  # required — must be set in env; no default prevents silent exposure
     cors_origins: list[str] = ["http://localhost:3000"]
     cors_origin_regex: str | None = None
 
