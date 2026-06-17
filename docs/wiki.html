@@ -143,6 +143,7 @@
       <a href="#sendgrid">SendGrid domain auth</a>
       <a href="#async-email">Async email sender</a>
       <a href="#salary-range">Salary range</a>
+      <a href="#beschikbaarheid">Beschikbaarheid field</a>
     </div>
   </nav>
 
@@ -319,6 +320,16 @@
       <li>Added to <code>/dashboard/profiel</code> — two numeric inputs: <code>salaris_min</code> and <code>salaris_max</code> (bruto per maand, integer)</li>
       <li>Stored on the <code>profiles</code> table; passed to the Claude API prompt as salary expectation context for motivation letter generation</li>
       <li>Profile form also supports up to 3 job titles simultaneously (multi-functietitel, #67) — the form handles a 409 conflict gracefully by falling back to an upsert</li>
+    </ul>
+
+    <h2 id="beschikbaarheid">Beschikbaarheid field</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Select field with three options: <code>fulltime</code>, <code>parttime</code>, <code>allebei</code> (displayed in Dutch as Fulltime / Parttime / Allebei)</li>
+      <li>Added to <code>/dashboard/profiel</code> (profile edit page) and the dashboard profile creation form</li>
+      <li>The <code>beschikbaarheid</code> column already existed in the <code>profiles</code> table — no DB migration needed, just UI exposure</li>
+      <li>Passed to the Claude API prompt as availability context so generated motivation letters can reference the candidate's preferred contract type</li>
+      <li>Key files: <code>web/src/app/dashboard/profiel/page.tsx</code>, profile creation form component</li>
     </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>

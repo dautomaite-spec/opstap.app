@@ -1,6 +1,7 @@
 # Changelog — Opstap
 
 ## 2026-06-17
+- feat: beschikbaarheid (availability) select field (fulltime/parttime/both) added to /dashboard/profiel and profile creation form (d30f7a6)
 - fix: make all SendGrid calls non-blocking with run_in_executor in email_sender.py and email_notifications.py (3e59998)
 - fix: dashboard profile form — 3 job titles, salary range, 409 fallback (#71)
 - feat: salary range (min/max bruto/maand) added to profile page (#70)
