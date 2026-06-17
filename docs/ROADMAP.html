@@ -129,7 +129,7 @@
   <main class="content">
     <div class="page-header">
       <h1>🗺 Roadmap</h1>
-      <p>Opstap — fasen & voortgang · Bijgewerkt 2026-06-16</p>
+      <p>Opstap — fasen & voortgang · Bijgewerkt 2026-06-17</p>
     </div>
 
     <!-- Phase 1 -->
@@ -261,6 +261,17 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sollicitatiestatus-dropdown (verzonden / in behandeling / beantwoord / geaccepteerd / afgewezen) vervangt "markeer als beantwoord"-knop</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>POST /apply/from-url — vacature-URL → AI-brief voor 1 credit; SSRF-beschermd (http/https + netloc vereist)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dashboard URL→brief-UI: inklapbaar veld onder zoekbalk met kopieerknop</span></li>
+        </ul>
+
+        <div class="section-label">Security fixes — 2026-06-17 (session 12, commit 2)</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SSRF HIGH x2 — /apply/from-url resolves hostname to IP, blocks private/loopback ranges; redirect-following disabled with re-validation of redirect targets</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Route shadowing MEDIUM — GET /jobs/saved/list declared before /{job_id} in jobs.py</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Credit race condition MEDIUM — atomic debit_one_credit RPC called before fetch+generation in /apply/from-url</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Unbounded job_data MEDIUM — SavedJobData Pydantic model replaces bare dict on POST /jobs/saved</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>writing_style injection MEDIUM — UrlLetterRequest.writing_style uses _WritingStyle Literal type (validated enum)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>PromptInjectionError LOW — no credit refund on injection; endpoint returns 422 instead of 500</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Indeed href injection MEDIUM — scrape_indeed_nl now only accepts URLs with /vacatures/, /rc/, etc. path prefixes</span></li>
         </ul>
 
         <div class="section-label">Hard blockers voor launch</div>
