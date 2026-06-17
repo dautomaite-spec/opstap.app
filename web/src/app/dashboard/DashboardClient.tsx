@@ -179,6 +179,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       const saved = await api.profile.create(data)
       setProfile(saved)
       setShowProfileForm(false)
+      // Auto-search immediately after first profile creation so the user lands on results
+      if (saved.functietitel) {
+        setKeywords(saved.functietitel)
+        if (saved.woonplaats) setLocation(saved.woonplaats)
+        triggerSearch(saved.functietitel, saved.woonplaats ?? '')
+      }
     } catch (err) {
       // Profile may already exist — fall back to update
       if (err instanceof ApiError && err.status === 409) {
@@ -211,19 +217,23 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     }
   }
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
+  async function triggerSearch(kw: string, loc: string) {
     setSearching(true)
     setSearchError('')
     setJobs([])
     try {
-      const results = await api.jobs.search({ keywords: keywords || undefined, location: location || undefined, limit: 20 })
+      const results = await api.jobs.search({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
       setJobs(results)
     } catch (err) {
       setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
     } finally {
       setSearching(false)
     }
+  }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    await triggerSearch(keywords, location)
   }
 
   async function handleGenerateLetter(job: Job) {
@@ -658,7 +668,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="px-5 py-2 text-sm font-semibold rounded-lg text-white transition hover:opacity-90 disabled:opacity-50"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                {applyState.sending ? 'Bezig…' : 'Kopieer & Solliciteer via site'}
+                {applyState.sending ? 'Bezig…' : 'Kopieer & solliciteer via site'}
               </button>
             </div>
           </div>
@@ -667,9 +677,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
       {/* Empty states */}
       {jobs.length === 0 && !searching && !searchError && keywords === '' && location === '' && (
-        <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>
-          Zoek naar vacatures om te beginnen.
-        </p>
+        <div className="text-center py-16">
+          <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Welkom bij Opstap!</p>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Vul je functietitel in en klik op Zoeken om direct passende vacatures te zien.</p>
+        </div>
       )}
       {jobs.length === 0 && !searching && !searchError && (keywords !== '' || location !== '') && (
         <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>

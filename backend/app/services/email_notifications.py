@@ -222,6 +222,33 @@ Team Opstap
     return await _send(to_email, naam, subject, plain, html)
 
 
+async def send_application_confirmation(to_email: str, naam: str, job_title: str, company: str) -> bool:
+    subject = f"Je sollicitatie bij {company} is verstuurd"
+    _naam = _html.escape(naam)
+    _job_title = _html.escape(job_title)
+    _company = _html.escape(company)
+    plain = f"""\
+Hallo {naam},
+
+Je sollicitatie voor {job_title} bij {company} is zojuist verstuurd via Opstap.
+
+We houden je op de hoogte! Zodra je een antwoord markeert, sturen we je meteen een berichtje.
+
+Bekijk je sollicitaties: {_DASHBOARD}/sollicitaties
+
+Veel succes,
+Team Opstap
+"""
+    html = _base_html("Sollicitatie verstuurd!", f"""
+<h2>Je sollicitatie is verstuurd 🎉</h2>
+<p>Hallo {_naam},</p>
+<p>Je motivatiebrief voor <strong>{_job_title}</strong> bij <strong>{_company}</strong> is zojuist verstuurd.</p>
+<div class="card">Houd je inbox in de gaten voor een reactie van de werkgever.</div>
+<p style="margin-top:20px;"><a href="{_DASHBOARD}/sollicitaties" class="btn">Bekijk mijn sollicitaties</a></p>
+""")
+    return await _send(to_email, naam, subject, plain, html)
+
+
 async def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
     count = len(jobs)
     subject = f"{count} nieuwe vacatures voor jou — weekoverzicht Opstap"

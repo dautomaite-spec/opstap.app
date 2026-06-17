@@ -8,6 +8,8 @@ flutter_application_1/
 # Environment / secrets
 backend/.env
 opstap/env.json
+admin-key.txt
+web/.env.local
 
 # Python
 backend/__pycache__/
