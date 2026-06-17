@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
@@ -67,6 +67,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [profileLoading, setProfileLoading] = useState(true)
   const [showProfileForm, setShowProfileForm] = useState(false)
   const [profileError, setProfileError] = useState('')
+  const autoSearched = useRef(false)
 
   const [keywords, setKeywords] = useState('')
   const [location, setLocation] = useState('')
@@ -137,10 +138,15 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         setProfile(p)
         if (p.functietitel) setKeywords(p.functietitel)
         if (p.woonplaats) setLocation(p.woonplaats)
+        // Auto-load matching jobs on every dashboard open — gives users immediate value
+        if (p.functietitel && !autoSearched.current) {
+          autoSearched.current = true
+          triggerSearch(p.functietitel, p.woonplaats ?? '')
+        }
       })
       .catch(() => setShowProfileForm(true))
       .finally(() => setProfileLoading(false))
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sortedJobs = useMemo(() => {
     if (!jobs.length) return jobs
