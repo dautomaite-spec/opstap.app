@@ -54,6 +54,7 @@ class ApplicationOut(BaseModel):
     sent_at: Optional[datetime] = None
     replied_at: Optional[datetime] = None
     created_at: datetime
+    letter_rating: Optional[int] = None
 
     model_config = {"from_attributes": True}
 

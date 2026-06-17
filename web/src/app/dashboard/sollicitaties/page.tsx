@@ -46,6 +46,16 @@ export default function SollicitatiesPage() {
     }
   }
 
+  async function handleRating(app: Application, rating: 1 | -1) {
+    if (app.letter_rating === rating) return
+    setHistory(prev => prev.map(a => a.id === app.id ? { ...a, letter_rating: rating } : a))
+    try {
+      await api.apply.rateLetter(app.id, rating)
+    } catch {
+      setHistory(prev => prev.map(a => a.id === app.id ? { ...a, letter_rating: app.letter_rating } : a))
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>Laden…</p>
   }
@@ -120,13 +130,36 @@ export default function SollicitatiesPage() {
                 )}
               </div>
 
-              <p className="text-xs mt-3" style={{ color: 'var(--color-text-muted)' }}>
-                {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
-                {app.replied_at && (
-                  <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {app.replied_at && (
+                    <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
+                  )}
+                  {isUpdating && <span> · Opslaan…</span>}
+                </p>
+                {app.status === 'sent' && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs mr-1" style={{ color: 'var(--color-text-muted)' }}>Brief:</span>
+                    <button
+                      title="Brief was goed"
+                      onClick={() => handleRating(app, 1)}
+                      className="p-1 rounded transition hover:bg-green-50"
+                      style={{ color: app.letter_rating === 1 ? '#16a34a' : 'var(--color-text-muted)' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={app.letter_rating === 1 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    </button>
+                    <button
+                      title="Brief kon beter"
+                      onClick={() => handleRating(app, -1)}
+                      className="p-1 rounded transition hover:bg-red-50"
+                      style={{ color: app.letter_rating === -1 ? '#dc2626' : 'var(--color-text-muted)' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={app.letter_rating === -1 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                  </div>
                 )}
-                {isUpdating && <span> · Opslaan…</span>}
-              </p>
+              </div>
             </div>
           )
         })}
