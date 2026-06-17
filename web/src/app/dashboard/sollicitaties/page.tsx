@@ -25,7 +25,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 export default function SollicitatiesPage() {
   const [history, setHistory] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
-  const [markingId, setMarkingId] = useState<string | null>(null)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   useEffect(() => {
     api.apply.history()
@@ -33,15 +33,16 @@ export default function SollicitatiesPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  async function handleMarkReplied(app: Application) {
-    setMarkingId(app.id)
+  async function handleStatusChange(app: Application, newStatus: string) {
+    if (newStatus === app.status) return
+    setUpdatingId(app.id)
     try {
-      const updated = await api.apply.updateStatus(app.id, 'replied')
+      const updated = await api.apply.updateStatus(app.id, newStatus)
       setHistory(prev => prev.map(a => a.id === updated.id ? updated : a))
     } catch {
-      // silently ignore — user can try again
+      // silently ignore — user can retry
     } finally {
-      setMarkingId(null)
+      setUpdatingId(null)
     }
   }
 
@@ -64,21 +65,38 @@ export default function SollicitatiesPage() {
       <div className="flex flex-col gap-3">
         {history.map(app => {
           const statusStyle = STATUS_COLORS[app.status] ?? STATUS_COLORS.sent
-          const canMarkReplied = app.status === 'sent' || app.status === 'pending'
+          const isUpdating = updatingId === app.id
+          const isFinal = app.status === 'failed'
 
           return (
             <div key={app.id} className="rounded-xl p-4" style={{ background: 'var(--color-lavender-card)' }}>
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>{app.job_title}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{app.job_title}</p>
                   <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{app.company}</p>
                 </div>
-                <span
-                  className="text-xs px-2 py-1 rounded-full shrink-0"
-                  style={{ background: statusStyle.bg, color: statusStyle.color }}
-                >
-                  {STATUS_LABELS[app.status] ?? app.status}
-                </span>
+                {isFinal ? (
+                  <span
+                    className="text-xs px-2 py-1 rounded-full shrink-0"
+                    style={{ background: statusStyle.bg, color: statusStyle.color }}
+                  >
+                    {STATUS_LABELS[app.status] ?? app.status}
+                  </span>
+                ) : (
+                  <select
+                    value={app.status}
+                    disabled={isUpdating}
+                    onChange={e => handleStatusChange(app, e.target.value)}
+                    className="text-xs px-2 py-1 rounded-full border-0 shrink-0 cursor-pointer disabled:opacity-60"
+                    style={{ background: statusStyle.bg, color: statusStyle.color, outline: 'none' }}
+                  >
+                    <option value="sent">Verstuurd</option>
+                    <option value="pending">In behandeling</option>
+                    <option value="replied">Beantwoord</option>
+                    <option value="accepted">Geaccepteerd</option>
+                    <option value="rejected">Afgewezen</option>
+                  </select>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
@@ -102,26 +120,13 @@ export default function SollicitatiesPage() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between mt-3">
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  {app.replied_at && (
-                    <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
-                  )}
-                </p>
-                {canMarkReplied && (
-                  <button
-                    onClick={() => handleMarkReplied(app)}
-                    disabled={markingId === app.id}
-                    className="text-xs px-3 py-1 rounded-lg transition disabled:opacity-50"
-                    style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#e0ddf7' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-lavender-bg)' }}
-                  >
-                    {markingId === app.id ? 'Bezig…' : 'Markeer als beantwoord'}
-                  </button>
+              <p className="text-xs mt-3" style={{ color: 'var(--color-text-muted)' }}>
+                {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {app.replied_at && (
+                  <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
                 )}
-              </div>
+                {isUpdating && <span> · Opslaan…</span>}
+              </p>
             </div>
           )
         })}

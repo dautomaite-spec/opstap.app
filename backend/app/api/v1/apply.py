@@ -1,7 +1,15 @@
 import re
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, HttpUrl
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
+
+try:
+    from bs4 import BeautifulSoup
+    _BS4 = True
+except ImportError:
+    _BS4 = False
 
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
@@ -317,3 +325,129 @@ async def update_application_status(
             pass
 
     return updated.data[0]
+
+
+# ── URL → letter ────────────────────────────────────────────────────────────
+
+class UrlLetterRequest(BaseModel):
+    url: str
+    writing_style: str = "formeel"
+
+
+class UrlLetterResponse(BaseModel):
+    job_title: str
+    company: str
+    description_snippet: str
+    letter: str
+
+
+_URL_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    "Accept-Language": "nl-NL,nl;q=0.9",
+    "Accept": "text/html,application/xhtml+xml",
+}
+
+_ALLOWED_SCHEMES = {"http", "https"}
+
+
+@router.post("/from-url", response_model=UrlLetterResponse)
+async def letter_from_url(
+    body: UrlLetterRequest,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    """
+    Fetch a job posting from a URL, extract title/company/description,
+    and generate a motivation letter. Costs 1 credit.
+    """
+    if not _BS4:
+        raise HTTPException(status_code=503, detail="Scraper not available")
+
+    # Validate URL scheme to prevent SSRF
+    from urllib.parse import urlparse
+    parsed = urlparse(body.url)
+    if parsed.scheme not in _ALLOWED_SCHEMES or not parsed.netloc:
+        raise HTTPException(status_code=422, detail="Ongeldige URL")
+
+    # Rate-limit: same letter limit applies
+    profile_result = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
+    if not profile_result.data:
+        raise HTTPException(status_code=400, detail="Profiel ontbreekt")
+    profile = profile_result.data
+
+    credits = profile.get("credits_balance", 0)
+    if credits < 1:
+        raise HTTPException(status_code=402, detail="Onvoldoende credits")
+
+    # Fetch page
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=_URL_HEADERS, follow_redirects=True) as client:
+            resp = await client.get(body.url)
+            resp.raise_for_status()
+            html = resp.text
+    except Exception:
+        raise HTTPException(status_code=422, detail="Vacaturepagina kon niet worden geladen")
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Extract title — try common selectors
+    title = ""
+    for sel in ["h1.jobTitle", "h1[class*='title']", "h1", "title"]:
+        el = soup.select_one(sel)
+        if el:
+            title = el.get_text(strip=True)[:200]
+            break
+
+    # Extract company
+    company = ""
+    for sel in ["[class*='company']", "[class*='employer']", "[itemprop='name']"]:
+        el = soup.select_one(sel)
+        if el:
+            text = el.get_text(strip=True)[:100]
+            if text and text != title:
+                company = text
+                break
+    if not company:
+        company = parsed.netloc.lstrip("www.").split(".")[0].capitalize()
+
+    # Extract description — largest text block
+    for tag in soup(["script", "style", "nav", "header", "footer"]):
+        tag.decompose()
+    description = (soup.get_text(separator=" ", strip=True))[:2000]
+
+    if not title:
+        raise HTTPException(status_code=422, detail="Geen functietitel gevonden op de pagina")
+
+    # Deduct credit
+    supabase.rpc("adjust_credits", {
+        "p_user_id": user_id,
+        "p_delta": -1,
+        "p_reason": "letter_from_url",
+        "p_reference_id": None,
+    }).execute()
+
+    # Generate letter
+    try:
+        letter = await generate_letter(
+            job_title=title,
+            company=company,
+            job_description=description,
+            profile=profile,
+            writing_style=body.writing_style,
+        )
+    except Exception as exc:
+        # Refund credit on letter failure
+        supabase.rpc("adjust_credits", {
+            "p_user_id": user_id,
+            "p_delta": 1,
+            "p_reason": "letter_from_url_refund",
+            "p_reference_id": None,
+        }).execute()
+        raise HTTPException(status_code=500, detail="Briefgeneratie mislukt") from exc
+
+    return {
+        "job_title": title,
+        "company": company,
+        "description_snippet": description[:300],
+        "letter": letter,
+    }

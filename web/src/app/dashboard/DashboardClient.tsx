@@ -7,17 +7,13 @@ import BuyCreditsModal from './components/BuyCreditsModal'
 import MultiApplyModal from './components/MultiApplyModal'
 import { JOB_TITLES } from '@/lib/jobTitles'
 
+// localStorage is kept as a fast local cache; Supabase is the source of truth
 const SAVED_JOBS_KEY = 'opstap_saved_jobs'
 
-function loadSavedJobs(): Record<string, Job> {
-  try {
-    return JSON.parse(localStorage.getItem(SAVED_JOBS_KEY) ?? '{}')
-  } catch {
-    return {}
-  }
+function loadSavedJobsLocal(): Record<string, Job> {
+  try { return JSON.parse(localStorage.getItem(SAVED_JOBS_KEY) ?? '{}') } catch { return {} }
 }
-
-function persistSavedJobs(map: Record<string, Job>) {
+function writeSavedJobsLocal(map: Record<string, Job>) {
   localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(map))
 }
 
@@ -82,7 +78,16 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [savedJobs, setSavedJobs] = useState<Record<string, Job>>({})
 
   useEffect(() => {
-    setSavedJobs(loadSavedJobs())
+    // Seed from localStorage immediately for instant UI, then sync from Supabase
+    setSavedJobs(loadSavedJobsLocal())
+    api.jobs.listSaved()
+      .then(rows => {
+        const map: Record<string, Job> = {}
+        for (const r of rows) map[r.job_id] = r.job_data
+        setSavedJobs(map)
+        writeSavedJobsLocal(map)
+      })
+      .catch(() => { /* offline or not authed — local cache is fine */ })
   }, [])
 
   const toggleSave = useCallback((job: Job) => {
@@ -90,10 +95,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       const next = { ...prev }
       if (next[job.id]) {
         delete next[job.id]
+        api.jobs.unsave(job.id).catch(() => {})
       } else {
         next[job.id] = job
+        api.jobs.save(job.id, job).catch(() => {})
       }
-      persistSavedJobs(next)
+      writeSavedJobsLocal(next)
       return next
     })
   }, [])
@@ -116,6 +123,13 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [multiSelect, setMultiSelect] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showMultiApply, setShowMultiApply] = useState(false)
+
+  // URL → letter state
+  const [urlLetterOpen, setUrlLetterOpen] = useState(false)
+  const [urlLetterInput, setUrlLetterInput] = useState('')
+  const [urlLetterLoading, setUrlLetterLoading] = useState(false)
+  const [urlLetterError, setUrlLetterError] = useState('')
+  const [urlLetterResult, setUrlLetterResult] = useState<{ job_title: string; company: string; letter: string } | null>(null)
 
   useEffect(() => {
     api.profile.get()
@@ -178,6 +192,22 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         }
       }
       setProfileError('Opslaan mislukt. Probeer het opnieuw.')
+    }
+  }
+
+  async function handleUrlLetter(e: React.FormEvent) {
+    e.preventDefault()
+    if (!urlLetterInput.trim()) return
+    setUrlLetterLoading(true)
+    setUrlLetterError('')
+    setUrlLetterResult(null)
+    try {
+      const res = await api.apply.fromUrl(urlLetterInput.trim(), writingStyle)
+      setUrlLetterResult(res)
+    } catch (err) {
+      setUrlLetterError(err instanceof ApiError ? err.message : 'Er is iets misgegaan.')
+    } finally {
+      setUrlLetterLoading(false)
     }
   }
 
@@ -389,6 +419,62 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           {searching ? 'Zoeken…' : 'Zoeken'}
         </button>
       </form>
+
+      {/* URL → letter shortcut */}
+      <div className="mb-5">
+        <button
+          onClick={() => { setUrlLetterOpen(o => !o); setUrlLetterResult(null); setUrlLetterError('') }}
+          className="text-xs underline"
+          style={{ color: 'var(--color-indigo-primary)' }}
+        >
+          {urlLetterOpen ? 'Sluiten' : 'Heb je een vacature-URL? Plak hem hier →'}
+        </button>
+        {urlLetterOpen && (
+          <div className="mt-3 p-4 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
+            <form onSubmit={handleUrlLetter} className="flex flex-col gap-3">
+              <input
+                value={urlLetterInput}
+                onChange={e => setUrlLetterInput(e.target.value)}
+                placeholder="https://nl.indeed.com/vacatures/..."
+                className="px-3 py-2 rounded-lg border text-sm outline-none"
+                style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+              />
+              <button
+                type="submit"
+                disabled={urlLetterLoading || !urlLetterInput.trim()}
+                className="self-start px-5 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                style={{ background: 'var(--color-indigo-primary)' }}
+              >
+                {urlLetterLoading ? 'Brief genereren…' : 'Genereer brief (1 credit)'}
+              </button>
+              {urlLetterError && (
+                <p className="text-sm" style={{ color: 'var(--color-error)' }}>{urlLetterError}</p>
+              )}
+            </form>
+            {urlLetterResult && (
+              <div className="mt-4 flex flex-col gap-3">
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  {urlLetterResult.job_title} — {urlLetterResult.company}
+                </p>
+                <textarea
+                  readOnly
+                  rows={12}
+                  value={urlLetterResult.letter}
+                  className="px-3 py-2 rounded-lg border text-sm resize-none"
+                  style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+                />
+                <button
+                  onClick={() => navigator.clipboard.writeText(urlLetterResult!.letter)}
+                  className="self-start text-xs px-3 py-1 rounded-lg"
+                  style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
+                >
+                  Kopiëren
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Sort bar — only shown when there are results */}
       {sortedJobs.length > 0 && (
