@@ -86,6 +86,7 @@ export default function ProfielPage() {
         functietitel_3: (fd.get('functietitel_3') as string) || undefined,
         woonplaats: (fd.get('woonplaats') as string) || undefined,
         uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
+        beschikbaarheid: (fd.get('beschikbaarheid') as string) || undefined,
         werklocatie: (fd.get('werklocatie') as string) || undefined,
         opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
         extra_info: (fd.get('extra_info') as string) || undefined,
@@ -187,6 +188,12 @@ export default function ProfielPage() {
               </div>
               <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
               <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" defaultValue={profile.uren_per_week?.toString()} />
+              <SelectField label="Beschikbaarheid" name="beschikbaarheid" defaultValue={profile.beschikbaarheid ?? ''}>
+                <option value="">Niet opgegeven</option>
+                <option value="fulltime">Fulltime</option>
+                <option value="parttime">Parttime</option>
+                <option value="both">Fulltime of parttime</option>
+              </SelectField>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Salaris (bruto/maand)</label>
                 <div className="flex items-center gap-2">

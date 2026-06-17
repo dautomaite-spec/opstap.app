@@ -155,6 +155,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       functietitel_3: (fd.get('functietitel_3') as string) || undefined,
       woonplaats: (fd.get('woonplaats') as string) || undefined,
       uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
+      beschikbaarheid: (fd.get('beschikbaarheid') as string) || undefined,
       salaris_min: fd.get('salaris_min') ? Number(fd.get('salaris_min')) : undefined,
       salaris_max: fd.get('salaris_max') ? Number(fd.get('salaris_max')) : undefined,
       werklocatie: (fd.get('werklocatie') as string) || undefined,
@@ -303,9 +304,17 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
           <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" />
 
-          {/* Hours + salary on same row */}
           <div className="flex gap-3">
             <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" />
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Beschikbaarheid</label>
+              <select name="beschikbaarheid" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
+                <option value="">Niet opgegeven</option>
+                <option value="fulltime">Fulltime</option>
+                <option value="parttime">Parttime</option>
+                <option value="both">Fulltime of parttime</option>
+              </select>
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Salaris (bruto/maand)</label>
