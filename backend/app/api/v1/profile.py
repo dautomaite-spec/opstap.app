@@ -198,6 +198,7 @@ async def delete_cv(
     supabase.table("profiles").update({
         "cv_path": None,
         "cv_expires_at": None,
+        "cv_structured": None,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }).eq("user_id", user_id).execute()
 
