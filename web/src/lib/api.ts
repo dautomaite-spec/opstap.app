@@ -22,6 +22,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     throw new ApiError(res.status, err.detail ?? res.statusText)
   }
+  if (res.status === 204) return undefined as T
   return res.json()
 }
 
@@ -68,6 +69,8 @@ export const api = {
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
     updateStatus: (id: string, status: string) =>
       request<Application>('PATCH', `/api/v1/apply/${id}/status`, { status }),
+    rateLetter: (id: string, rating: 1 | -1) =>
+      request<void>('PATCH', `/api/v1/apply/${id}/rating`, { rating }),
   },
 }
 
@@ -195,4 +198,5 @@ export interface Application {
   job_location?: string
   job_salary?: string
   job_hours?: string
+  letter_rating?: 1 | -1 | null
 }

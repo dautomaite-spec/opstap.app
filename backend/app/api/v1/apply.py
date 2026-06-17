@@ -336,6 +336,32 @@ async def update_application_status(
     return updated.data[0]
 
 
+class LetterRatingBody(BaseModel):
+    rating: int  # 1 = thumbs up, -1 = thumbs down
+
+    def model_post_init(self, __context):
+        if self.rating not in (1, -1):
+            raise ValueError("rating must be 1 or -1")
+
+
+@router.patch("/{application_id}/rating", status_code=204)
+async def rate_letter(
+    application_id: str,
+    body: LetterRatingBody,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    result = (
+        supabase.table("applications")
+        .update({"letter_rating": body.rating})
+        .eq("id", application_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Sollicitatie niet gevonden")
+
+
 # ── URL → letter ────────────────────────────────────────────────────────────
 
 from app.schemas.application import _WritingStyle  # reuse validated Literal type  # noqa: E402
