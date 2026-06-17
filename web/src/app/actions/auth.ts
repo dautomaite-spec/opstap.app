@@ -41,23 +41,24 @@ export async function register(formData: FormData) {
   const password = formData.get('password') as string
   const naam = formData.get('naam') as string
   const ref = (formData.get('ref') as string | null) || undefined
+  const invite = (formData.get('invite') as string | null) || undefined
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { naam, ...(ref ? { ref_code: ref } : {}) },
-      emailRedirectTo: `${await siteUrl()}/auth/confirm`,
+      emailRedirectTo: `${await siteUrl()}/auth/confirm${invite ? `?invite=${invite}` : ''}`,
     },
   })
   if (error) {
-    redirect(`/register?error=${encodeURIComponent(dutchAuthError(error.message))}`)
+    redirect(`/register?error=${encodeURIComponent(dutchAuthError(error.message))}${invite ? `&invite=${invite}` : ''}`)
   }
   // If Supabase auto-confirm is off, user.identities will be empty or session null
   if (!data.session) {
     redirect('/register/bevestig')
   }
-  redirect('/dashboard/welkom')
+  redirect(`/dashboard/welkom${invite ? `?invite=${invite}` : ''}`)
 }
 
 export async function forgotPassword(formData: FormData) {

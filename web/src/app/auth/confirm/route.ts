@@ -24,8 +24,11 @@ export async function GET(request: NextRequest) {
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ type: type as 'signup' | 'recovery' | 'email', token_hash })
     if (!error) {
-      // New signups go to onboarding wizard
-      const destination = type === 'signup' ? '/dashboard/welkom' : next
+      // New signups go to onboarding wizard; carry invite code if present
+      const inviteCode = searchParams.get('invite')
+      const destination = type === 'signup'
+        ? `/dashboard/welkom${inviteCode ? `?invite=${inviteCode}` : ''}`
+        : next
       return NextResponse.redirect(new URL(destination, request.url))
     }
   }

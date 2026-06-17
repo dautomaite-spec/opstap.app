@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import PublicShell from '@/app/components/PublicShell'
+import WaitlistForm from '@/app/components/WaitlistForm'
 
 export const metadata: Metadata = {
   alternates: { canonical: 'https://opstapapp.nl' },
@@ -199,6 +200,32 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Beta waitlist CTA */}
+      <section className="py-16 px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4"
+            style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+            Vroege toegang
+          </div>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>
+            Word één van de eerste gebruikers
+          </h2>
+          <p className="text-sm mb-8" style={{ color: 'var(--color-text-muted)' }}>
+            Opstap is nu in besloten beta. Meld je aan voor de wachtlijst en ontvang een persoonlijke uitnodiging.
+          </p>
+          <WaitlistForm />
+          <p className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
+            Al een uitnodiging?{' '}
+            <Link href="/register" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
+              Maak een account aan
+            </Link>
+          </p>
         </div>
       </section>
 
