@@ -1,5 +1,12 @@
 # Changelog — Opstap
 
+## 2026-06-17 (shared jobs pool)
+- feat: shared jobs pool — dropped scraped_for_user column, added PostgreSQL FTS (tsvector + GIN index, dutch dictionary), DB-first 6h cache in search_jobs, pg_cron stale-job cleanup (48h TTL)
+- feat: admin prefetch-jobs cron endpoint (POST /admin/prefetch-jobs) — warms 20 popular NL searches daily at 06:00 via cron-job.org
+- feat: letter quality feedback — thumbs-up/down on sent applications, stored in applications.letter_feedback (#77)
+- feat: auto-load matching jobs when dashboard opens if profile has job title set (#78)
+- feat: confirmation email on apply, auto-search after onboarding completes (#79)
+
 ## 2026-06-17 (infra)
 - ops: 5 cron jobs configured on cron-job.org — warn-cv-expiry (daily 02:00), cleanup-expired-cvs (daily 03:00), follow-up reminder (Sundays 09:00), job-digest (Mondays 09:00), purge-inactive (monthly)
 - ops: Vercel env vars confirmed complete — ADMIN_API_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, NEXT_PUBLIC_PLAUSIBLE_DOMAIN all set on opstap-app project

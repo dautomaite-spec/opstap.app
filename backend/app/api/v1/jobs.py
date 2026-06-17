@@ -1,4 +1,6 @@
+import re
 import asyncio
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -11,6 +13,15 @@ from app.services.job_scraper import scrape_adzuna, scrape_indeed_nl
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
+_FRESH_HOURS = 6   # DB results younger than this are served without re-scraping
+_STALE_DAYS = 14   # Fallback cap — never return results older than this
+
+
+def _keywords_to_tsquery(keywords: str) -> str:
+    """Convert a free-text keyword string to a simple AND tsquery."""
+    tokens = re.sub(r"[^\w\s]", " ", keywords).split()
+    return " & ".join(t for t in tokens if t)
+
 
 @router.post("/search", response_model=list[JobOut])
 async def search_jobs(
@@ -18,9 +29,27 @@ async def search_jobs(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    keywords = params.keywords or ""
-    location = params.location or ""
+    keywords = (params.keywords or "").strip()
+    location = (params.location or "").strip()
 
+    now = datetime.now(timezone.utc)
+    fresh_cutoff = (now - timedelta(hours=_FRESH_HOURS)).isoformat()
+
+    # ── DB-first: check shared job pool for fresh matching results ────────────
+    db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff)
+    if keywords:
+        tsquery = _keywords_to_tsquery(keywords)
+        if tsquery:
+            db_query = db_query.text_search("fts", tsquery)
+    if location:
+        db_query = db_query.ilike("location", f"%{location}%")
+
+    cached = (db_query.order("scraped_at", desc=True).limit(params.limit).execute().data or [])
+
+    if len(cached) >= 10:
+        return cached[:params.limit]
+
+    # ── Not enough fresh results — hit the scrapers ───────────────────────────
     adzuna_limit = params.limit
     indeed_limit = min(params.limit // 2, 10)
     adzuna_results, indeed_results = await asyncio.gather(
@@ -28,10 +57,20 @@ async def search_jobs(
         scrape_indeed_nl(keywords, location, indeed_limit),
     )
     raw = adzuna_results + indeed_results
-    if not raw:
-        existing = supabase.table("jobs").select("*").eq("scraped_for_user", user_id).limit(params.limit).execute()
-        return existing.data or []
 
+    if not raw:
+        # Scrapers returned nothing — fall back to DB with a 14-day staleness cap
+        stale_cutoff = (now - timedelta(days=_STALE_DAYS)).isoformat()
+        fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff)
+        if keywords:
+            tsquery = _keywords_to_tsquery(keywords)
+            if tsquery:
+                fb_query = fb_query.text_search("fts", tsquery)
+        if location:
+            fb_query = fb_query.ilike("location", f"%{location}%")
+        return (fb_query.order("scraped_at", desc=True).limit(params.limit).execute().data or cached)
+
+    # Deduplicate by URL then upsert to shared pool
     seen: set[str] = set()
     unique = []
     for job in raw:
@@ -55,13 +94,12 @@ async def search_jobs(
             "contract_type": j.get("contract_type"),
             "posted_at": j.get("posted_at"),
             "scraped_at": j["scraped_at"],
-            "scraped_for_user": user_id,
         }
         for j in unique
     ]
     supabase.table("jobs").upsert(rows, on_conflict="url").execute()
 
-    return rows[: params.limit]
+    return rows[:params.limit]
 
 
 # ── Saved jobs (declared BEFORE /{job_id} to prevent route shadowing) ───────
@@ -125,7 +163,7 @@ async def get_job(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    result = supabase.table("jobs").select("*").eq("id", job_id).eq("scraped_for_user", user_id).single().execute()
+    result = supabase.table("jobs").select("*").eq("id", job_id).maybe_single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Job not found")
     return result.data

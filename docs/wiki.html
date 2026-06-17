@@ -150,6 +150,9 @@
       <a href="#application-status">Application status</a>
       <a href="#url-to-letter">URL-to-letter</a>
       <a href="#security-session12">Security fixes (session 12)</a>
+      <a href="#letter-feedback">Letter quality feedback</a>
+      <a href="#auto-search">Auto-search on dashboard load</a>
+      <a href="#shared-jobs-pool">Shared jobs pool</a>
     </div>
   </nav>
 
@@ -394,6 +397,39 @@
     </ul>
     <div class="gotcha"><strong>Pattern:</strong> The atomic-debit-first pattern (RPC before external calls) should be applied to any future endpoint that consumes credits. Never check-then-debit in separate DB calls — always use the <code>debit_one_credit</code> RPC which is wrapped in a transaction.</div>
 
+    <h2 id="letter-feedback">Letter quality feedback</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Thumbs-up / thumbs-down buttons shown on each sent application card in <code>/dashboard/sollicitaties</code></li>
+      <li>Feedback stored in the <code>applications</code> table (<code>letter_feedback</code> column: <code>'positive' | 'negative' | null</code>)</li>
+      <li>Backend endpoint: <code>PATCH /apply/{application_id}/feedback</code> — updates the column; auth-guarded to the owning user</li>
+      <li>Used in the future to rank or adapt letter style; no immediate effect on generation in v1</li>
+      <li>Key files: <code>web/src/app/dashboard/sollicitaties/page.tsx</code>, <code>backend/app/api/apply.py</code></li>
+    </ul>
+
+    <h2 id="auto-search">Auto-search on dashboard load</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>When a user opens the dashboard and their profile already has at least one job title set, <code>DashboardClient.tsx</code> fires the job search automatically on mount — no manual click required</li>
+      <li>Gated on profile completeness: only triggers if <code>profile.functietitel</code> (or the first of multiple titles) is non-empty</li>
+      <li>Same trigger fires after the onboarding wizard completes — the wizard redirects to the dashboard with a flag that skips the "complete your profile" banner and immediately runs the search</li>
+      <li>Key file: <code>web/src/app/dashboard/components/DashboardClient.tsx</code></li>
+    </ul>
+
+    <h2 id="shared-jobs-pool">Shared jobs pool (DB-first search)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li><strong>Architecture change:</strong> Jobs are no longer scraped per-user on every search. Instead, a shared <code>jobs</code> table is pre-populated; user searches query the DB first and only fall back to live scraping on a cache miss.</li>
+      <li><strong>Removed:</strong> <code>scraped_for_user</code> column — all jobs in the pool are shared across users. DB migration drops the column and rebuilds indexes.</li>
+      <li><strong>Full-text search:</strong> PostgreSQL <code>tsvector</code> column on the <code>jobs</code> table (<code>to_tsvector('dutch', title || ' ' || description)</code>) with a GIN index. <code>search_jobs()</code> queries this instead of scraping when results are fresh (&lt;6 h old).</li>
+      <li><strong>Cache TTL:</strong> 6 hours. If the newest matching row is older than 6 h, the endpoint falls back to live scraping and upserts results into the pool.</li>
+      <li><strong>Stale cleanup:</strong> <code>pg_cron</code> scheduled job deletes rows older than 48 h daily — keeps the table small.</li>
+      <li><strong>Prefetch cron:</strong> Admin endpoint <code>POST /admin/prefetch-jobs</code> is called daily at 06:00 (via cron-job.org). It runs 20 hardcoded popular NL job searches (e.g. "software developer Amsterdam", "verpleegkundige", "accountant") to warm the cache before peak hours.</li>
+      <li>Key files: <code>backend/app/api/jobs.py</code>, <code>backend/app/services/job_scraper.py</code>, DB migration dropping <code>scraped_for_user</code> + adding FTS index</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The FTS tsvector uses the <code>dutch</code> dictionary — make sure all future job inserts also use <code>'dutch'</code> in <code>to_tsvector()</code> or the GIN index will not match queries. English job titles may not stem correctly with the Dutch dictionary; consider <code>'simple'</code> as a fallback if recall drops.</div>
+    <div class="gotcha"><strong>Gotcha:</strong> <code>pg_cron</code> must be enabled on the Supabase project (<code>CREATE EXTENSION IF NOT EXISTS pg_cron</code> in a migration). Supabase does not enable it by default on all plans — verify in the Extensions dashboard.</div>
+
     <h2 id="cron-jobs">Cron jobs (cron-job.org)</h2>
     <p><span class="tag tag-db">supabase</span></p>
     <ul>
@@ -403,6 +439,7 @@
       <li><strong>follow-up reminder</strong> — Sundays at 09:00 — emails users with pending applications to follow up</li>
       <li><strong>job-digest</strong> — Mondays at 09:00 — sends weekly job digest to opted-in users</li>
       <li><strong>purge-inactive</strong> — monthly (1st of month) — deletes accounts inactive for 90+ days (after 30-day warning)</li>
+      <li><strong>prefetch-jobs</strong> — daily at 06:00 — calls <code>POST /admin/prefetch-jobs</code> on the Railway backend; warms the shared jobs pool with 20 popular NL searches before peak hours. Authenticated with <code>x-admin-key</code> header.</li>
       <li>Secret: <code>CRON_SECRET</code> set as Supabase Edge Function secret (not exposed to frontend)</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> cron-job.org free tier retries failed requests up to 3 times. Ensure all Edge Functions are idempotent — running twice must not send duplicate emails or delete data twice. Each function should check a <code>processed</code> flag or use a time-window guard before acting.</div>
