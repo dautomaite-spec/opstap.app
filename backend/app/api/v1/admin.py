@@ -21,7 +21,7 @@ from typing import Optional
 
 from app.core.config import settings
 from app.core.supabase import get_supabase
-from app.services.job_scraper import scrape_adzuna
+from app.services.job_scraper import scrape_adzuna, scrape_indeed_nl
 from app.services.email_notifications import send_follow_up_reminder, send_job_digest, send_credits_adjusted, send_account_suspended
 
 logger = logging.getLogger(__name__)
@@ -403,3 +403,62 @@ async def cron_job_digest(
 
     logger.info("Job digest cron: sent=%d skipped=%d week=%s", sent, skipped, week_key)
     return {"sent": sent, "skipped": skipped, "week": week_key}
+
+
+# ── Job pool prefetch ──────────────────────────────────────────────────────────
+
+_POPULAR_NL_SEARCHES = [
+    "software developer", "administratief medewerker", "verkoopmedewerker",
+    "marketing manager", "accountant", "chauffeur", "verpleegkundige",
+    "klantenservice medewerker", "projectmanager", "data analist",
+    "hr medewerker", "logistiek medewerker", "kok", "grafisch ontwerper",
+    "recruiter", "financieel controller", "salesmanager",
+    "productiemedewerker", "it beheerder", "boekhouder",
+]
+
+
+@router.post("/cron/prefetch-jobs")
+async def cron_prefetch_jobs(
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """
+    Pre-fetch popular Dutch job searches to warm the shared jobs pool.
+    Run daily at 06:00 so users get instant DB results for common searches.
+    """
+    from uuid import uuid4 as _uuid4
+
+    total_upserted = 0
+
+    for keyword in _POPULAR_NL_SEARCHES:
+        try:
+            results = await scrape_adzuna(keyword, "", limit=20)
+            if results:
+                rows = [
+                    {
+                        "id": str(_uuid4()),
+                        "title": j["title"],
+                        "company": j["company"],
+                        "location": j["location"],
+                        "source": j["source"],
+                        "url": j["url"],
+                        "description_snippet": j.get("description_snippet"),
+                        "salary_range": j.get("salary_range"),
+                        "salary_hourly": j.get("salary_hourly"),
+                        "salary_min_raw": j.get("salary_min_raw"),
+                        "salary_max_raw": j.get("salary_max_raw"),
+                        "contract_type": j.get("contract_type"),
+                        "posted_at": j.get("posted_at"),
+                        "scraped_at": j["scraped_at"],
+                    }
+                    for j in results
+                ]
+                supabase.table("jobs").upsert(rows, on_conflict="url").execute()
+                total_upserted += len(rows)
+        except Exception:
+            logger.warning("Prefetch failed for keyword: %s", keyword, exc_info=True)
+
+        await asyncio.sleep(1)  # avoid hammering Adzuna
+
+    logger.info("Job prefetch cron: upserted=%d keywords=%d", total_upserted, len(_POPULAR_NL_SEARCHES))
+    return {"upserted": total_upserted, "keywords": len(_POPULAR_NL_SEARCHES)}
