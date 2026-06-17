@@ -230,6 +230,42 @@ async def generate_letter(
     if extra:
         profile_lines.append(f"Achtergrond / extra info: {extra}")
 
+    # cv_structured — parsed CV data (much richer than manual profile fields)
+    # When present, adds actual work history, skills, and education to the prompt
+    cv = profile.get("cv_structured")
+    if cv and isinstance(cv, dict):
+        werkervaring = cv.get("werkervaring") or []
+        vaardigheden = cv.get("vaardigheden") or []
+        opleiding = cv.get("opleiding") or []
+        talen = cv.get("talen") or []
+        certificaten = cv.get("certificaten") or []
+
+        if werkervaring:
+            werk_lines = []
+            for w in werkervaring[:4]:
+                line = f"- {w.get('functie', '?')} bij {w.get('bedrijf', '?')} ({w.get('periode', '?')})"
+                taken = [str(t) for t in (w.get("taken") or [])[:3]]
+                if taken:
+                    line += ": " + ", ".join(taken)
+                werk_lines.append(line)
+            profile_lines.append("Werkervaring:\n" + "\n".join(werk_lines))
+
+        if vaardigheden:
+            profile_lines.append(f"Vaardigheden: {', '.join(str(s) for s in vaardigheden[:20])}")
+
+        if opleiding:
+            o = opleiding[0]
+            parts = [o.get("graad"), o.get("studierichting"), o.get("instelling")]
+            if o.get("jaar"):
+                parts.append(f"({o['jaar']})")
+            profile_lines.append(f"Opleiding: {' '.join(p for p in parts if p)}")
+
+        if talen:
+            profile_lines.append(f"Talen: {', '.join(str(t) for t in talen)}")
+
+        if certificaten:
+            profile_lines.append(f"Certificaten: {', '.join(str(c) for c in certificaten[:10])}")
+
     profile_block = "\n".join(profile_lines) if profile_lines else "(geen aanvullende profielinfo)"
 
     # ── Build user prompt — user content is wrapped in XML tags ──────────────

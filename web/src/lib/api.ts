@@ -37,11 +37,12 @@ export const api = {
     get: () => request<Profile>('GET', '/api/v1/profile/me'),
     create: (body: ProfileCreate) => request<Profile>('POST', '/api/v1/profile/', body),
     update: (body: Partial<ProfileCreate>) => request<Profile>('PATCH', '/api/v1/profile/me', body),
-    uploadCV: async (file: File, retentionDays = 30) => {
+    uploadCV: async (file: File, retentionDays = 30, avgConsent = true) => {
       const token = await getToken()
       const fd = new FormData()
       fd.append('file', file)
       fd.append('retention_days', String(retentionDays))
+      fd.append('avg_consent', avgConsent ? 'true' : 'false')
       const res = await fetch(`${BASE}/api/v1/profile/cv`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -65,6 +66,10 @@ export const api = {
   apply: {
     generateLetter: (body: LetterRequest) => request<LetterResponse>('POST', '/api/v1/apply/letter', body),
     fromUrl: (url: string, writing_style?: string) => request<{ job_title: string; company: string; description_snippet: string; letter: string }>('POST', '/api/v1/apply/from-url', { url, writing_style: writing_style ?? 'formeel' }),
+    /** Approval gate — requires a draft created by generateLetter */
+    approve: (application_id: string, body: ApproveRequest) =>
+      request<Application>('POST', `/api/v1/apply/${application_id}/approve`, body),
+    /** Legacy send — still used by MultiApplyModal */
     send: (body: SendRequest) => request<Application>('POST', '/api/v1/apply/send', body),
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
     updateStatus: (id: string, status: string) =>
@@ -172,9 +177,16 @@ export interface LetterRequest {
 
 export interface LetterResponse {
   job_id: string
+  application_id: string  // server-side draft ID — required for /approve
   letter_nl: string
   generated_at: string
   regenerations_remaining: number
+}
+
+export interface ApproveRequest {
+  send_method: 'email' | 'form' | 'site'
+  contact_email_override?: string
+  letter_nl?: string  // user's inline edits
 }
 
 export interface SendRequest {

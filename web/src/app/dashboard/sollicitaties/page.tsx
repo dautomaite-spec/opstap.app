@@ -8,9 +8,11 @@ const STATUS_LABELS: Record<string, string> = {
   sent: 'Verstuurd',
   pending: 'In behandeling',
   rejected: 'Afgewezen',
-  accepted: 'Geaccepteerd',
+  accepted: 'Aangenomen',
   replied: 'Beantwoord',
+  interview: 'Uitgenodigd voor gesprek',
   failed: 'Mislukt',
+  draft: 'Concept',
 }
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -18,8 +20,10 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   pending: { bg: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' },
   replied: { bg: '#d1fae5', color: '#065f46' },
   accepted: { bg: '#d1fae5', color: '#065f46' },
+  interview: { bg: '#fef3c7', color: '#92400e' },
   rejected: { bg: '#fee2e2', color: '#991b1b' },
   failed: { bg: '#fee2e2', color: '#991b1b' },
+  draft: { bg: '#f3f4f6', color: '#6b7280' },
 }
 
 export default function SollicitatiesPage() {
@@ -29,7 +33,7 @@ export default function SollicitatiesPage() {
 
   useEffect(() => {
     api.apply.history()
-      .then(setHistory)
+      .then(rows => setHistory(rows.filter(a => a.status !== 'draft')))
       .finally(() => setLoading(false))
   }, [])
 
@@ -76,7 +80,7 @@ export default function SollicitatiesPage() {
         {history.map(app => {
           const statusStyle = STATUS_COLORS[app.status] ?? STATUS_COLORS.sent
           const isUpdating = updatingId === app.id
-          const isFinal = app.status === 'failed'
+          const isFinal = app.status === 'failed' || app.status === 'accepted'
 
           return (
             <div key={app.id} className="rounded-xl p-4" style={{ background: 'var(--color-lavender-card)' }}>
@@ -103,7 +107,8 @@ export default function SollicitatiesPage() {
                     <option value="sent">Verstuurd</option>
                     <option value="pending">In behandeling</option>
                     <option value="replied">Beantwoord</option>
-                    <option value="accepted">Geaccepteerd</option>
+                    <option value="interview">Uitgenodigd voor gesprek</option>
+                    <option value="accepted">Aangenomen</option>
                     <option value="rejected">Afgewezen</option>
                   </select>
                 )}
