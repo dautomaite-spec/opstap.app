@@ -1,3 +1,4 @@
+import asyncio
 import ipaddress
 import re
 import socket
@@ -41,7 +42,7 @@ from app.services.prompt_guard import (
     validate_letter_output,
 )
 from app.services.credits import maybe_award_referrer_credit
-from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations
+from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations, send_application_confirmation
 
 router = APIRouter(prefix="/apply", tags=["apply"])
 
@@ -245,6 +246,11 @@ async def send_application(
         ))
         status = "sent" if success else "failed"
         sent_at = now.isoformat() if success else None
+
+        if success and profile.get("email"):
+            asyncio.create_task(send_application_confirmation(
+                profile["email"], profile.get("naam", ""), job["title"], job["company"]
+            ))
 
     row = {
         "id": str(uuid4()),

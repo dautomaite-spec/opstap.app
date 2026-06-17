@@ -227,6 +227,8 @@
   .check-done span { color: var(--muted); }
   .check-todo .check-icon { color: #d1d5db; }
   .check-todo span { color: var(--text); }
+  .check-block .check-icon { color: var(--amber); }
+  .check-block span { color: var(--amber); }
 
   /* Code / flow box */
   pre {
@@ -685,9 +687,9 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dashboard: URL→brief-invoerveld (inklapbaar, onder zoekbalk) met kopieerknop</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Beveiligingsscan session 12: SSRF x2 (IP-resolving + redirect-blok), route shadowing, credit race condition (atomic RPC), SavedJobData Pydantic model, writing_style Literal type, PromptInjectionError 422, Indeed href whitelist</span></li>
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl geregistreerd (handmatig, SIDN-registrar)</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plausible-account geactiveerd (domein vereist)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Plausible-account geactiveerd — opstapapp.nl geregistreerd, 1 bezoeker getrackt, 25 proefdagen resterend</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid domeinverificatie voltooid (opstapapp.nl DKIM/SPF-records geverifieerd)</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Cron-jobs op cron-job.org (maandagse digest, zondagse follow-up, 1e van de maand credits)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Cron-jobs op cron-job.org geconfigureerd: follow-up zondagen 9:00, vacaturedigest maandagen 9:00, purge-inactive maandelijks, cleanup-expired-cvs dagelijks 3:00, warn-cv-expiry dagelijks 2:00</span></li>
         </ul>
       </div>
 
@@ -698,14 +700,14 @@
         <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;padding:6px 0 2px">Gebruikers-blokkers (hard blockers)</p>
         <ul class="checklist">
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><strong>SendGrid DKIM/SPF domeinauth</strong> — domeinverificatie voor opstapapp.nl voltooid via SendGrid dashboard.</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Mollie iDEAL productietest</strong> — volledig end-to-end betaalflow testen met echte iDEAL-betaling (credits kopen → credits bijgeschreven).</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Cron-jobs actief op cron-job.org</strong> — 4 Edge Functions zijn live maar crons zijn nog niet ingesteld. Zonder crons: geen CV-verwijderingswaarschuwingen, geen vacaturedigest, geen inactiviteitsverwijdering.</span></li>
+          <li class="check-block"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Mollie iDEAL productietest</strong> — volledig end-to-end betaalflow testen met echte iDEAL-betaling (credits kopen → credits bijgeschreven). Vereist gebruikersactie (echte betaling).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Cron-jobs actief op cron-job.org</strong> — 5 crons geconfigureerd: follow-up (zo 9:00), vacaturedigest (ma 9:00), purge-inactive (maandelijks), cleanup-expired-cvs (dagelijks 3:00), warn-cv-expiry (dagelijks 2:00).</span></li>
         </ul>
 
         <p style="font-size:11px;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 2px">Admin-behoeften</p>
         <ul class="checklist">
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Vercel env vars completeren: <code>ADMIN_API_KEY</code>, <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code>, <code>TURNSTILE_SECRET_KEY</code>, <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code> nog niet ingesteld op opstap-app Vercel project.</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Plausible-account activeren op opgegeven domein (vereist live domein + account op plausible.io).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vercel env vars compleet: <code>ADMIN_API_KEY</code>, <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code>, <code>TURNSTILE_SECRET_KEY</code>, <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code> — alle bevestigd ingesteld op opstap-app Vercel project.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Plausible-account geactiveerd — opstapapp.nl geregistreerd, 1 bezoeker getrackt, 25 proefdagen resterend.</span></li>
         </ul>
 
         <p style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 2px">Post-launch verificaties</p>
