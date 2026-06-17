@@ -57,7 +57,7 @@ export async function register(formData: FormData) {
   if (!data.session) {
     redirect('/register/bevestig')
   }
-  redirect('/dashboard')
+  redirect('/dashboard/welkom')
 }
 
 export async function forgotPassword(formData: FormData) {

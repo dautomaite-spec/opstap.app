@@ -163,9 +163,14 @@ export default function WelkomPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
                   <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
                     <h3 className="font-bold text-base mb-3" style={{ color: 'var(--color-text-primary)' }}>Toestemming CV opslaan</h3>
-                    <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>
-                      Je CV wordt versleuteld opgeslagen op EU-servers. Het wordt alleen gebruikt voor het genereren van sollicitatiebrieven en nooit gedeeld met derden of voor AI-training gebruikt.
-                    </p>
+                    <div className="text-sm mb-4 flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
+                      <p>Je CV wordt versleuteld opgeslagen op EU-servers en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
+                      <ul className="flex flex-col gap-1 pl-4 list-disc">
+                        <li>Voor het uitlezen van je CV wordt de inhoud eenmalig verstuurd naar de Anthropic API (AI-dienst). Anthropic slaat deze inhoud niet op en gebruikt deze niet voor training.</li>
+                        <li>Je gegevens worden niet gedeeld met andere derden</li>
+                        <li>Je kunt je CV op elk moment zelf verwijderen</li>
+                      </ul>
+                    </div>
                     <p className="text-sm mb-1 font-medium" style={{ color: 'var(--color-text-primary)' }}>Bewaartermijn</p>
                     <select
                       value={retentionDays}

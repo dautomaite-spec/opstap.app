@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
@@ -63,6 +64,7 @@ function formatDate(iso?: string): string | null {
 }
 
 export default function DashboardClient({ userId, userEmail }: { userId: string; userEmail: string }) {
+  const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [showProfileForm, setShowProfileForm] = useState(false)
@@ -144,7 +146,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           triggerSearch(p.functietitel, p.woonplaats ?? '')
         }
       })
-      .catch(() => setShowProfileForm(true))
+      .catch((err: unknown) => {
+        // 404 = no profile yet → send to onboarding wizard
+        if (err instanceof ApiError && err.status === 404) {
+          router.replace('/dashboard/welkom')
+        } else {
+          setShowProfileForm(true)
+        }
+      })
       .finally(() => setProfileLoading(false))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
