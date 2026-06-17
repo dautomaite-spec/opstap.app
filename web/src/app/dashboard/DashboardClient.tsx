@@ -18,7 +18,7 @@ function writeSavedJobsLocal(map: Record<string, Job>) {
 }
 
 type SortKey = 'match' | 'salary' | 'date'
-type ApplyState = { job: Job; letter: string; sending: boolean; copied: boolean } | null
+type ApplyState = { job: Job; applicationId: string | null; letter: string; sending: boolean; copied: boolean } | null
 
 function matchScore(job: Job, profile: Profile | null): number {
   if (!profile) return 0
@@ -249,7 +249,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setApplySuccess('')
     try {
       const res = await api.apply.generateLetter({ job_id: job.id, profile_id: profile.id, writing_style: writingStyle })
-      setApplyState({ job, letter: res.letter_nl, sending: false, copied: false })
+      setApplyState({ job, applicationId: res.application_id ?? null, letter: res.letter_nl, sending: false, copied: false })
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
         setShowBuyCredits(true)
@@ -266,11 +266,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setApplyState(s => s ? { ...s, sending: true } : s)
     setApplyError('')
     try {
-      // Copy letter to clipboard
       await navigator.clipboard.writeText(applyState.letter).catch(() => {})
-      // Record the application
-      await api.apply.send({ job_id: applyState.job.id, profile_id: profile.id, letter_nl: applyState.letter, send_method: 'site' })
-      // Open the job URL
+      if (applyState.applicationId) {
+        await api.apply.approve(applyState.applicationId, { send_method: 'site', letter_nl: applyState.letter })
+      }
       window.open(applyState.job.url, '_blank', 'noopener,noreferrer')
       setApplySuccess(`Brief gekopieerd en vacature geopend voor ${applyState.job.title}.`)
       setApplyState(null)
@@ -286,13 +285,22 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setEmailSendError('')
     setEmailSendSuccess('')
     try {
-      await api.apply.send({
-        job_id: applyState.job.id,
-        profile_id: profile.id,
-        letter_nl: applyState.letter,
-        send_method: 'email',
-        contact_email_override: recipientEmail,
-      })
+      if (applyState.applicationId) {
+        await api.apply.approve(applyState.applicationId, {
+          send_method: 'email',
+          contact_email_override: recipientEmail,
+          letter_nl: applyState.letter,
+        })
+      } else {
+        // Fallback for edge case where draft creation failed
+        await api.apply.send({
+          job_id: applyState.job.id,
+          profile_id: profile.id,
+          letter_nl: applyState.letter,
+          send_method: 'email',
+          contact_email_override: recipientEmail,
+        })
+      }
       setEmailSendSuccess(`Sollicitatie verstuurd naar ${recipientEmail}.`)
       setApplyState(null)
       setEmailApplyOpen(false)

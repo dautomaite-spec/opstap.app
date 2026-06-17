@@ -13,6 +13,7 @@ from app.services.credits import (
     check_and_award_profile_bonus,
     generate_referral_code,
 )
+from app.services.cv_parser import parse_cv_async
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
@@ -136,6 +137,7 @@ async def delete_account(
 @router.post("/cv", status_code=200)
 async def upload_cv(
     retention_days: Annotated[int, Form(ge=7, le=90)] = 30,
+    avg_consent: Annotated[bool, Form()] = False,
     file: UploadFile = File(...),
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
@@ -145,6 +147,9 @@ async def upload_cv(
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
     allowed_magic = (b"%PDF", b"PK\x03\x04")
+
+    if not avg_consent:
+        raise HTTPException(status_code=422, detail="AVG-toestemming is vereist voor het uploaden van een CV")
 
     if file.content_type not in allowed_mime:
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are accepted")
@@ -172,6 +177,10 @@ async def upload_cv(
         "last_active_at": now.isoformat(),
         "updated_at": now.isoformat(),
     }).eq("user_id", user_id).execute()
+
+    # Fire-and-forget CV parsing — updates profiles.cv_structured asynchronously
+    import asyncio as _asyncio
+    _asyncio.create_task(parse_cv_async(content, file.content_type, user_id, supabase))
 
     return {"message": "CV uploaded", "expires_at": expires_at}
 

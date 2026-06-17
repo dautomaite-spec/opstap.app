@@ -33,6 +33,7 @@ from app.schemas.application import (
     ApplicationCreate,
     ApplicationOut,
     ApplicationStatusUpdate,
+    ApprovalBody,
 )
 from app.services.letter_generator import generate_letter
 from app.services.email_sender import send_application_email, ApplicationEmail
@@ -144,13 +145,185 @@ async def generate_motivation_letter(
     except Exception:
         pass
 
+    # Create or update a server-side draft — this is the approval gate anchor.
+    # The frontend must reference this application_id when calling /approve.
+    # Without the draft in the DB, /approve will 404 — it cannot be bypassed.
+    now_str = datetime.now(timezone.utc).isoformat()
+    try:
+        existing = (
+            supabase.table("applications")
+            .select("id")
+            .eq("user_id", user_id)
+            .eq("job_id", str(body.job_id))
+            .eq("status", "draft")
+            .maybe_single()
+            .execute()
+        )
+        if existing.data:
+            supabase.table("applications").update({"letter_nl": letter}).eq("id", existing.data["id"]).execute()
+            draft_id = existing.data["id"]
+        else:
+            insert = supabase.table("applications").insert({
+                "id": str(uuid4()),
+                "job_id": str(body.job_id),
+                "user_id": user_id,
+                "company": job["company"],
+                "job_title": job["title"],
+                "letter_nl": letter,
+                "status": "draft",
+                "created_at": now_str,
+            }).execute()
+            if not insert.data:
+                raise ValueError("insert returned no data")
+            draft_id = insert.data[0]["id"]
+    except Exception:
+        raise HTTPException(status_code=500, detail="Kon concept niet aanmaken. Probeer opnieuw.")
+
     quota = get_letter_usage(user_id, str(body.job_id))
     return MotivationLetterOut(
         job_id=body.job_id,
+        application_id=draft_id,
         letter_nl=letter,
         generated_at=datetime.now(timezone.utc),
         regenerations_remaining=quota["job_remaining"],
     )
+
+
+# ── Approval gate — the only server-side path to actually send ────────────────
+
+@router.post("/{application_id}/approve", response_model=ApplicationOut)
+async def approve_and_send(
+    request: Request,
+    application_id: str,
+    body: ApprovalBody,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    """
+    Approve and send an application that was previously drafted via POST /letter.
+    The draft must exist in the DB for this user — cannot be called without it.
+    This is the unbypassable server-side approval gate.
+    """
+    ip = request.client.host if request.client else "unknown"
+    if check_ip_flood(ip):
+        raise HTTPException(status_code=429, detail="Te veel verzoeken. Probeer het later opnieuw.")
+
+    # Fetch the draft — ownership + draft-state enforced at DB level
+    draft_result = (
+        supabase.table("applications")
+        .select("*")
+        .eq("id", application_id)
+        .eq("user_id", user_id)
+        .maybe_single()
+        .execute()
+    )
+    if not draft_result.data:
+        raise HTTPException(status_code=404, detail="Sollicitatie niet gevonden")
+    draft = draft_result.data
+    if draft["status"] != "draft":
+        raise HTTPException(status_code=409, detail="Deze sollicitatie is al verstuurd")
+
+    # Daily send limit (excludes drafts)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    daily_count = (
+        supabase.table("applications")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .neq("status", "draft")
+        .gte("created_at", today_start.isoformat())
+        .execute()
+    ).count or 0
+    if daily_count >= APPLY_DAILY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Je hebt het dagelijks limiet van {APPLY_DAILY_LIMIT} sollicitaties bereikt. Probeer morgen opnieuw.",
+        )
+
+    # Per-company weekly limit (excludes drafts)
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    company_count = (
+        supabase.table("applications")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("company", draft["company"])
+        .neq("status", "draft")
+        .gte("created_at", week_ago)
+        .execute()
+    ).count or 0
+    if company_count >= APPLY_PER_COMPANY_WEEKLY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Je hebt deze week al gesolliciteerd bij {draft['company']}. Wacht 7 dagen voor een nieuwe poging.",
+        )
+
+    profile_result = supabase.table("profiles").select("naam,is_suspended").eq("user_id", user_id).single().execute()
+    if not profile_result.data:
+        raise HTTPException(status_code=404, detail="Profiel niet gevonden")
+    profile = profile_result.data
+    if profile.get("is_suspended"):
+        raise HTTPException(
+            status_code=403,
+            detail="Je account is geschorst wegens vermoeden van misbruik. Neem contact op via misbruik@opstap.nl.",
+        )
+
+    auth_user = supabase.auth.admin.get_user_by_id(user_id)
+    profile["email"] = auth_user.user.email if auth_user.user else ""
+
+    # Use stored server-side letter unless the user made inline edits
+    final_letter = body.letter_nl or draft["letter_nl"]
+    try:
+        validate_letter_output(final_letter)
+    except PromptInjectionError:
+        raise HTTPException(status_code=422, detail="Ongeldige briefinhoud. Regenereer de brief en probeer opnieuw.")
+
+    now = datetime.now(timezone.utc)
+    status = "pending"
+    sent_at = None
+
+    if body.send_method == "email":
+        contact_email = body.contact_email_override
+        if not contact_email:
+            job_result = supabase.table("jobs").select("contact_email").eq("id", draft["job_id"]).maybe_single().execute()
+            if job_result.data:
+                contact_email = job_result.data.get("contact_email")
+        if not contact_email or not _EMAIL_RE.match(contact_email):
+            raise HTTPException(
+                status_code=422,
+                detail="Geen geldig e-mailadres beschikbaar. Voer een recruiter e-mailadres in.",
+            )
+        success = await send_application_email(ApplicationEmail(
+            to_email=contact_email,
+            to_name=draft["company"],
+            reply_to_email=profile.get("email", ""),
+            reply_to_name=profile.get("naam", ""),
+            job_title=draft["job_title"],
+            company=draft["company"],
+            letter_body=final_letter,
+        ))
+        status = "sent" if success else "failed"
+        sent_at = now.isoformat() if success else None
+        if success and profile.get("email"):
+            asyncio.create_task(send_application_confirmation(
+                profile["email"], profile.get("naam", ""), draft["job_title"], draft["company"]
+            ))
+
+    updated = (
+        supabase.table("applications")
+        .update({
+            "status": status,
+            "send_method": body.send_method,
+            "letter_nl": final_letter,
+            "approved_at": now.isoformat(),
+            "sent_at": sent_at,
+        })
+        .eq("id", application_id)
+        .eq("user_id", user_id)
+        .select()
+        .execute()
+    )
+    if not updated.data:
+        raise HTTPException(status_code=500, detail="Kon sollicitatie niet bijwerken")
+    return updated.data[0]
 
 
 @router.post("/send", response_model=ApplicationOut, status_code=201)
@@ -307,7 +480,7 @@ async def update_application_status(
     app = app_result.data
     now = datetime.now(timezone.utc)
     update = {"status": body.status}
-    if body.status == "replied":
+    if body.status in ("replied", "interview"):
         update["replied_at"] = now.isoformat()
 
     updated = (
