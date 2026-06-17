@@ -348,7 +348,8 @@ export default function ProfielPage() {
                         <ul className="flex flex-col gap-1 pl-4 list-disc">
                           <li>Je ontvangt 7 dagen van tevoren een herinnering</li>
                           <li>Je kunt je CV op elk moment zelf verwijderen</li>
-                          <li>Niet gedeeld met derden of gebruikt voor AI-training</li>
+                          <li>Voor het uitlezen van je CV wordt de inhoud eenmalig verstuurd naar de Anthropic API (AI-dienst). Anthropic slaat deze inhoud niet op en gebruikt deze niet voor training.</li>
+                          <li>Je gegevens worden niet gedeeld met andere derden</li>
                         </ul>
                       </div>
                       <div className="flex flex-col gap-1">
