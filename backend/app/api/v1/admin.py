@@ -102,6 +102,54 @@ async def list_users(
     ]
 
 
+@router.get("/stats")
+async def admin_stats(
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """High-level platform stats for the admin dashboard."""
+    profiles_result = supabase.table("profiles").select("user_id,credits_balance,is_suspended,created_at").execute()
+    profiles = profiles_result.data or []
+
+    apps_result = supabase.table("applications").select("status,created_at").execute()
+    apps = apps_result.data or []
+
+    waitlist_result = supabase.table("waitlist").select("id", count="exact").is_("invited_at", "null").execute()
+    invite_codes_result = supabase.table("invite_codes").select("use_count,max_uses").execute()
+
+    total_users = len(profiles)
+    suspended = sum(1 for p in profiles if p.get("is_suspended"))
+    total_credits = sum(p.get("credits_balance", 0) for p in profiles)
+
+    total_apps = len(apps)
+    sent = sum(1 for a in apps if a["status"] in ("sent", "pending"))
+    replied = sum(1 for a in apps if a["status"] == "replied")
+    interview = sum(1 for a in apps if a["status"] == "interview")
+
+    codes = invite_codes_result.data or []
+    total_uses = sum(c.get("use_count", 0) for c in codes)
+    total_capacity = sum(c.get("max_uses", 0) for c in codes)
+
+    return {
+        "users": {
+            "total": total_users,
+            "suspended": suspended,
+            "total_credits_balance": total_credits,
+        },
+        "applications": {
+            "total": total_apps,
+            "sent": sent,
+            "replied": replied,
+            "interview": interview,
+        },
+        "invites": {
+            "waitlist_pending": waitlist_result.count or 0,
+            "codes_used": total_uses,
+            "codes_capacity": total_capacity,
+        },
+    }
+
+
 @router.post("/users/{user_id}/credits")
 async def adjust_credits(
     user_id: str,

@@ -43,7 +43,7 @@ from app.services.prompt_guard import (
     validate_letter_output,
 )
 from app.services.credits import maybe_award_referrer_credit
-from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations, send_application_confirmation
+from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations, send_application_confirmation, send_interview_congratulations
 
 router = APIRouter(prefix="/apply", tags=["apply"])
 
@@ -291,7 +291,7 @@ async def approve_and_send(
                 status_code=422,
                 detail="Geen geldig e-mailadres beschikbaar. Voer een recruiter e-mailadres in.",
             )
-        success = await send_application_email(ApplicationEmail(
+        email_payload = ApplicationEmail(
             to_email=contact_email,
             to_name=draft["company"],
             reply_to_email=profile.get("email", ""),
@@ -299,7 +299,13 @@ async def approve_and_send(
             job_title=draft["job_title"],
             company=draft["company"],
             letter_body=final_letter,
-        ))
+        )
+        success = await send_application_email(email_payload)
+        # One retry on transient SendGrid failures
+        if not success:
+            import asyncio as _aio
+            await _aio.sleep(1)
+            success = await send_application_email(email_payload)
         status = "sent" if success else "failed"
         sent_at = now.isoformat() if success else None
         if success and profile.get("email"):
@@ -326,122 +332,28 @@ async def approve_and_send(
     return updated.data[0]
 
 
-@router.post("/send", response_model=ApplicationOut, status_code=201)
-async def send_application(
-    request: Request,
-    body: ApplicationCreate,
+@router.get("/stats")
+async def application_stats(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    # ── IP flood protection ────────────────────────────────────────────────────
-    ip = request.client.host if request.client else "unknown"
-    if check_ip_flood(ip):
-        raise HTTPException(status_code=429, detail="Te veel verzoeken. Probeer het later opnieuw.")
-    # ── Rate limiting: max APPLY_DAILY_LIMIT applications per day ─────────────
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    usage_result = (
+    """Return sent / replied / interview / accepted counts for the current user."""
+    result = (
         supabase.table("applications")
-        .select("id", count="exact")
+        .select("status")
         .eq("user_id", user_id)
-        .gte("created_at", today_start.isoformat())
+        .neq("status", "draft")
         .execute()
     )
-    daily_count = usage_result.count or 0
-    if daily_count >= APPLY_DAILY_LIMIT:
-        raise HTTPException(
-            status_code=429,
-            detail=f"Je hebt het dagelijks limiet van {APPLY_DAILY_LIMIT} sollicitaties bereikt. Probeer morgen opnieuw.",
-        )
-
-    job_result = supabase.table("jobs").select("title,company,url,contact_email").eq("id", str(body.job_id)).single().execute()
-    if not job_result.data:
-        raise HTTPException(status_code=404, detail="Job not found")
-    job = job_result.data
-
-    profile_result = supabase.table("profiles").select("naam,is_suspended").eq("user_id", user_id).single().execute()
-    if not profile_result.data:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    profile = profile_result.data
-
-    # Check suspension before making any further API calls
-    if profile.get("is_suspended"):
-        raise HTTPException(
-            status_code=403,
-            detail="Je account is geschorst wegens vermoeden van misbruik. Neem contact op via misbruik@opstap.nl.",
-        )
-
-    # Get user email from Supabase auth (not stored on profile to avoid duplication)
-    auth_user = supabase.auth.admin.get_user_by_id(user_id)
-    profile["email"] = auth_user.user.email if auth_user.user else ""
-
-    # ── Per-company weekly limit ───────────────────────────────────────────────
-    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
-    company_count_result = (
-        supabase.table("applications")
-        .select("id", count="exact")
-        .eq("user_id", user_id)
-        .eq("company", job["company"])
-        .gte("created_at", week_ago)
-        .execute()
-    )
-    if (company_count_result.count or 0) >= APPLY_PER_COMPANY_WEEKLY_LIMIT:
-        raise HTTPException(
-            status_code=429,
-            detail=f"Je hebt deze week al gesolliciteerd bij {job['company']}. Wacht 7 dagen voor een nieuwe poging.",
-        )
-
-    now = datetime.now(timezone.utc)
-    status = "pending"
-    sent_at = None
-
-    # Validate letter content before send — client could substitute arbitrary text
-    try:
-        validate_letter_output(body.letter_nl)
-    except PromptInjectionError:
-        raise HTTPException(status_code=422, detail="Ongeldige briefinhoud. Regenereer de brief en probeer opnieuw.")
-
-    if body.send_method == "email":
-        contact_email = body.contact_email_override or job.get("contact_email")
-        if not contact_email or not _EMAIL_RE.match(contact_email):
-            raise HTTPException(
-                status_code=422,
-                detail="Geen geldig e-mailadres beschikbaar. Voer een recruiter e-mailadres in.",
-            )
-
-        success = await send_application_email(ApplicationEmail(
-            to_email=contact_email,
-            to_name=job["company"],
-            reply_to_email=profile.get("email", ""),
-            reply_to_name=profile.get("naam", ""),
-            job_title=job["title"],
-            company=job["company"],
-            letter_body=body.letter_nl,
-        ))
-        status = "sent" if success else "failed"
-        sent_at = now.isoformat() if success else None
-
-        if success and profile.get("email"):
-            asyncio.create_task(send_application_confirmation(
-                profile["email"], profile.get("naam", ""), job["title"], job["company"]
-            ))
-
-    row = {
-        "id": str(uuid4()),
-        "job_id": str(body.job_id),
-        "user_id": user_id,
-        "company": job["company"],
-        "job_title": job["title"],
-        "letter_nl": body.letter_nl,
-        "send_method": body.send_method,
-        "status": status,
-        "sent_at": sent_at,
-        "created_at": now.isoformat(),
-    }
-    result = supabase.table("applications").insert(row).execute()
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to log application")
-
-    return result.data[0]
+    rows = result.data or []
+    counts: dict[str, int] = {"sent": 0, "replied": 0, "interview": 0, "accepted": 0}
+    for r in rows:
+        s = r["status"]
+        if s in counts:
+            counts[s] += 1
+        elif s == "pending":
+            counts["sent"] += 1
+    return counts
 
 
 @router.get("/history", response_model=list[ApplicationOut])
@@ -494,15 +406,17 @@ async def update_application_status(
     if not updated.data:
         raise HTTPException(status_code=500, detail="Status bijwerken mislukt")
 
-    # Congratulations email on first reply mark
-    if body.status == "replied":
+    if body.status in ("replied", "interview"):
         try:
             auth_user = supabase.auth.admin.get_user_by_id(user_id)
             user_email = auth_user.user.email if auth_user.user else None
             profile_result = supabase.table("profiles").select("naam").eq("user_id", user_id).single().execute()
             naam = profile_result.data.get("naam", "") if profile_result.data else ""
             if user_email:
-                await send_reply_congratulations(user_email, naam, app["company"], app["job_title"])
+                if body.status == "replied":
+                    await send_reply_congratulations(user_email, naam, app["company"], app["job_title"])
+                else:
+                    await send_interview_congratulations(user_email, naam, app["company"], app["job_title"])
         except Exception:
             pass
 

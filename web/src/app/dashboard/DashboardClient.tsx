@@ -19,7 +19,16 @@ function writeSavedJobsLocal(map: Record<string, Job>) {
 }
 
 type SortKey = 'match' | 'salary' | 'date'
-type ApplyState = { job: Job; applicationId: string | null; letter: string; sending: boolean; copied: boolean } | null
+type ApplyState = { job: Job; applicationId: string | null; letter: string; regenRemaining: number | null; sending: boolean; copied: boolean } | null
+
+const PENDING_APPLY_KEY = 'opstap_pending_apply'
+
+function trackEvent(name: string) {
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).plausible?.(name)
+  }
+}
 
 function matchScore(job: Job, profile: Profile | null): number {
   if (!profile) return 0
@@ -108,6 +117,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     })
   }, [])
 
+  const [jobsStale, setJobsStale] = useState(false)
   const [applyState, setApplyState] = useState<ApplyState>(null)
   const [generatingLetter, setGeneratingLetter] = useState(false)
   const [applyError, setApplyError] = useState('')
@@ -144,6 +154,17 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         if (p.functietitel && !autoSearched.current) {
           autoSearched.current = true
           triggerSearch(p.functietitel, p.woonplaats ?? '')
+        }
+        // Pending apply from saved-jobs page
+        try {
+          const raw = localStorage.getItem(PENDING_APPLY_KEY)
+          if (raw) {
+            localStorage.removeItem(PENDING_APPLY_KEY)
+            const job = JSON.parse(raw) as Job
+            handleGenerateLetter(job)
+          }
+        } catch {
+          // ignore corrupt localStorage
         }
       })
       .catch((err: unknown) => {
@@ -236,9 +257,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setSearching(true)
     setSearchError('')
     setJobs([])
+    setJobsStale(false)
     try {
-      const results = await api.jobs.search({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
+      const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
       setJobs(results)
+      setJobsStale(stale)
     } catch (err) {
       setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
     } finally {
@@ -258,7 +281,8 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setApplySuccess('')
     try {
       const res = await api.apply.generateLetter({ job_id: job.id, profile_id: profile.id, writing_style: writingStyle })
-      setApplyState({ job, applicationId: res.application_id ?? null, letter: res.letter_nl, sending: false, copied: false })
+      setApplyState({ job, applicationId: res.application_id ?? null, letter: res.letter_nl, regenRemaining: res.regenerations_remaining ?? null, sending: false, copied: false })
+      trackEvent('Letter Generated')
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
         setShowBuyCredits(true)
@@ -280,6 +304,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         await api.apply.approve(applyState.applicationId, { send_method: 'site', letter_nl: applyState.letter })
       }
       window.open(applyState.job.url, '_blank', 'noopener,noreferrer')
+      trackEvent('Application Sent')
       setApplySuccess(`Brief gekopieerd en vacature geopend voor ${applyState.job.title}.`)
       setApplyState(null)
     } catch (err) {
@@ -289,27 +314,17 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   }
 
   async function handleSendViaEmail() {
-    if (!applyState || !profile || !recipientEmail) return
+    if (!applyState || !applyState.applicationId || !recipientEmail) return
     setSendingEmail(true)
     setEmailSendError('')
     setEmailSendSuccess('')
     try {
-      if (applyState.applicationId) {
-        await api.apply.approve(applyState.applicationId, {
-          send_method: 'email',
-          contact_email_override: recipientEmail,
-          letter_nl: applyState.letter,
-        })
-      } else {
-        // Fallback for edge case where draft creation failed
-        await api.apply.send({
-          job_id: applyState.job.id,
-          profile_id: profile.id,
-          letter_nl: applyState.letter,
-          send_method: 'email',
-          contact_email_override: recipientEmail,
-        })
-      }
+      await api.apply.approve(applyState.applicationId, {
+        send_method: 'email',
+        contact_email_override: recipientEmail,
+        letter_nl: applyState.letter,
+      })
+      trackEvent('Application Sent')
       setEmailSendSuccess(`Sollicitatie verstuurd naar ${recipientEmail}.`)
       setApplyState(null)
       setEmailApplyOpen(false)
@@ -562,6 +577,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
+      {jobsStale && (
+        <div className="mb-4 px-3 py-2 rounded-lg text-xs" style={{ background: '#fef3c7', color: '#92400e' }}>
+          Vacatures worden vernieuwd op de achtergrond. Je ziet nu resultaten uit onze cache.
+        </div>
+      )}
       {searchError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{searchError}</p>}
       {applySuccess && <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{applySuccess}</p>}
       {applyError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{applyError}</p>}
@@ -627,6 +647,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               >
                 {generatingLetter ? 'Genereren…' : 'Opnieuw genereren'}
               </button>
+              {applyState.regenRemaining !== null && (
+                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  {applyState.regenRemaining}× over
+                </span>
+              )}
             </div>
             <textarea
               value={applyState.letter}

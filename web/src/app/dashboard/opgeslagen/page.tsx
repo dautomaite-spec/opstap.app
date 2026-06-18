@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Job } from '@/lib/api'
+
+const PENDING_APPLY_KEY = 'opstap_pending_apply'
 
 const SAVED_JOBS_KEY = 'opstap_saved_jobs'
 
@@ -24,6 +27,7 @@ function removeSavedJob(id: string) {
 }
 
 export default function OpgeslagenPage() {
+  const router = useRouter()
   const [jobs, setJobs] = useState<Job[]>([])
   const [ready, setReady] = useState(false)
 
@@ -36,6 +40,11 @@ export default function OpgeslagenPage() {
   function handleUnsave(id: string) {
     removeSavedJob(id)
     setJobs(prev => prev.filter(j => j.id !== id))
+  }
+
+  function handleApply(job: Job) {
+    localStorage.setItem(PENDING_APPLY_KEY, JSON.stringify(job))
+    router.push('/dashboard')
   }
 
   if (!ready) {
@@ -80,12 +89,19 @@ export default function OpgeslagenPage() {
                 )}
               </div>
               <div className="flex flex-col gap-2 shrink-0">
+                <button
+                  onClick={() => handleApply(job)}
+                  className="px-3 py-1.5 text-xs rounded-lg text-white font-medium text-center transition hover:opacity-90"
+                  style={{ background: 'var(--color-indigo-primary)' }}
+                >
+                  Solliciteren
+                </button>
                 <a
                   href={job.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 text-xs rounded-lg text-white font-medium text-center transition hover:opacity-90"
-                  style={{ background: 'var(--color-indigo-primary)' }}
+                  className="px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
+                  style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
                 >
                   Bekijken
                 </a>

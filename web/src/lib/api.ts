@@ -74,6 +74,17 @@ export const api = {
   },
   jobs: {
     search: (params: JobSearchParams) => request<Job[]>('POST', '/api/v1/jobs/search', params),
+    searchWithStale: async (params: JobSearchParams): Promise<{ jobs: Job[]; stale: boolean }> => {
+      const token = await getToken()
+      const res = await fetch(`${BASE}/api/v1/jobs/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(params),
+      })
+      if (!res.ok) throw new ApiError(res.status, res.statusText)
+      const jobs = (await res.json()) as Job[]
+      return { jobs, stale: res.headers.get('X-Jobs-Source') === 'cache' }
+    },
     listSaved: () => request<{ job_id: string; job_data: Job; saved_at: string }[]>('GET', '/api/v1/jobs/saved/list'),
     save: (job_id: string, job_data: Job) => request<{ saved: boolean }>('POST', '/api/v1/jobs/saved', { job_id, job_data }),
     unsave: (job_id: string) => request<void>('DELETE', `/api/v1/jobs/saved/${job_id}`),
@@ -87,10 +98,13 @@ export const api = {
     /** Legacy send — still used by MultiApplyModal */
     send: (body: SendRequest) => request<Application>('POST', '/api/v1/apply/send', body),
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
+    stats: () => request<{ sent: number; replied: number; interview: number; accepted: number }>('GET', '/api/v1/apply/stats'),
     updateStatus: (id: string, status: string) =>
       request<Application>('PATCH', `/api/v1/apply/${id}/status`, { status }),
     rateLetter: (id: string, rating: 1 | -1) =>
       request<void>('PATCH', `/api/v1/apply/${id}/rating`, { rating }),
+    retry: (application_id: string) =>
+      request<Application>('POST', `/api/v1/apply/${application_id}/approve`, { send_method: 'email' }),
   },
 }
 
