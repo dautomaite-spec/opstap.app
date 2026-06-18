@@ -336,6 +336,13 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>ReferralSection: shows referral invite count vs beta cap ("Jij hebt X van 5 uitnodigingen gebruikt") — user knows how many invites remain (ReferralSection.tsx)</span></li>
         </ul>
 
+        <div class="section-label">CV polish — 2026-06-18</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Backend: <code>_attach_cv_url</code> now strips <code>cv_structured</code> from profile response and adds <code>cv_parsed: bool</code> — raw CV JSONB never reaches the frontend (backend/app/api/v1/profile.py)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Frontend: Profile interface extended with <code>cv_parsed?: boolean</code> (web/src/lib/api.ts)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Frontend: CV status card on /dashboard/profiel shows "gegevens verwerkt ✓" when cv_parsed is true (web/src/app/dashboard/profiel/page.tsx)</span></li>
+        </ul>
+
         <div class="section-label">Nog te doen</div>
         <ul class="checklist">
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl registreren (handmatig, SIDN-registrar)</span></li>

@@ -165,6 +165,7 @@
       <a href="#smart-search-retry">Smart search retry (no-location fallback)</a>
       <a href="#onboarding-analytics">Onboarding analytics (Plausible)</a>
       <a href="#referral-invite-count">Referral invite count vs beta cap</a>
+      <a href="#cv-extraction-status">CV extraction status (cv_parsed)</a>
     </div>
   </nav>
 
@@ -587,6 +588,17 @@
       <li>This gives users transparency about their invite budget without needing an admin to check for them</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> The beta cap of 5 is currently hardcoded in the component. When the beta phase ends and invites are opened up, remove the cap display and update or hide the counter.</div>
+
+    <h2 id="cv-extraction-status">CV extraction status (cv_parsed)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key files: <code>backend/app/api/v1/profile.py</code>, <code>web/src/lib/api.ts</code>, <code>web/src/app/dashboard/profiel/page.tsx</code></li>
+      <li><code>_attach_cv_url</code> in <code>profile.py</code> pops <code>cv_structured</code> from the profile dict before serialising the response — the raw CV JSONB (which may contain full CV text) is never sent to the frontend</li>
+      <li>A boolean <code>cv_parsed</code> is computed from whether <code>cv_structured</code> was non-null and added to the response instead — lightweight signal the frontend can use without exposing CV content</li>
+      <li>Profile TypeScript interface in <code>api.ts</code> gains <code>cv_parsed?: boolean</code></li>
+      <li>Profiel page shows a "gegevens verwerkt ✓" badge on the CV status card when <code>cv_parsed</code> is <code>true</code></li>
+    </ul>
+    <div class="gotcha"><strong>AVG note:</strong> Stripping <code>cv_structured</code> at the API boundary prevents accidental exposure of parsed CV data in browser devtools or logs. If the field is ever needed client-side for a specific feature, gate it behind an explicit opt-in endpoint rather than adding it back to the default profile response.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
