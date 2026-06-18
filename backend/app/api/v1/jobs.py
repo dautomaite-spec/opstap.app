@@ -79,7 +79,7 @@ async def search_jobs(
         if tsquery:
             db_query = db_query.text_search("fts", tsquery)
     if location:
-        db_query = db_query.ilike("location", f"%{location}%")
+        db_query = db_query.filter("location", "ilike", f"%{location}%")
 
     cached = (db_query.order("scraped_at", desc=True).limit(params.limit).execute().data or [])
 
@@ -104,7 +104,7 @@ async def search_jobs(
             if tsquery:
                 fb_query = fb_query.text_search("fts", tsquery)
         if location:
-            fb_query = fb_query.ilike("location", f"%{location}%")
+            fb_query = fb_query.filter("location", "ilike", f"%{location}%")
         response.headers["X-Jobs-Source"] = "cache"
         stale_results = fb_query.order("scraped_at", desc=True).limit(params.limit * 2).execute().data or cached
         return _dedup_by_company(stale_results)[:params.limit]
