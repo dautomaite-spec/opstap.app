@@ -73,13 +73,15 @@ async def search_jobs(
     fresh_cutoff = (now - timedelta(hours=_FRESH_HOURS)).isoformat()
 
     # ── DB-first: check shared job pool for fresh matching results ────────────
+    # Apply ilike BEFORE text_search — text_search returns SyncQueryRequestBuilder
+    # which does not expose filter methods; SyncFilterRequestBuilder does.
     db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff)
+    if location:
+        db_query = db_query.ilike("location", f"%{location}%")
     if keywords:
         tsquery = _keywords_to_tsquery(keywords)
         if tsquery:
             db_query = db_query.text_search("fts", tsquery)
-    if location:
-        db_query = db_query.filter("location", "ilike", f"%{location}%")
 
     cached = (db_query.order("scraped_at", desc=True).limit(params.limit).execute().data or [])
 
@@ -99,12 +101,12 @@ async def search_jobs(
         # Scrapers returned nothing — fall back to DB with a 14-day staleness cap
         stale_cutoff = (now - timedelta(days=_STALE_DAYS)).isoformat()
         fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff)
+        if location:
+            fb_query = fb_query.ilike("location", f"%{location}%")
         if keywords:
             tsquery = _keywords_to_tsquery(keywords)
             if tsquery:
                 fb_query = fb_query.text_search("fts", tsquery)
-        if location:
-            fb_query = fb_query.filter("location", "ilike", f"%{location}%")
         response.headers["X-Jobs-Source"] = "cache"
         stale_results = fb_query.order("scraped_at", desc=True).limit(params.limit * 2).execute().data or cached
         return _dedup_by_company(stale_results)[:params.limit]
