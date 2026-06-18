@@ -11,6 +11,7 @@ type Phase = 'generating' | 'review' | 'sending' | 'done'
 interface Entry {
   job: Job
   letter: string
+  applicationId?: string
   status: EntryStatus
   error?: string
 }
@@ -52,7 +53,7 @@ export default function MultiApplyModal({
         profile_id: profile.id,
         writing_style: writingStyle,
       })
-      const next = updated.map((e, i) => i === idx ? { ...e, letter: res.letter_nl, status: 'ready' as EntryStatus } : e)
+      const next = updated.map((e, i) => i === idx ? { ...e, letter: res.letter_nl, applicationId: res.application_id, status: 'ready' as EntryStatus } : e)
       setEntries([...next])
       await runGenerating(idx + 1, next)
     } catch (err) {
@@ -86,12 +87,9 @@ export default function MultiApplyModal({
 
       setEntries(prev => prev.map((e, j) => j === i ? { ...e, status: 'sending' } : e))
       try {
-        await api.apply.send({
-          job_id: entry.job.id,
-          profile_id: profile.id,
-          letter_nl: entry.letter,
-          send_method: 'site',
-        })
+        if (entry.applicationId) {
+          await api.apply.approve(entry.applicationId, { send_method: 'site', letter_nl: entry.letter })
+        }
         window.open(entry.job.url, '_blank', 'noopener,noreferrer')
         setEntries(prev => prev.map((e, j) => j === i ? { ...e, status: 'sent' } : e))
         sent++

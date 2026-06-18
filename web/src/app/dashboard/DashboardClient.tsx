@@ -513,19 +513,34 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   {urlLetterResult.job_title} — {urlLetterResult.company}
                 </p>
                 <textarea
-                  readOnly
                   rows={12}
                   value={urlLetterResult.letter}
-                  className="px-3 py-2 rounded-lg border text-sm resize-none"
+                  onChange={e => setUrlLetterResult(r => r ? { ...r, letter: e.target.value } : r)}
+                  className="px-3 py-2 rounded-lg border text-sm resize-none outline-none"
                   style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
                 />
-                <button
-                  onClick={() => navigator.clipboard.writeText(urlLetterResult!.letter)}
-                  className="self-start text-xs px-3 py-1 rounded-lg"
-                  style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
-                >
-                  Kopiëren
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})
+                      window.open(urlLetterInput, '_blank', 'noopener,noreferrer')
+                    }}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90"
+                    style={{ background: 'var(--color-indigo-primary)' }}
+                  >
+                    Kopieer & open vacature
+                  </button>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})}
+                    className="px-3 py-2 rounded-lg text-sm border transition hover:opacity-80"
+                    style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+                  >
+                    Alleen kopiëren
+                  </button>
+                </div>
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  Brief bewerken kan hierboven. Klik op "Kopieer & open vacature" om de brief te plakken in het sollicitatieformulier.
+                </p>
               </div>
             )}
           </div>
