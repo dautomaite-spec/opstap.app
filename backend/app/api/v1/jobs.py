@@ -138,7 +138,6 @@ async def search_jobs(
             "url": j["url"],
             "description_snippet": j.get("description_snippet"),
             "salary_range": j.get("salary_range"),
-            "salary_hourly": j.get("salary_hourly"),
             "salary_min_raw": j.get("salary_min_raw"),
             "salary_max_raw": j.get("salary_max_raw"),
             "contract_type": j.get("contract_type"),
