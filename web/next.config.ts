@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co https://plausible.io",
+              "connect-src 'self' https://*.supabase.co https://plausible.io https://opstapapp-production.up.railway.app",
               "frame-ancestors 'none'",
             ].join('; '),
           },
