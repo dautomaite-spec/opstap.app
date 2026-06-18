@@ -89,8 +89,7 @@
       <a href="#s1">Stack</a>
       <a href="#s2">Repo-structuur</a>
       <a href="#s3">Lokaal draaien</a>
-      <a href="#s4">Navigatie (Flutter)</a>
-      <a href="#s5">State (Riverpod)</a>
+      <a href="#s4">Flutter (uitgesteld)</a>
       <a href="#s6">API-eindpunten</a>
       <a href="#s7">Supabase-schema</a>
       <a href="#s8">Edge Functions</a>
@@ -114,19 +113,18 @@
       <table>
         <thead><tr><th>Laag</th><th>Technologie</th></tr></thead>
         <tbody>
-          <tr><td><strong>Web frontend</strong></td><td>Next.js 16.2.7 (App Router, Turbopack) + Tailwind v4</td></tr>
-          <tr><td><strong>Mobile app</strong></td><td>Flutter 3.x — iOS + Android</td></tr>
-          <tr><td><strong>State (Flutter)</strong></td><td>Riverpod 2.x</td></tr>
-          <tr><td><strong>Navigation (Flutter)</strong></td><td>go_router 14.x</td></tr>
-          <tr><td><strong>Backend API</strong></td><td>Python FastAPI op Railway (europe-west4, EU)</td></tr>
-          <tr><td><strong>AI</strong></td><td>Anthropic Claude API (<code>claude-sonnet-4-6</code>)</td></tr>
-          <tr><td><strong>Database + Auth</strong></td><td>Supabase (EU — <code>eu-central-1</code>), project <code>rwwumtwelwncdqmvhdkt</code></td></tr>
-          <tr><td><strong>CV-opslag</strong></td><td>Supabase Storage, bucket <code>cvs</code> (privé, max 10 MB)</td></tr>
+          <tr><td><strong>Web frontend</strong></td><td>Next.js 15 (App Router) + Tailwind v4 — primair platform</td></tr>
+          <tr><td><strong>Mobile app</strong></td><td>Flutter 3.x — <span class="tag tag-amber">uitgesteld tot 500 MAU</span></td></tr>
+          <tr><td><strong>Backend API</strong></td><td>Python FastAPI op Railway (EU, europe-west4)</td></tr>
+          <tr><td><strong>AI</strong></td><td>Anthropic Claude API (<code>claude-sonnet-4-6</code>) — ZDR ingeschakeld</td></tr>
+          <tr><td><strong>Database + Auth</strong></td><td>Supabase (EU — Frankfurt), project <code>rwwumtwelwncdqmvhdkt</code></td></tr>
+          <tr><td><strong>CV-opslag</strong></td><td>Supabase Storage, bucket <code>cvs</code> (privé, versleuteld, max 10 MB)</td></tr>
           <tr><td><strong>E-mail</strong></td><td>SendGrid — <code>sollicitaties@opstap.nl</code> (recruiters) / <code>info@opstapapp.nl</code> (gebruikers)</td></tr>
-          <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL</td></tr>
-          <tr><td><strong>Job scraping</strong></td><td>Adzuna NL API</td></tr>
-          <tr><td><strong>Scheduled jobs</strong></td><td>Supabase pg_cron + Edge Functions (Deno)</td></tr>
-          <tr><td><strong>Analytics</strong></td><td>Plausible (cookieloos, AVG-veilig)</td></tr>
+          <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL — 10/30/75 credits (€2,99/€6,99/€14,99)</td></tr>
+          <tr><td><strong>Job scraping</strong></td><td>Adzuna NL API + Indeed NL HTML scraper (parallel)</td></tr>
+          <tr><td><strong>Scheduled jobs</strong></td><td>Supabase Edge Functions (Deno) voor CV-beheer; Railway cron-endpoints voor e-maildigest + follow-up</td></tr>
+          <tr><td><strong>DNS</strong></td><td>Cloudflare (SPF + DKIM + DMARC geconfigureerd voor SendGrid)</td></tr>
+          <tr><td><strong>Analytics</strong></td><td>Plausible (cookieloos, AVG-veilig) — custom events: Letter Generated, Application Sent</td></tr>
         </tbody>
       </table>
     </section>
@@ -163,17 +161,18 @@
 │   │   │   ├── rate_limiter.py  # Per-user + per-IP rate limits
 │   │   │   └── supabase.py      # Supabase service-role client
 │   │   ├── api/v1/
-│   │   │   ├── apply.py         # POST /apply/letter, /apply/send
-│   │   │   ├── jobs.py          # POST /jobs/search
-│   │   │   ├── profile.py       # GET/PATCH /profile, POST /profile/cv
-│   │   │   ├── credits.py       # GET /credits, POST /credits/purchase
-│   │   │   └── admin.py         # Admin + cron endpoints
+│   │   │   ├── apply.py         # POST /apply/letter, POST /apply/{id}/approve, GET /apply/stats
+│   │   │   ├── jobs.py          # POST /jobs/search, saved-jobs CRUD
+│   │   │   ├── profile.py       # GET/PATCH /profile/me, POST /profile/cv
+│   │   │   ├── credits.py       # GET /credits/balance, POST /credits/purchase + webhook
+│   │   │   ├── invite.py        # Waitlist + invite codes (beta)
+│   │   │   └── admin.py         # Admin users, stats, cron endpoints
 │   │   └── services/
 │   │       ├── letter_generator.py  # Claude API → Dutch letter
 │   │       ├── email_sender.py      # SendGrid wrapper
 │   │       └── prompt_guard.py      # Injection detection
 │   └── supabase/
-│       ├── migrations/          # 001–009 SQL (apply in order)
+│       ├── migrations/          # 001–011 SQL (apply in order)
 │       └── functions/           # 4 Edge Functions (Deno)
 │
 ├── PLANNING.html                # This file's siblings
@@ -216,48 +215,11 @@ flutter run</pre>
       <p>De app verbindt direct met het productie-Supabase project. Voor lokale backend: pas <code>AppConfig.backendUrl</code> aan in <code>lib/core/config.dart</code>.</p>
     </section>
 
-    <!-- 4 Navigation -->
+    <!-- 4 Flutter (deferred) -->
     <section id="s4">
-      <div class="section-title"><span class="section-num">4</span>Navigatie (Flutter)</div>
-      <p>Alle routes staan in <code>lib/core/router.dart</code>.</p>
-      <pre>/welcome                    → WelcomeScreen
-/login                      → LoginScreen
-/register                   → RegisterScreen
-
-/avg-toestemming            → AvgConsentScreen
-  /avg-toestemming/cv       → CvUploadScreen (child, niet deep-linkable)
-
-/onboarding/start           → OnboardingStartScreen
-/onboarding/profiel         → ProfileFormScreen
-
-ShellRoute (bottom nav)
-  /zoeken                   → JobSearchScreen
-    /zoeken/resultaten      → JobResultsScreen
-    /zoeken/detail          → JobDetailScreen
-      /zoeken/detail/brief  → LetterPreviewScreen
-  /sollicitaties            → ApplicationsScreen
-  /profiel                  → ProfileScreen
-  /instellingen             → SettingsScreen
-
-/bevestigd                  → ConfirmationScreen</pre>
-      <p><strong>Auth guard</strong> (in <code>GoRouter.redirect</code>): niet-ingelogde gebruikers gaan naar <code>/welcome</code>; ingelogde gebruikers worden teruggestuurd van auth-routes naar <code>/zoeken</code>.</p>
-    </section>
-
-    <!-- 5 State -->
-    <section id="s5">
-      <div class="section-title"><span class="section-num">5</span>State (Riverpod providers)</div>
-      <table>
-        <thead><tr><th>Provider</th><th>Bestand</th><th>Wat het bevat</th></tr></thead>
-        <tbody>
-          <tr><td><code>authNotifierProvider</code></td><td>auth_provider.dart</td><td>Supabase-sessie, signIn/Up/Out, deleteAccount</td></tr>
-          <tr><td><code>authStateProvider</code></td><td>auth_provider.dart</td><td>Raw <code>Stream&lt;AuthState&gt;</code> — stuurt router-refresh aan</td></tr>
-          <tr><td><code>profileProvider</code></td><td>profile_provider.dart</td><td><code>AsyncValue&lt;UserProfile?&gt;</code>, CRUD, deleteCv</td></tr>
-          <tr><td><code>jobSearchProvider</code></td><td>jobs_provider.dart</td><td><code>AsyncValue&lt;List&lt;Job&gt;&gt;</code> — zoekresultaten</td></tr>
-          <tr><td><code>selectedJobProvider</code></td><td>jobs_provider.dart</td><td><code>StateProvider&lt;Job?&gt;</code> — vacature die gebruiker selecteert</td></tr>
-          <tr><td><code>letterGenerationProvider</code></td><td>jobs_provider.dart</td><td><code>AsyncValue&lt;String&gt;</code> — gegenereerde brieftekst</td></tr>
-          <tr><td><code>apiClientProvider</code></td><td>jobs_provider.dart</td><td><code>ApiClient</code>-instantie (leest auth-token)</td></tr>
-        </tbody>
-      </table>
+      <div class="section-title"><span class="section-num">4</span>Flutter app <span class="tag tag-amber" style="margin-left:8px;font-size:12px">uitgesteld tot 500 MAU</span></div>
+      <p>De Flutter-app staat in de <code>opstap/</code> map maar wordt <strong>niet actief ontwikkeld</strong>. Alle werkzaamheden gaan momenteel naar de Next.js web-app in <code>web/</code>.</p>
+      <p>Pas de Flutter-app niet aan tenzij het 500 MAU-mijlpaal is bereikt.</p>
     </section>
 
     <!-- 6 API endpoints -->
@@ -267,24 +229,48 @@ ShellRoute (bottom nav)
       <table style="margin-top:10px">
         <thead><tr><th>Methode</th><th>Pad</th><th>Auth</th><th>Beschrijving</th></tr></thead>
         <tbody>
-          <tr><td>GET</td><td><code>/health</code></td><td>—</td><td>Health check</td></tr>
-          <tr><td>GET</td><td><code>/profile</code></td><td>JWT</td><td>Eigen profiel ophalen</td></tr>
-          <tr><td>POST</td><td><code>/profile</code></td><td>JWT</td><td>Profiel aanmaken</td></tr>
-          <tr><td>PATCH</td><td><code>/profile</code></td><td>JWT</td><td>Profiel updaten (partial)</td></tr>
-          <tr><td>POST</td><td><code>/profile/cv</code></td><td>JWT</td><td>CV uploaden</td></tr>
-          <tr><td>POST</td><td><code>/jobs/search</code></td><td>JWT</td><td>Adzuna NL zoeken</td></tr>
-          <tr><td>POST</td><td><code>/apply/letter</code></td><td>JWT</td><td>Motivatiebrief genereren (1 credit)</td></tr>
-          <tr><td>POST</td><td><code>/apply/send</code></td><td>JWT</td><td>Sollicitatie versturen (e-mail / site)</td></tr>
+          <tr><td colspan="4" style="background:var(--lavender-card);font-weight:600;color:var(--indigo);font-size:12px">Profiel</td></tr>
+          <tr><td>GET</td><td><code>/profile/me</code></td><td>JWT</td><td>Eigen profiel ophalen</td></tr>
+          <tr><td>POST</td><td><code>/profile/</code></td><td>JWT</td><td>Profiel aanmaken</td></tr>
+          <tr><td>PATCH</td><td><code>/profile/me</code></td><td>JWT</td><td>Profiel updaten (partial)</td></tr>
+          <tr><td>POST</td><td><code>/profile/cv</code></td><td>JWT</td><td>CV uploaden (AVG-consent verplicht)</td></tr>
+          <tr><td>DELETE</td><td><code>/profile/cv</code></td><td>JWT</td><td>CV verwijderen</td></tr>
+          <tr><td>DELETE</td><td><code>/profile/me</code></td><td>JWT</td><td>Account verwijderen (cascade alles)</td></tr>
+          <tr><td colspan="4" style="background:var(--lavender-card);font-weight:600;color:var(--indigo);font-size:12px">Vacatures</td></tr>
+          <tr><td>POST</td><td><code>/jobs/search</code></td><td>JWT</td><td>Adzuna + Indeed NL; DB-first (6u cache); <code>X-Jobs-Source: cache</code> bij stale fallback</td></tr>
+          <tr><td>GET</td><td><code>/jobs/saved/list</code></td><td>JWT</td><td>Opgeslagen vacatures (Supabase)</td></tr>
+          <tr><td>POST</td><td><code>/jobs/saved</code></td><td>JWT</td><td>Vacature opslaan</td></tr>
+          <tr><td>DELETE</td><td><code>/jobs/saved/{id}</code></td><td>JWT</td><td>Vacature verwijderen uit opgeslagen</td></tr>
+          <tr><td colspan="4" style="background:var(--lavender-card);font-weight:600;color:var(--indigo);font-size:12px">Sollicitaties (goedkeuringspoort)</td></tr>
+          <tr><td>POST</td><td><code>/apply/letter</code></td><td>JWT</td><td>Brief genereren + concept aanmaken (1 credit)</td></tr>
+          <tr><td>POST</td><td><code>/apply/{id}/approve</code></td><td>JWT</td><td>Verstuur goedgekeurd concept (e-mail / site / form)</td></tr>
+          <tr><td>POST</td><td><code>/apply/from-url</code></td><td>JWT</td><td>Vacature-URL → brief (1 credit, SSRF-beschermd)</td></tr>
           <tr><td>GET</td><td><code>/apply/history</code></td><td>JWT</td><td>Geschiedenis van sollicitaties</td></tr>
-          <tr><td>GET</td><td><code>/credits</code></td><td>JWT</td><td>Huidige creditbalans + transacties</td></tr>
-          <tr><td>POST</td><td><code>/credits/purchase</code></td><td>JWT</td><td>Mollie-betaling aanmaken</td></tr>
-          <tr><td>POST</td><td><code>/abuse/report</code></td><td>—</td><td>Misbruik melden</td></tr>
-          <tr><td>GET</td><td><code>/admin/users</code></td><td>X-Admin-Key</td><td>Gebruikerslijst (admin)</td></tr>
-          <tr><td>POST</td><td><code>/admin/cron/job-digest</code></td><td>X-Admin-Key</td><td>Maandagse vacaturedigest</td></tr>
-          <tr><td>POST</td><td><code>/admin/cron/follow-up</code></td><td>X-Admin-Key</td><td>Zondagse follow-up-reminder</td></tr>
+          <tr><td>GET</td><td><code>/apply/stats</code></td><td>JWT</td><td>Aantallen verstuurd / beantwoord / gesprek / aangenomen</td></tr>
+          <tr><td>PATCH</td><td><code>/apply/{id}/status</code></td><td>JWT</td><td>Status bijwerken (triggert e-mail bij beantwoord/gesprek)</td></tr>
+          <tr><td>PATCH</td><td><code>/apply/{id}/rating</code></td><td>JWT</td><td>Brief beoordelen (+1 / -1)</td></tr>
+          <tr><td colspan="4" style="background:var(--lavender-card);font-weight:600;color:var(--indigo);font-size:12px">Credits</td></tr>
+          <tr><td>GET</td><td><code>/credits/balance</code></td><td>JWT</td><td>Saldo + referral-code</td></tr>
+          <tr><td>GET</td><td><code>/credits/transactions</code></td><td>JWT</td><td>Credithistorie</td></tr>
+          <tr><td>POST</td><td><code>/credits/purchase</code></td><td>JWT</td><td>Mollie iDEAL checkout aanmaken</td></tr>
+          <tr><td>POST</td><td><code>/credits/webhook</code></td><td>—</td><td>Mollie webhook — credits bijschrijven na betaling</td></tr>
+          <tr><td colspan="4" style="background:var(--lavender-card);font-weight:600;color:var(--indigo);font-size:12px">Beta-uitnodigingen</td></tr>
+          <tr><td>POST</td><td><code>/invite/waitlist</code></td><td>—</td><td>Aanmelden voor wachtlijst</td></tr>
+          <tr><td>GET</td><td><code>/invite/validate/{code}</code></td><td>—</td><td>Code controleren</td></tr>
+          <tr><td>POST</td><td><code>/invite/redeem</code></td><td>JWT</td><td>Code inwisselen (atomair via RPC)</td></tr>
+          <tr><td colspan="4" style="background:var(--lavender-card);font-weight:600;color:var(--indigo);font-size:12px">Admin (X-Admin-Key)</td></tr>
+          <tr><td>GET</td><td><code>/admin/users</code></td><td>Admin</td><td>Gebruikerslijst met credits + sollicitaties</td></tr>
+          <tr><td>GET</td><td><code>/admin/stats</code></td><td>Admin</td><td>Platform-statistieken (gebruikers / sollicitaties / uitnodigingen)</td></tr>
+          <tr><td>POST</td><td><code>/admin/users/{id}/credits</code></td><td>Admin</td><td>Credits aanpassen</td></tr>
+          <tr><td>PATCH</td><td><code>/admin/users/{id}/suspend</code></td><td>Admin</td><td>Account schorsen / herstellen</td></tr>
+          <tr><td>DELETE</td><td><code>/admin/users/{id}</code></td><td>Admin</td><td>Account verwijderen</td></tr>
+          <tr><td>POST</td><td><code>/admin/cron/follow-up</code></td><td>Admin</td><td>Follow-up reminders (elke zondag)</td></tr>
+          <tr><td>POST</td><td><code>/admin/cron/job-digest</code></td><td>Admin</td><td>Vacaturedigest (elke maandag)</td></tr>
+          <tr><td>POST</td><td><code>/admin/cron/monthly-credits</code></td><td>Admin</td><td>Maandelijkse betrokkenheidsbonus (+1 credit)</td></tr>
+          <tr><td>POST</td><td><code>/admin/cron/prefetch-jobs</code></td><td>Admin</td><td>Populaire zoekopdrachten vooraf ophalen (dagelijks 06:00)</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:10px">Rate limits (in-memory, per gebruiker): <code>/apply/letter</code> — 10/dag, 3 per vacature · <code>/apply/send</code> — 20/dag, 1 per bedrijf per 7 dagen.</p>
+      <p style="margin-top:10px">Rate limits (in-memory, per gebruiker): brief genereren — 10/dag · goedkeuren — 20/dag, 1 per bedrijf per 7 dagen. Alle publieke eindpunten hebben ook IP-floodbeveiliging.</p>
     </section>
 
     <!-- 7 Supabase -->
@@ -294,17 +280,20 @@ ShellRoute (bottom nav)
       <table style="margin-top:10px">
         <thead><tr><th>Tabel</th><th>Sleutelkolommen</th></tr></thead>
         <tbody>
-          <tr><td><code>profiles</code></td><td>user_id, naam, functietitel, woonplaats, cv_path, cv_expires_at, writing_style, credits_balance, referral_code, email_digest_enabled, email_reminders_enabled, last_active_at</td></tr>
-          <tr><td><code>jobs</code></td><td>id, title, company, url, description_snippet, salary_min, salary_max, salary_hourly, posted_at, scraped_at</td></tr>
-          <tr><td><code>applications</code></td><td>id, job_id, user_id, letter_nl, status, send_method, sent_at, replied_at</td></tr>
-          <tr><td><code>credit_transactions</code></td><td>id, user_id, delta, reason, created_at</td></tr>
-          <tr><td><code>mollie_payments</code></td><td>id, user_id, payment_id, credits, status, created_at</td></tr>
-          <tr><td><code>referral_uses</code></td><td>referrer_id, referee_id, used_at</td></tr>
-          <tr><td><code>notifications</code></td><td>id, user_id, type, sent_at</td></tr>
-          <tr><td><code>abuse_reports</code></td><td>reporter_email, sender_email, description (service role only)</td></tr>
+          <tr><td><code>profiles</code></td><td>user_id, naam, functietitel[_2][_3], woonplaats, cv_path, cv_expires_at, credits_balance, referral_code, confirmed_at, is_suspended, last_active_at, email_digest_enabled, email_reminders_enabled</td></tr>
+          <tr><td><code>jobs</code></td><td>id, title, company, location, source, url, description_snippet, salary_range, salary_hourly, salary_min_raw, salary_max_raw, contract_type, posted_at, scraped_at, fts (tsvector)</td></tr>
+          <tr><td><code>applications</code></td><td>id, job_id, user_id, company, job_title, letter_nl, status, send_method, sent_at, replied_at, letter_rating</td></tr>
+          <tr><td><code>saved_jobs</code></td><td>user_id, job_id, job_data (jsonb), saved_at</td></tr>
+          <tr><td><code>credit_transactions</code></td><td>id, user_id, delta, reason, reference_id, created_at</td></tr>
+          <tr><td><code>mollie_payments</code></td><td>id, user_id, payment_id, credits, status, created_at (7-jaar bewaarplicht)</td></tr>
+          <tr><td><code>referral_uses</code></td><td>referrer_user_id, referee_user_id, used_at</td></tr>
+          <tr><td><code>invite_codes</code></td><td>id, code, max_uses, use_count, source, notes, expires_at, created_at</td></tr>
+          <tr><td><code>invite_uses</code></td><td>code_id, user_id, used_at (UNIQUE user_id)</td></tr>
+          <tr><td><code>waitlist</code></td><td>id, email, naam, created_at, invited_at, invite_code</td></tr>
+          <tr><td><code>notifications</code></td><td>id, user_id, type, reference_id, created_at (UNIQUE user_id + type + reference_id voor dedup)</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:10px">Migraties draaien op volgorde: <code>001</code> → <code>009</code>. Toepassen via Supabase SQL-editor of <code>supabase db push</code>.</p>
+      <p style="margin-top:10px">Migraties draaien op volgorde: <code>001</code> → <code>011</code>. Toepassen via Supabase MCP (<code>apply_migration</code>) of SQL-editor.</p>
     </section>
 
     <!-- 8 Edge Functions -->
