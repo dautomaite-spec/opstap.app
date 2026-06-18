@@ -1,5 +1,11 @@
 # Changelog — Opstap
 
+## 2026-06-18 (activation-retention)
+- feat: handleGenerateLetter accepts optional profileOverride param — fixes race condition in pending-apply flow (DashboardClient.tsx)
+- feat: profile completeness nudge banner shown on dashboard when no CV uploaded (DashboardClient.tsx)
+- feat: referral card shown after successful application using profile.referral_code (DashboardClient.tsx)
+- fix: mobile letter modal overflow — max-h-[90vh] overflow-y-auto, items-end on small screens, textarea rows 10 → 7 (DashboardClient.tsx)
+
 ## 2026-06-18 (beta roadmap — 20 items)
 - feat: GET /apply/stats endpoint — per-user application counts by status (apply.py)
 - feat: GET /admin/stats endpoint — platform-wide user + application aggregates (apply.py)

@@ -161,6 +161,7 @@
       <a href="#dashboard-beta">Dashboard beta improvements</a>
       <a href="#sendgrid-retry">SendGrid retry</a>
       <a href="#migration-011">Migration 011</a>
+      <a href="#activation-retention">Activation &amp; retention (DashboardClient)</a>
     </div>
   </nav>
 
@@ -535,6 +536,17 @@
       <li><code>invite_codes.source</code> — text column tracking how the invite code was created (e.g. <code>'admin'</code>, <code>'referral'</code>, <code>'bulk'</code>)</li>
       <li><code>profiles.confirmed_at</code> — timestamp set when a user completes email confirmation; used for analytics and to distinguish verified vs unverified accounts in admin stats</li>
     </ul>
+
+    <h2 id="activation-retention">Activation &amp; retention improvements (DashboardClient)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key file: <code>web/src/app/dashboard/components/DashboardClient.tsx</code></li>
+      <li><strong>profileOverride param on handleGenerateLetter</strong> — the function now accepts an optional <code>profileOverride</code> argument. Used by the pending-apply flow (applying from a saved job) to pass the profile that was already fetched, avoiding a race where the profile might not yet be in React state when the flow triggers immediately after mount.</li>
+      <li><strong>CV nudge banner</strong> — when the user has no CV uploaded (<code>!profile.cv_filename</code>), a banner is shown in the dashboard prompting them to upload one. Dismissible per session; links to <code>/dashboard/profiel</code>. Increases profile completeness and letter quality.</li>
+      <li><strong>Referral card after successful application</strong> — after the apply success state is shown, a referral card appears displaying the user's <code>profile.referral_code</code> with a share link. Shown at peak engagement moment (just after a successful apply) to maximise referral conversion.</li>
+      <li><strong>Mobile letter modal fix</strong> — the letter preview modal now has <code>max-h-[90vh] overflow-y-auto</code> to prevent content being cut off on small screens. Modal uses <code>items-end</code> alignment on mobile (sheet-from-bottom pattern). Textarea <code>rows</code> reduced from 10 to 7 so the edit area fits without requiring inner scroll.</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The referral card reads <code>profile.referral_code</code> directly from the profile object — ensure this field is always included in the <code>GET /profile</code> response. If the field is missing the card renders silently without a code.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
