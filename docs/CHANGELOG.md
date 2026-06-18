@@ -1,5 +1,10 @@
 # Changelog — Opstap
 
+## 2026-06-18 (cv-polish)
+- feat: profile.py — `_attach_cv_url` pops `cv_structured` from the response dict and adds `cv_parsed: bool`; raw CV JSONB is never sent to the frontend (backend/app/api/v1/profile.py)
+- feat: api.ts — Profile interface extended with `cv_parsed?: boolean` (web/src/lib/api.ts)
+- feat: profiel/page.tsx — CV status card shows "gegevens verwerkt ✓" when cv_parsed is true (web/src/app/dashboard/profiel/page.tsx)
+
 ## 2026-06-18 (retention-v2)
 - feat: DashboardClient.tsx — triggerSearch auto-retries without location when results < 3 (widens search instead of "geen resultaten")
 - feat: welkom/page.tsx — Plausible custom events on onboarding profile save, CV upload, CV skip, and onboarding completion

@@ -22,7 +22,7 @@ CV_SIGNED_URL_EXPIRY = 3600  # 1 hour
 
 
 def _attach_cv_url(profile: dict, supabase) -> dict:
-    """Replace cv_path with a signed cv_url if a CV is stored."""
+    """Replace cv_path with a signed cv_url if a CV is stored. Adds cv_parsed boolean."""
     path = profile.pop("cv_path", None)
     user_id = str(profile.get("user_id", ""))
     # Guard: only generate signed URL for paths owned by this user
@@ -34,6 +34,7 @@ def _attach_cv_url(profile: dict, supabase) -> dict:
             profile["cv_url"] = None
     else:
         profile["cv_url"] = None
+    profile["cv_parsed"] = bool(profile.pop("cv_structured", None))
     return profile
 
 

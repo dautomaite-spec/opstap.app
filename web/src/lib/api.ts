@@ -132,6 +132,7 @@ export interface Profile {
   brief_taal?: string
   cv_url?: string
   cv_expires_at?: string
+  cv_parsed?: boolean
   opleidingsniveau?: string
   credits_balance?: number
   referral_code?: string
