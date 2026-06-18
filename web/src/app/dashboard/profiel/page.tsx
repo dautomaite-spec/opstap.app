@@ -284,7 +284,9 @@ export default function ProfielPage() {
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
                     </svg>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>CV geüpload</p>
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                        CV geüpload{profile.cv_parsed ? ' — gegevens verwerkt ✓' : ''}
+                      </p>
                       {profile.cv_expires_at && (
                         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                           Vervalt {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
