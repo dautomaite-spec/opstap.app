@@ -19,6 +19,21 @@ _LOCATION_REPLACEMENTS = {
 }
 
 
+_MAX_PER_COMPANY = 2
+
+
+def _dedup_by_company(jobs: list[dict]) -> list[dict]:
+    """Limit results to _MAX_PER_COMPANY per company to ensure diversity."""
+    counts: dict[str, int] = {}
+    out = []
+    for job in jobs:
+        key = (job.get("company") or "").strip().lower()
+        if counts.get(key, 0) < _MAX_PER_COMPANY:
+            counts[key] = counts.get(key, 0) + 1
+            out.append(job)
+    return out
+
+
 def _normalize_location(loc: str | None) -> str:
     if not loc:
         return "Nederland"
@@ -69,7 +84,7 @@ async def search_jobs(
     cached = (db_query.order("scraped_at", desc=True).limit(params.limit).execute().data or [])
 
     if len(cached) >= 10:
-        return cached[:params.limit]
+        return _dedup_by_company(cached)[:params.limit]
 
     # ── Not enough fresh results — hit the scrapers ───────────────────────────
     adzuna_limit = params.limit
@@ -91,7 +106,8 @@ async def search_jobs(
         if location:
             fb_query = fb_query.ilike("location", f"%{location}%")
         response.headers["X-Jobs-Source"] = "cache"
-        return (fb_query.order("scraped_at", desc=True).limit(params.limit).execute().data or cached)
+        stale_results = fb_query.order("scraped_at", desc=True).limit(params.limit * 2).execute().data or cached
+        return _dedup_by_company(stale_results)[:params.limit]
 
     # Deduplicate by URL then upsert to shared pool
     seen: set[str] = set()
@@ -122,7 +138,7 @@ async def search_jobs(
     ]
     supabase.table("jobs").upsert(rows, on_conflict="url").execute()
 
-    return rows[:params.limit]
+    return _dedup_by_company(rows)[:params.limit]
 
 
 # ── Saved jobs (declared BEFORE /{job_id} to prevent route shadowing) ───────
