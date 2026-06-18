@@ -150,18 +150,20 @@ async def generate_motivation_letter(
     # Without the draft in the DB, /approve will 404 — it cannot be bypassed.
     now_str = datetime.now(timezone.utc).isoformat()
     try:
-        existing = (
+        # Use execute() not maybe_single() — PostgREST returns 406 on zero rows
+        # with the object Accept header, which supabase-py raises as APIError.
+        existing_rows = (
             supabase.table("applications")
             .select("id")
             .eq("user_id", user_id)
             .eq("job_id", str(body.job_id))
             .eq("status", "draft")
-            .maybe_single()
             .execute()
         )
-        if existing.data:
-            supabase.table("applications").update({"letter_nl": letter}).eq("id", existing.data["id"]).execute()
-            draft_id = existing.data["id"]
+        existing_row = existing_rows.data[0] if existing_rows.data else None
+        if existing_row:
+            supabase.table("applications").update({"letter_nl": letter}).eq("id", existing_row["id"]).execute()
+            draft_id = existing_row["id"]
         else:
             insert = supabase.table("applications").insert({
                 "id": str(uuid4()),
