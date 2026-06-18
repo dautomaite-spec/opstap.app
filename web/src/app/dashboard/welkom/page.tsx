@@ -11,6 +11,10 @@ function markDone() {
   try { localStorage.setItem(ONBOARDING_KEY, '1') } catch {}
 }
 
+function trackEvent(name: string) {
+  try { (window as { plausible?: (n: string) => void }).plausible?.(name) } catch {}
+}
+
 type Step = 1 | 2 | 3
 
 export default function WelkomPage() {
@@ -52,6 +56,7 @@ export default function WelkomPage() {
         woonplaats: (fd.get('woonplaats') as string) || undefined,
         extra_info: (fd.get('extra_info') as string) || undefined,
       })
+      trackEvent('Onboarding: Profile Saved')
       setStep(2)
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : 'Opslaan mislukt. Probeer het opnieuw.')
@@ -67,6 +72,7 @@ export default function WelkomPage() {
     setCvError('')
     try {
       await api.profile.uploadCV(file, retentionDays)
+      trackEvent('Onboarding: CV Uploaded')
       setCvDone(true)
       setTimeout(() => setStep(3), 800)
     } catch (err) {
@@ -79,6 +85,7 @@ export default function WelkomPage() {
 
   function finish() {
     markDone()
+    trackEvent('Onboarding: Completed')
     router.replace('/dashboard')
   }
 
@@ -223,7 +230,7 @@ export default function WelkomPage() {
           )}
 
           <button
-            onClick={() => setStep(3)}
+            onClick={() => { if (!cvDone) trackEvent('Onboarding: CV Skipped'); setStep(3) }}
             className="w-full py-3 rounded-xl text-sm font-medium border transition hover:opacity-80"
             style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
           >
