@@ -199,7 +199,8 @@ async def toggle_suspend(
     supabase=Depends(get_supabase),
 ):
     """Suspend or unsuspend a user account."""
-    result = supabase.table("profiles").update({"is_suspended": body.suspended}).eq("user_id", user_id).select().execute()
+    supabase.table("profiles").update({"is_suspended": body.suspended}).eq("user_id", user_id).execute()
+    result = supabase.table("profiles").select("naam").eq("user_id", user_id).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="User not found")
     naam = (result.data[0] or {}).get("naam", "") or ""

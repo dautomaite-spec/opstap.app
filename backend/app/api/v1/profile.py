@@ -91,9 +91,8 @@ async def update_profile(
     now_iso = datetime.now(timezone.utc).isoformat()
     data["updated_at"] = now_iso
     data["last_active_at"] = now_iso
-    result = (
-        supabase.table("profiles").update(data).eq("user_id", user_id).select().execute()
-    )
+    supabase.table("profiles").update(data).eq("user_id", user_id).execute()
+    result = supabase.table("profiles").select("*").eq("user_id", user_id).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     profile = result.data[0]

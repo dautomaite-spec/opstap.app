@@ -315,18 +315,21 @@ async def approve_and_send(
                 profile["email"], profile.get("naam", ""), draft["job_title"], draft["company"]
             ))
 
+    # postgrest-py 0.19: .select() is not available on SyncFilterRequestBuilder
+    # (returned after .eq()). Do the update then fetch the row separately.
+    supabase.table("applications").update({
+        "status": status,
+        "send_method": body.send_method,
+        "letter_nl": final_letter,
+        "approved_at": now.isoformat(),
+        "sent_at": sent_at,
+    }).eq("id", application_id).eq("user_id", user_id).execute()
+
     updated = (
         supabase.table("applications")
-        .update({
-            "status": status,
-            "send_method": body.send_method,
-            "letter_nl": final_letter,
-            "approved_at": now.isoformat(),
-            "sent_at": sent_at,
-        })
+        .select("*")
         .eq("id", application_id)
         .eq("user_id", user_id)
-        .select()
         .execute()
     )
     if not updated.data:
@@ -397,12 +400,12 @@ async def update_application_status(
     if body.status in ("replied", "interview"):
         update["replied_at"] = now.isoformat()
 
+    supabase.table("applications").update(update).eq("id", application_id).eq("user_id", user_id).execute()
     updated = (
         supabase.table("applications")
-        .update(update)
+        .select("*")
         .eq("id", application_id)
         .eq("user_id", user_id)
-        .select()
         .execute()
     )
     if not updated.data:
