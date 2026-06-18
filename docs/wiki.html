@@ -162,6 +162,9 @@
       <a href="#sendgrid-retry">SendGrid retry</a>
       <a href="#migration-011">Migration 011</a>
       <a href="#activation-retention">Activation &amp; retention (DashboardClient)</a>
+      <a href="#smart-search-retry">Smart search retry (no-location fallback)</a>
+      <a href="#onboarding-analytics">Onboarding analytics (Plausible)</a>
+      <a href="#referral-invite-count">Referral invite count vs beta cap</a>
     </div>
   </nav>
 
@@ -547,6 +550,43 @@
       <li><strong>Mobile letter modal fix</strong> — the letter preview modal now has <code>max-h-[90vh] overflow-y-auto</code> to prevent content being cut off on small screens. Modal uses <code>items-end</code> alignment on mobile (sheet-from-bottom pattern). Textarea <code>rows</code> reduced from 10 to 7 so the edit area fits without requiring inner scroll.</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> The referral card reads <code>profile.referral_code</code> directly from the profile object — ensure this field is always included in the <code>GET /profile</code> response. If the field is missing the card renders silently without a code.</div>
+
+    <h2 id="smart-search-retry">Smart search retry (no-location fallback)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key file: <code>web/src/app/dashboard/components/DashboardClient.tsx</code></li>
+      <li><code>triggerSearch</code> now checks the result count after the first search. If fewer than 3 jobs are returned, it automatically retries the same query without the location parameter — widening the geographic scope to find more results</li>
+      <li>The user sees the widened results seamlessly; no manual action required and no "geen resultaten" empty state is shown when the issue is geography rather than the job title</li>
+      <li>The retry is skipped if the first search already had no location set — avoids an unnecessary duplicate request</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The threshold of &lt;3 results is hardcoded. If the job pool grows significantly, consider making this configurable or raising the threshold so the fallback is less aggressive.</div>
+
+    <h2 id="onboarding-analytics">Onboarding analytics (Plausible custom events)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key file: <code>web/src/app/dashboard/welkom/page.tsx</code></li>
+      <li>Four Plausible custom events are now fired during the onboarding wizard:
+        <ul>
+          <li><code>onboarding_profile_saved</code> — user saves their profile in step 1</li>
+          <li><code>onboarding_cv_uploaded</code> — user completes a CV upload in step 2</li>
+          <li><code>onboarding_cv_skipped</code> — user explicitly skips the CV upload step</li>
+          <li><code>onboarding_completed</code> — user finishes the full wizard and is redirected to the dashboard</li>
+        </ul>
+      </li>
+      <li>All events use the standard <code>plausible()</code> helper — cookieless, AVG-safe, no extra deps</li>
+      <li>These events allow funnel analysis: what percentage of registrations reach each onboarding step, and where users drop off</li>
+    </ul>
+
+    <h2 id="referral-invite-count">Referral invite count vs beta cap</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key file: <code>web/src/app/dashboard/components/ReferralSection.tsx</code></li>
+      <li>The component now shows how many beta invites a user has sent versus their cap (currently 5): "Jij hebt X van 5 uitnodigingen gebruikt"</li>
+      <li>The count is fetched from the backend (invite_codes table filtered by <code>source = 'referral'</code> and the user's referral code) — reflects actual redemptions, not just links shared</li>
+      <li>When the cap is reached, the invite-sharing UI is hidden or disabled so users do not generate dead links</li>
+      <li>This gives users transparency about their invite budget without needing an admin to check for them</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The beta cap of 5 is currently hardcoded in the component. When the beta phase ends and invites are opened up, remove the cap display and update or hide the counter.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

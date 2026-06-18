@@ -1,5 +1,10 @@
 # Changelog — Opstap
 
+## 2026-06-18 (retention-v2)
+- feat: DashboardClient.tsx — triggerSearch auto-retries without location when results < 3 (widens search instead of "geen resultaten")
+- feat: welkom/page.tsx — Plausible custom events on onboarding profile save, CV upload, CV skip, and onboarding completion
+- feat: ReferralSection.tsx — shows referral invite count vs beta cap ("Jij hebt X van 5 uitnodigingen gebruikt")
+
 ## 2026-06-18 (activation-retention)
 - feat: handleGenerateLetter accepts optional profileOverride param — fixes race condition in pending-apply flow (DashboardClient.tsx)
 - feat: profile completeness nudge banner shown on dashboard when no CV uploaded (DashboardClient.tsx)
