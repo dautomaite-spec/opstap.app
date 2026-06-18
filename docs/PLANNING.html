@@ -561,7 +561,7 @@
           <tr><td><strong>Database</strong></td><td>PostgreSQL (Supabase EU)</td><td>Gebruikers, vacatures, sollicitaties</td></tr>
           <tr><td><strong>Auth</strong></td><td>Supabase Auth</td><td>Login, sessies</td></tr>
           <tr><td><strong>Bestandsopslag</strong></td><td>Supabase Storage (EU)</td><td>CV-bestanden, versleuteld</td></tr>
-          <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL</td><td>Credit-aankopen</td></tr>
+          <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL (post-beta)</td><td>Credit-aankopen — uitgesteld; tijdens beta dagelijkse gratis credits via cron</td></tr>
           <tr><td><strong>E-mail</strong></td><td>SendGrid</td><td>Transactionele e-mails</td></tr>
           <tr><td><strong>Analytics</strong></td><td>Plausible (cookieloos)</td><td>AVG-veilige statistieken</td></tr>
         </tbody>
@@ -731,7 +731,7 @@
         <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;padding:6px 0 2px">Gebruikers-blokkers (hard blockers)</p>
         <ul class="checklist">
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><strong>SendGrid DKIM/SPF domeinauth</strong> — domeinverificatie voor opstapapp.nl voltooid via SendGrid dashboard.</span></li>
-          <li class="check-block"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Mollie iDEAL productietest</strong> — volledig end-to-end betaalflow testen met echte iDEAL-betaling (credits kopen → credits bijgeschreven). Vereist gebruikersactie (echte betaling).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Beta dagelijks creditssysteem (vervangt Mollie iDEAL)</strong> — Mollie iDEAL uitgesteld tot post-beta. Tijdens beta: +2 gratis credits/dag via <code>POST /admin/cron/daily-credits</code> (veilig heruitvoerbaar cron-eindpunt, max 15 credits per gebruiker). BuyCreditsModal toont betainfo-paneel in plaats van betalingsformulier. Mollie-retour-URL (<code>/betaling/terug</code>) verwijst nu door naar <code>/dashboard</code>.</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Cron-jobs actief op cron-job.org</strong> — 5 crons geconfigureerd: follow-up (zo 9:00), vacaturedigest (ma 9:00), purge-inactive (maandelijks), cleanup-expired-cvs (dagelijks 3:00), warn-cv-expiry (dagelijks 2:00).</span></li>
         </ul>
 

@@ -1,19 +1,11 @@
 from pydantic import BaseModel, UUID4
-from typing import Literal, Optional
+from typing import Optional
 from datetime import datetime
 
 
 class BalanceOut(BaseModel):
     balance: int
     referral_code: Optional[str] = None
-
-
-class PurchaseRequest(BaseModel):
-    bundle: Literal["10", "30", "75"]
-
-
-class PurchaseOut(BaseModel):
-    checkout_url: str
 
 
 class TransactionOut(BaseModel):

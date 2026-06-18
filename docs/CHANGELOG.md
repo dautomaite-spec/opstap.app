@@ -1,5 +1,13 @@
 # Changelog — Opstap
 
+## 2026-06-18 (beta-credits)
+- feat: POST /admin/cron/daily-credits — grants +2 credits to all users with balance < 15; safe to re-run; intended for daily cron-job.org schedule (backend/app/api/v1/admin.py)
+- refactor: removed POST /credits/purchase and POST /credits/webhook endpoints from credits.py — Mollie iDEAL deferred to post-beta
+- refactor: removed PurchaseRequest and PurchaseOut Pydantic models from schemas/credits.py
+- feat: BuyCreditsModal.tsx — replaced iDEAL payment UI with beta info panel explaining +2 free credits/day, max 15 (web/src/app/dashboard/components/BuyCreditsModal.tsx)
+- fix: betaling/terug/page.tsx — now redirects to /dashboard instead of Mollie return flow (web/src/app/dashboard/betaling/terug/page.tsx)
+- refactor: api.credits.purchase removed from web/src/lib/api.ts
+
 ## 2026-06-18 (search-quality)
 - feat: _dedup_by_company() helper in jobs.py — caps results at max 2 per company across DB cache, stale fallback, and live scraper return paths (backend/app/api/v1/jobs.py)
 - feat: global IP rate limiter as FastAPI middleware — sliding window 200 req/60s per IP, in-process deque store, prunes stale keys, excludes OPTIONS, Dutch 429 message (backend/app/main.py)

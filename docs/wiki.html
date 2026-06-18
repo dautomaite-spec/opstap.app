@@ -168,6 +168,7 @@
       <a href="#cv-extraction-status">CV extraction status (cv_parsed)</a>
       <a href="#company-dedup">Company diversity dedup</a>
       <a href="#ip-rate-limiter">Global IP rate limiter</a>
+      <a href="#beta-credits">Beta daily credits</a>
     </div>
   </nav>
 
@@ -625,6 +626,20 @@
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> The in-process store means rate limit counters are not shared across multiple backend replicas. If Railway scales to more than one instance, move the store to Redis (e.g. <code>redis-py</code> + Railway Redis add-on) to enforce the limit cluster-wide.</div>
     <div class="gotcha"><strong>Gotcha:</strong> IP-based limiting is defeated by proxies and shared NAT (e.g. corporate offices, mobile carriers). If abuse patterns emerge from a single forwarded IP block, consider adding a per-user-token layer on top of the IP limiter for authenticated endpoints.</div>
+
+    <h2 id="beta-credits">Beta daily credits (replaces Mollie iDEAL)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Mollie iDEAL payment is deferred until post-beta. During beta, users receive free credits via a daily cron grant instead of purchasing them.</li>
+      <li><strong>Backend:</strong> <code>POST /admin/cron/daily-credits</code> in <code>backend/app/api/v1/admin.py</code> — grants +2 credits to every user whose balance is below 15. Safe to re-run; the cap prevents double-granting. Protected by <code>x-admin-key</code>.</li>
+      <li><strong>Removed endpoints:</strong> <code>POST /credits/purchase</code> and <code>POST /credits/webhook</code> removed from <code>backend/app/api/v1/credits.py</code>. Only <code>GET /credits/balance</code> and <code>GET /credits/transactions</code> remain.</li>
+      <li><strong>Removed schemas:</strong> <code>PurchaseRequest</code> and <code>PurchaseOut</code> Pydantic models removed from <code>backend/app/schemas/credits.py</code>.</li>
+      <li><strong>Frontend:</strong> <code>BuyCreditsModal.tsx</code> now shows a beta info panel explaining the daily credit grant (+2/day, max 15) instead of the iDEAL payment UI.</li>
+      <li><strong>Return URL:</strong> <code>web/src/app/dashboard/betaling/terug/page.tsx</code> now redirects to <code>/dashboard</code> — the old Mollie return URL is kept as a page to handle any bookmarked or cached links gracefully.</li>
+      <li><strong>API client:</strong> <code>api.credits.purchase</code> removed from <code>web/src/lib/api.ts</code>.</li>
+      <li><strong>Cron schedule:</strong> Add <code>POST /admin/cron/daily-credits</code> to cron-job.org — daily at a fixed time (e.g. 08:00), same auth as the existing admin cron endpoints (<code>x-admin-key</code> header).</li>
+    </ul>
+    <div class="gotcha"><strong>Post-beta:</strong> When payments are re-introduced, restore the Mollie endpoints, add back <code>MOLLIE_API_KEY</code> env var, and swap BuyCreditsModal back to the payment UI. The <code>/betaling/terug</code> page can be updated to handle the Mollie return flow again at that point.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
