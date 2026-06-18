@@ -1,5 +1,9 @@
 # Changelog — Opstap
 
+## 2026-06-18 (search-quality)
+- feat: _dedup_by_company() helper in jobs.py — caps results at max 2 per company across DB cache, stale fallback, and live scraper return paths (backend/app/api/v1/jobs.py)
+- feat: global IP rate limiter as FastAPI middleware — sliding window 200 req/60s per IP, in-process deque store, prunes stale keys, excludes OPTIONS, Dutch 429 message (backend/app/main.py)
+
 ## 2026-06-18 (cv-polish)
 - feat: profile.py — `_attach_cv_url` pops `cv_structured` from the response dict and adds `cv_parsed: bool`; raw CV JSONB is never sent to the frontend (backend/app/api/v1/profile.py)
 - feat: api.ts — Profile interface extended with `cv_parsed?: boolean` (web/src/lib/api.ts)

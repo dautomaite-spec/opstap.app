@@ -166,6 +166,8 @@
       <a href="#onboarding-analytics">Onboarding analytics (Plausible)</a>
       <a href="#referral-invite-count">Referral invite count vs beta cap</a>
       <a href="#cv-extraction-status">CV extraction status (cv_parsed)</a>
+      <a href="#company-dedup">Company diversity dedup</a>
+      <a href="#ip-rate-limiter">Global IP rate limiter</a>
     </div>
   </nav>
 
@@ -599,6 +601,30 @@
       <li>Profiel page shows a "gegevens verwerkt ✓" badge on the CV status card when <code>cv_parsed</code> is <code>true</code></li>
     </ul>
     <div class="gotcha"><strong>AVG note:</strong> Stripping <code>cv_structured</code> at the API boundary prevents accidental exposure of parsed CV data in browser devtools or logs. If the field is ever needed client-side for a specific feature, gate it behind an explicit opt-in endpoint rather than adding it back to the default profile response.</div>
+
+    <h2 id="company-dedup">Company diversity dedup</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key file: <code>backend/app/api/v1/jobs.py</code></li>
+      <li><code>_dedup_by_company(jobs: list) -&gt; list</code> helper — iterates the result list and caps any single company at 2 entries. Order-preserving: keeps the first N occurrences, drops the rest.</li>
+      <li>Applied to all three result paths: DB-cache hit, stale fallback (cached result returned while live scrape runs), and the live scraper return value.</li>
+      <li>Prevents a single large employer (e.g. Randstad, ASML) from dominating the first page of results when the job pool has many of their listings.</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The cap of 2 per company is hardcoded. If users complain about missing jobs from large employers they target specifically, consider making it user-configurable or raising the cap for searches that return fewer than 10 total results.</div>
+
+    <h2 id="ip-rate-limiter">Global IP rate limiter (FastAPI middleware)</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key file: <code>backend/app/main.py</code></li>
+      <li>Implemented as a Starlette <code>BaseHTTPMiddleware</code> — runs before any route handler.</li>
+      <li>Algorithm: sliding window — stores a <code>collections.deque</code> of timestamps per IP. On each request, old entries outside the 60-second window are pruned, then the current count is checked against the limit (200 req/60s).</li>
+      <li>Storage: in-process <code>dict[str, deque]</code> — no Redis dependency. Resets on dyno restart. Adequate for a single Railway instance; revisit if multiple replicas are added.</li>
+      <li>Memory bound: keys for IPs with no recent traffic are pruned on the next request from that IP — prevents unbounded growth under long-tail traffic.</li>
+      <li>OPTIONS requests are excluded — allows CORS preflight to pass through without counting against the limit.</li>
+      <li>Response on limit exceeded: HTTP 429 with Dutch message "Te veel verzoeken. Probeer het later opnieuw."</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The in-process store means rate limit counters are not shared across multiple backend replicas. If Railway scales to more than one instance, move the store to Redis (e.g. <code>redis-py</code> + Railway Redis add-on) to enforce the limit cluster-wide.</div>
+    <div class="gotcha"><strong>Gotcha:</strong> IP-based limiting is defeated by proxies and shared NAT (e.g. corporate offices, mobile carriers). If abuse patterns emerge from a single forwarded IP block, consider adding a per-user-token layer on top of the IP limiter for authenticated endpoints.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
