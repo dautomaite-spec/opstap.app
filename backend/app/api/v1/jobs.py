@@ -1,7 +1,7 @@
 import re
 import asyncio
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import uuid4
@@ -10,6 +10,27 @@ from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.job import JobOut, JobSearchParams
 from app.services.job_scraper import scrape_adzuna, scrape_indeed_nl
+
+_LOCATION_REPLACEMENTS = {
+    "netherlands": "Nederland",
+    "the netherlands": "Nederland",
+    "nederland": "Nederland",
+    "holland": "Nederland",
+}
+
+
+def _normalize_location(loc: str | None) -> str:
+    if not loc:
+        return "Nederland"
+    stripped = loc.strip()
+    lower = stripped.lower()
+    if lower in _LOCATION_REPLACEMENTS:
+        return _LOCATION_REPLACEMENTS[lower]
+    # Strip country suffix like ", Nederland" or ", Netherlands"
+    for suffix in (", Nederland", ", Netherlands", ", Holland", ", NL"):
+        if stripped.endswith(suffix):
+            stripped = stripped[: -len(suffix)].strip()
+    return stripped or "Nederland"
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -26,6 +47,7 @@ def _keywords_to_tsquery(keywords: str) -> str:
 @router.post("/search", response_model=list[JobOut])
 async def search_jobs(
     params: JobSearchParams,
+    response: Response,
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
@@ -68,6 +90,7 @@ async def search_jobs(
                 fb_query = fb_query.text_search("fts", tsquery)
         if location:
             fb_query = fb_query.ilike("location", f"%{location}%")
+        response.headers["X-Jobs-Source"] = "cache"
         return (fb_query.order("scraped_at", desc=True).limit(params.limit).execute().data or cached)
 
     # Deduplicate by URL then upsert to shared pool
@@ -83,7 +106,7 @@ async def search_jobs(
             "id": str(uuid4()),
             "title": j["title"],
             "company": j["company"],
-            "location": j["location"],
+            "location": _normalize_location(j.get("location")),
             "source": j["source"],
             "url": j["url"],
             "description_snippet": j.get("description_snippet"),

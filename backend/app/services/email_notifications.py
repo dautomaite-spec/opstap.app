@@ -249,6 +249,57 @@ Team Opstap
     return await _send(to_email, naam, subject, plain, html)
 
 
+async def send_interview_congratulations(to_email: str, naam: str, company: str, job_title: str) -> bool:
+    subject = f"Gesprek ingepland bij {company}!"
+    _naam = _html.escape(naam)
+    _company = _html.escape(company)
+    _job_title = _html.escape(job_title)
+    plain = f"""\
+Hallo {naam},
+
+Gefeliciteerd — je hebt een gesprek bij {company} voor {job_title}!
+
+Bekijk je sollicitaties: {_DASHBOARD}/sollicitaties
+
+Veel succes met het gesprek,
+Team Opstap
+"""
+    html = _base_html("Gesprek ingepland!", f"""
+<h2>Gefeliciteerd, je hebt een gesprek!</h2>
+<p>Hallo {_naam},</p>
+<p>Je hebt een gesprek bij <strong>{_company}</strong> voor <strong>{_job_title}</strong>. Goed bezig!</p>
+<p style="margin-top:20px;"><a href="{_DASHBOARD}/sollicitaties" class="btn">Bekijk mijn sollicitaties</a></p>
+""")
+    return await _send(to_email, naam, subject, plain, html)
+
+
+async def send_cv_expiry_warning(to_email: str, naam: str, days_remaining: int) -> bool:
+    subject = f"Je CV wordt over {days_remaining} dagen verwijderd"
+    _naam = _html.escape(naam)
+    plain = f"""\
+Hallo {naam},
+
+Je opgeslagen CV op Opstap wordt over {days_remaining} dagen automatisch verwijderd op grond van je privacyinstellingen.
+
+Wil je je CV langer bewaren? Verleng de bewaartermijn via je instellingen.
+
+Instellingen: {_DASHBOARD}/settings
+
+Met vriendelijke groet,
+Team Opstap
+"""
+    html = _base_html("CV wordt binnenkort verwijderd", f"""
+<h2>Je CV wordt over {days_remaining} dagen verwijderd</h2>
+<p>Hallo {_naam},</p>
+<p>Je opgeslagen CV op Opstap wordt over <strong>{days_remaining} dagen</strong> automatisch verwijderd
+op grond van je privacyinstellingen (AVG).</p>
+<p>Wil je je CV langer bewaren? Verleng de bewaartermijn via je instellingen.</p>
+<p style="margin-top:20px;"><a href="{_DASHBOARD}/settings" class="btn">Naar instellingen</a></p>
+<p style="font-size:13px;color:#555;margin-top:16px;">Je kunt je CV ook op elk moment handmatig verwijderen via de instellingenpagina.</p>
+""")
+    return await _send(to_email, naam, subject, plain, html)
+
+
 async def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
     count = len(jobs)
     subject = f"{count} nieuwe vacatures voor jou — weekoverzicht Opstap"

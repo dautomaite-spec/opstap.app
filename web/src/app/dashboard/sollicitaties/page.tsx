@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import type { Application } from '@/lib/api'
 
@@ -26,15 +27,23 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   draft: { bg: '#f3f4f6', color: '#6b7280' },
 }
 
+interface Stats { sent: number; replied: number; interview: number; accepted: number }
+
 export default function SollicitatiesPage() {
   const [history, setHistory] = useState<Application[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [retryingId, setRetryingId] = useState<string | null>(null)
 
   useEffect(() => {
-    api.apply.history()
-      .then(rows => setHistory(rows.filter(a => a.status !== 'draft')))
-      .finally(() => setLoading(false))
+    Promise.all([
+      api.apply.history(),
+      api.apply.stats(),
+    ]).then(([rows, s]) => {
+      setHistory(rows.filter(a => a.status !== 'draft'))
+      setStats(s)
+    }).finally(() => setLoading(false))
   }, [])
 
   async function handleStatusChange(app: Application, newStatus: string) {
@@ -43,10 +52,33 @@ export default function SollicitatiesPage() {
     try {
       const updated = await api.apply.updateStatus(app.id, newStatus)
       setHistory(prev => prev.map(a => a.id === updated.id ? updated : a))
+      setStats(prev => {
+        if (!prev) return prev
+        const next = { ...prev }
+        if (app.status === 'sent' || app.status === 'pending') next.sent = Math.max(0, next.sent - 1)
+        else if (app.status === 'replied') next.replied = Math.max(0, next.replied - 1)
+        else if (app.status === 'interview') next.interview = Math.max(0, next.interview - 1)
+        if (newStatus === 'sent' || newStatus === 'pending') next.sent += 1
+        else if (newStatus === 'replied') next.replied += 1
+        else if (newStatus === 'interview') next.interview += 1
+        return next
+      })
     } catch {
       // silently ignore — user can retry
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  async function handleRetry(app: Application) {
+    setRetryingId(app.id)
+    try {
+      const updated = await api.apply.retry(app.id)
+      setHistory(prev => prev.map(a => a.id === updated.id ? updated : a))
+    } catch {
+      // leave status as failed — user sees the button again
+    } finally {
+      setRetryingId(null)
     }
   }
 
@@ -68,18 +100,55 @@ export default function SollicitatiesPage() {
     return (
       <div className="text-center py-16">
         <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Je hebt nog niet gesolliciteerd.</p>
-        <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>Ga naar Vacatures om te beginnen.</p>
+        <p className="text-xs mt-2 mb-6" style={{ color: 'var(--color-text-muted)' }}>Ga naar Vacatures om te beginnen.</p>
+        <Link
+          href="/dashboard"
+          className="inline-block px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
+          style={{ background: 'var(--color-indigo-primary)' }}
+        >
+          Zoek vacatures
+        </Link>
       </div>
     )
   }
 
+  const interviewCount = stats?.interview ?? 0
+
   return (
     <div>
-      <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>Jouw reacties</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Jouw reacties</h1>
+        {interviewCount > 0 && (
+          <span
+            className="text-xs font-bold px-2.5 py-1 rounded-full"
+            style={{ background: '#fef3c7', color: '#92400e' }}
+          >
+            {interviewCount} gesprek{interviewCount !== 1 ? 'ken' : ''}
+          </span>
+        )}
+      </div>
+
+      {/* Stats tiles */}
+      {stats && (
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label: 'Verstuurd', value: stats.sent, color: 'var(--color-indigo-primary)', bg: 'var(--color-lavender-bg)' },
+            { label: 'Beantwoord', value: stats.replied, color: '#065f46', bg: '#d1fae5' },
+            { label: 'Gesprek', value: stats.interview, color: '#92400e', bg: '#fef3c7' },
+          ].map(t => (
+            <div key={t.label} className="rounded-xl p-3 text-center" style={{ background: t.bg }}>
+              <p className="text-2xl font-bold" style={{ color: t.color }}>{t.value}</p>
+              <p className="text-xs mt-0.5" style={{ color: t.color, opacity: 0.8 }}>{t.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         {history.map(app => {
           const statusStyle = STATUS_COLORS[app.status] ?? STATUS_COLORS.sent
           const isUpdating = updatingId === app.id
+          const isRetrying = retryingId === app.id
           const isFinal = app.status === 'failed' || app.status === 'accepted'
 
           return (
@@ -136,13 +205,25 @@ export default function SollicitatiesPage() {
               </div>
 
               <div className="flex items-center justify-between mt-3">
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  {app.replied_at && (
-                    <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
+                <div className="flex items-center gap-3">
+                  <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {app.replied_at && (
+                      <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
+                    )}
+                    {isUpdating && <span> · Opslaan…</span>}
+                  </p>
+                  {app.status === 'failed' && (
+                    <button
+                      onClick={() => handleRetry(app)}
+                      disabled={isRetrying}
+                      className="text-xs px-2.5 py-1 rounded-lg font-medium transition hover:opacity-80 disabled:opacity-50"
+                      style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
+                    >
+                      {isRetrying ? 'Bezig…' : 'Opnieuw'}
+                    </button>
                   )}
-                  {isUpdating && <span> · Opslaan…</span>}
-                </p>
+                </div>
                 {app.status === 'sent' && (
                   <div className="flex items-center gap-1">
                     <span className="text-xs mr-1" style={{ color: 'var(--color-text-muted)' }}>Brief:</span>

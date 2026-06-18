@@ -1,5 +1,21 @@
 # Changelog — Opstap
 
+## 2026-06-18 (beta roadmap — 20 items)
+- feat: GET /apply/stats endpoint — per-user application counts by status (apply.py)
+- feat: GET /admin/stats endpoint — platform-wide user + application aggregates (apply.py)
+- feat: removed /apply/send bypass — all applications now route through approval gate only
+- feat: send_interview_congratulations() + send_cv_expiry_warning() email functions (email_sender.py)
+- feat: SendGrid retry with exponential backoff in approve_and_send (3 attempts, 1/2/4 s delays)
+- feat: location normalisation in jobs.py — city names standardised before DB insert
+- feat: X-Jobs-Source: cache response header on job search — indicates whether result is from DB cache or live scrape
+- feat: migration 011 — invite_codes.source column + profiles.confirmed_at timestamp
+- feat: sollicitaties/page.tsx — stats tiles (total/sent/interview/rejected), interview badge, empty state CTA, retry button for failed applications
+- feat: DashboardClient.tsx — regen remaining count, stale cache banner (reads X-Jobs-Source header), Plausible custom events on key actions
+- feat: DashboardClient.tsx — pending apply from saved jobs (triggers apply flow directly from saved job list)
+- feat: opgeslagen/page.tsx — Solliciteren button for applying directly from saved jobs page
+- feat: ReferralSection.tsx — credits earned from referrals now displayed to user
+- feat: api.ts — stats(), retry(applicationId), searchWithStale() helpers added
+
 ## 2026-06-18
 - fix: invite redemption now atomic via Supabase RPC (use_count increment in single transaction, prevents double-redemption race) — backend/app/api/invite.py, migration 010
 - fix: rate limits added to all public + protected invite endpoints (30/min per IP on validate/register, 5/min on admin create)

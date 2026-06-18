@@ -8,10 +8,17 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'
 export default function ReferralSection() {
   const [code, setCode] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [creditsEarned, setCreditsEarned] = useState(0)
 
   useEffect(() => {
-    api.credits.balance()
-      .then(b => setCode(b.referral_code))
+    api.credits.balance().then(b => setCode(b.referral_code)).catch(() => {})
+    api.credits.transactions()
+      .then(txs => {
+        const earned = txs
+          .filter(t => t.reason?.toLowerCase().includes('referral') && t.delta > 0)
+          .reduce((sum, t) => sum + t.delta, 0)
+        setCreditsEarned(earned)
+      })
       .catch(() => {})
   }, [])
 
@@ -45,9 +52,16 @@ export default function ReferralSection() {
           {copied ? 'Gekopieerd!' : 'Kopieer'}
         </button>
       </div>
-      <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
-        Je code: <span className="font-mono font-medium" style={{ color: 'var(--color-text-primary)' }}>{code}</span>
-      </p>
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          Je code: <span className="font-mono font-medium" style={{ color: 'var(--color-text-primary)' }}>{code}</span>
+        </p>
+        {creditsEarned > 0 && (
+          <p className="text-xs font-medium" style={{ color: '#065f46' }}>
+            +{creditsEarned} credit{creditsEarned !== 1 ? 's' : ''} verdiend
+          </p>
+        )}
+      </div>
     </div>
   )
 }
