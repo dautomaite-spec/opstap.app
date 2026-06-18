@@ -1,5 +1,11 @@
 # Changelog — Opstap
 
+## 2026-06-18 (post-beta-credits)
+- ops: daily-credits cron added to cron-job.org — POST /admin/cron/daily-credits, daily at 06:00 Amsterdam time (Europe/Amsterdam), x-admin-key header, idempotent (cap 15 credits/user)
+- fix: CSP connect-src in web/next.config.ts — added https://opstapapp-production.up.railway.app so the frontend can reach the Railway backend without CSP violations (#94)
+- fix: remove Outlook/Meta login buttons and Overslaan link from login page (#93)
+- fix: bulk apply 404 + URL-letter dead end (#92)
+
 ## 2026-06-18 (beta-credits)
 - feat: POST /admin/cron/daily-credits — grants +2 credits to all users with balance < 15; safe to re-run; intended for daily cron-job.org schedule (backend/app/api/v1/admin.py)
 - refactor: removed POST /credits/purchase and POST /credits/webhook endpoints from credits.py — Mollie iDEAL deferred to post-beta

@@ -18,7 +18,7 @@ User management endpoints (called by admin frontend):
 import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header
 from pydantic import BaseModel, Field, AnyHttpUrl
 from typing import Optional, List
 
@@ -511,19 +511,10 @@ _POPULAR_NL_SEARCHES = [
 ]
 
 
-@router.post("/cron/prefetch-jobs")
-async def cron_prefetch_jobs(
-    _: None = Depends(_check_admin_key),
-    supabase=Depends(get_supabase),
-):
-    """
-    Pre-fetch popular Dutch job searches to warm the shared jobs pool.
-    Run daily at 06:00 so users get instant DB results for common searches.
-    """
+async def _run_prefetch(supabase) -> None:
     from uuid import uuid4 as _uuid4
 
     total_upserted = 0
-
     for keyword in _POPULAR_NL_SEARCHES:
         try:
             results = await scrape_adzuna(keyword, "", limit=20)
@@ -552,10 +543,19 @@ async def cron_prefetch_jobs(
         except Exception:
             logger.warning("Prefetch failed for keyword: %s", keyword, exc_info=True)
 
-        await asyncio.sleep(1)  # avoid hammering Adzuna
+        await asyncio.sleep(1)
 
     logger.info("Job prefetch cron: upserted=%d keywords=%d", total_upserted, len(_POPULAR_NL_SEARCHES))
-    return {"upserted": total_upserted, "keywords": len(_POPULAR_NL_SEARCHES)}
+
+
+@router.post("/cron/prefetch-jobs", status_code=202)
+async def cron_prefetch_jobs(
+    background_tasks: BackgroundTasks,
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    background_tasks.add_task(_run_prefetch, supabase)
+    return {"status": "accepted", "keywords": len(_POPULAR_NL_SEARCHES)}
 
 
 # ── n8n ingest endpoint ────────────────────────────────────────────────────────
