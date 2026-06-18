@@ -156,6 +156,11 @@
       <a href="#beta-invite">Beta invite system</a>
       <a href="#invite-security">Invite security</a>
       <a href="#avg-consent-copy">AVG consent copy</a>
+      <a href="#apply-stats">Apply stats endpoint</a>
+      <a href="#sollicitaties-ux">Sollicitaties UX (stats tiles)</a>
+      <a href="#dashboard-beta">Dashboard beta improvements</a>
+      <a href="#sendgrid-retry">SendGrid retry</a>
+      <a href="#migration-011">Migration 011</a>
     </div>
   </nav>
 
@@ -479,6 +484,56 @@
       <li>Previous wording made vague claims; updated wording accurately describes that CV text is sent to the Anthropic API for processing and is not retained by Anthropic for training</li>
       <li>Trailing period removed from the bullet item to match the list punctuation convention used across all consent surfaces</li>
       <li>Homepage (<code>web/src/app/page.tsx</code>): fabricated numeric stats (e.g. "87% hogere kans") replaced with a qualitative benefits section — honest claims only</li>
+    </ul>
+
+    <h2 id="apply-stats">Apply stats &amp; admin stats endpoints</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li><code>GET /apply/stats</code> — returns per-user application counts grouped by status (<code>sent</code>, <code>pending</code>, <code>replied</code>, <code>interview</code>, <code>accepted</code>, <code>rejected</code>). Auth-guarded to the requesting user.</li>
+      <li><code>GET /admin/stats</code> — platform-wide aggregates: total users, total applications, breakdown by status, new signups in last 7 days. Admin-key protected.</li>
+      <li><code>/apply/send</code> bypass route removed — any direct send path that skipped the approval gate is gone. All applications must go through <code>POST /apply/letter</code> (creates draft) → <code>POST /apply/approve</code> (sends).</li>
+      <li>Key file: <code>backend/app/api/apply.py</code></li>
+    </ul>
+
+    <h2 id="sollicitaties-ux">Sollicitaties page — stats tiles &amp; UX improvements</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/sollicitaties/page.tsx</code></li>
+      <li>Stats tiles at the top of the page — pulls from <code>GET /apply/stats</code> and shows total, sent, interview, rejected counts as summary cards</li>
+      <li>Interview badge on application cards when status is <code>interview</code> — visually distinct highlight (congratulations state)</li>
+      <li>Empty state CTA when user has no applications yet — directs them to the search flow</li>
+      <li>Retry button on failed application cards — re-sends a failed submission without needing to regenerate the letter</li>
+      <li>API helper: <code>apply.stats()</code> in <code>web/src/lib/api.ts</code></li>
+    </ul>
+
+    <h2 id="dashboard-beta">Dashboard beta improvements (DashboardClient + opgeslagen)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key files: <code>web/src/app/dashboard/components/DashboardClient.tsx</code>, <code>web/src/app/dashboard/opgeslagen/page.tsx</code>, <code>web/src/app/dashboard/components/ReferralSection.tsx</code></li>
+      <li><strong>Regen remaining count</strong> — shows how many letter regenerations a user has left before the daily/session cap is reached</li>
+      <li><strong>Stale cache banner</strong> — when job results are served from a cache older than the 6-hour TTL threshold, a banner warns the user and offers a manual refresh. Uses the <code>X-Jobs-Source: cache</code> response header from the backend.</li>
+      <li><strong>Plausible custom events</strong> — key user actions (job search, apply, regen, save job) now fire <code>plausible()</code> custom events for conversion tracking without cookies</li>
+      <li><strong>Pending apply from saved jobs</strong> — a user can click "Solliciteren" directly on a saved job in <code>opgeslagen/page.tsx</code> without returning to the search results; triggers the same letter-generation flow</li>
+      <li><strong>ReferralSection credits earned</strong> — <code>ReferralSection.tsx</code> now displays the total credits a user has earned from referrals alongside the referral link</li>
+      <li>API helpers added to <code>web/src/lib/api.ts</code>: <code>apply.stats()</code>, <code>apply.retry(applicationId)</code>, <code>jobs.searchWithStale(params)</code> (returns result + cache metadata)</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> <code>searchWithStale()</code> reads the <code>X-Jobs-Source</code> response header. Ensure the backend sets this header on both cached and live responses, or the stale banner will never show.</div>
+
+    <h2 id="sendgrid-retry">SendGrid retry in approve_and_send</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>File: <code>backend/app/services/email_sender.py</code></li>
+      <li>The <code>approve_and_send</code> path now retries failed SendGrid deliveries with exponential backoff — 3 attempts, delays: 1 s, 2 s, 4 s</li>
+      <li>New transactional email functions: <code>send_interview_congratulations(user_email, job_title, company)</code> — triggered when an application status changes to <code>interview</code>; <code>send_cv_expiry_warning(user_email, days_left)</code> — called by the daily cron</li>
+      <li>All new functions are non-blocking (<code>run_in_executor</code>) — consistent with existing pattern</li>
+    </ul>
+
+    <h2 id="migration-011">Migration 011 — invite source + confirmed_at</h2>
+    <p><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>File: <code>backend/supabase/migrations/011_invite_source_confirmed_at.sql</code></li>
+      <li><code>invite_codes.source</code> — text column tracking how the invite code was created (e.g. <code>'admin'</code>, <code>'referral'</code>, <code>'bulk'</code>)</li>
+      <li><code>profiles.confirmed_at</code> — timestamp set when a user completes email confirmation; used for analytics and to distinguish verified vs unverified accounts in admin stats</li>
     </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
