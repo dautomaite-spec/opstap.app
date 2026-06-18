@@ -123,17 +123,17 @@ export default function Home() {
       <section className="py-16 px-8" style={{ background: 'var(--color-indigo-primary)' }}>
         <div className="max-w-4xl mx-auto">
           <p className="text-center text-sm font-semibold mb-10 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            Opstap in cijfers
+            Wat Opstap voor je doet
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: '3×', label: 'sneller solliciteren dan handmatig', sub: 'gemiddeld 8 min per sollicitatie' },
-              { value: '78%', label: 'minder tijd kwijt aan brieven schrijven', sub: 'vs. gemiddeld 47 min per brief' },
-              { value: '9', label: 'sollicitaties gemiddeld tot eerste uitnodiging', sub: 'NL markt gemiddelde: 23' },
-              { value: '4.8★', label: 'gebruikersbeoordeling', sub: 'op basis van 140+ beoordelingen' },
+              { icon: '⚡', label: 'Solliciteer op meerdere vacatures tegelijk', sub: 'In plaats van één voor één' },
+              { icon: '✍️', label: 'Persoonlijke motivatiebrief per vacature', sub: 'Gegenereerd door AI, door jou goedgekeurd' },
+              { icon: '🔒', label: 'Jij bepaalt wat er verstuurd wordt', sub: 'Geen enkele sollicitatie zonder jouw akkoord' },
+              { icon: '🇳🇱', label: 'Speciaal voor de Nederlandse arbeidsmarkt', sub: 'Indeed, LinkedIn, Jobbird en meer' },
             ].map(stat => (
-              <div key={stat.value}>
-                <p className="text-4xl font-bold text-white mb-1">{stat.value}</p>
+              <div key={stat.icon}>
+                <p className="text-4xl mb-2">{stat.icon}</p>
                 <p className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{stat.label}</p>
                 <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{stat.sub}</p>
               </div>
