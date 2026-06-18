@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const GOOGLE_ICON = (
@@ -12,87 +11,31 @@ const GOOGLE_ICON = (
   </svg>
 )
 
-const SECONDARY_PROVIDERS = [
-  {
-    id: 'azure' as const,
-    label: 'Outlook',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
-        <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
-        <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
-        <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'facebook' as const,
-    label: 'Meta',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.696 4.533-4.696 1.312 0 2.686.235 2.686.235v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
-      </svg>
-    ),
-  },
-]
-
-type OAuthProvider = 'google' | 'azure' | 'facebook'
-
 interface SocialButtonsProps {
   redirectTo?: string
-  showSkip?: boolean
 }
 
-export default function SocialButtons({ redirectTo, showSkip = false }: SocialButtonsProps) {
+export default function SocialButtons({ redirectTo }: SocialButtonsProps) {
   const supabase = createClient()
 
-  async function handleOAuth(provider: OAuthProvider) {
+  async function handleGoogle() {
     await supabase.auth.signInWithOAuth({
-      provider,
+      provider: 'google',
       options: {
         redirectTo: redirectTo ?? `${window.location.origin}/auth/confirm?next=/dashboard`,
-        scopes: provider === 'azure' ? 'email profile' : undefined,
       },
     })
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* Google — primary, full-width */}
-      <button
-        type="button"
-        onClick={() => handleOAuth('google')}
-        className="flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-semibold transition hover:opacity-80"
-        style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', background: 'var(--color-white)' }}
-      >
-        {GOOGLE_ICON}
-        Doorgaan met Google
-      </button>
-
-      {/* Outlook / Meta — coming soon, greyed out */}
-      <div className="flex gap-2">
-        {SECONDARY_PROVIDERS.map((p) => (
-          <div
-            key={p.id}
-            title={`${p.label} — binnenkort beschikbaar`}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium cursor-not-allowed select-none"
-            style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)', background: 'var(--color-lavender-bg)', opacity: 0.5 }}
-          >
-            {p.icon}
-            <span>{p.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {showSkip && (
-        <Link
-          href="/"
-          className="block text-center text-xs mt-1 transition hover:opacity-70"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Overslaan
-        </Link>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={handleGoogle}
+      className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-semibold transition hover:opacity-80"
+      style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', background: 'var(--color-white)' }}
+    >
+      {GOOGLE_ICON}
+      Doorgaan met Google
+    </button>
   )
 }
