@@ -93,8 +93,6 @@ export const api = {
     /** Approval gate — requires a draft created by generateLetter */
     approve: (application_id: string, body: ApproveRequest) =>
       request<Application>('POST', `/api/v1/apply/${application_id}/approve`, body),
-    /** Legacy send — still used by MultiApplyModal */
-    send: (body: SendRequest) => request<Application>('POST', '/api/v1/apply/send', body),
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
     stats: () => request<{ sent: number; replied: number; interview: number; accepted: number }>('GET', '/api/v1/apply/stats'),
     updateStatus: (id: string, status: string) =>
@@ -215,14 +213,6 @@ export interface ApproveRequest {
   send_method: 'email' | 'form' | 'site'
   contact_email_override?: string
   letter_nl?: string  // user's inline edits
-}
-
-export interface SendRequest {
-  job_id: string
-  profile_id: string
-  letter_nl: string
-  send_method?: string
-  contact_email_override?: string
 }
 
 export interface InviteCode {
