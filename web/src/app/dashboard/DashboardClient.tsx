@@ -155,13 +155,13 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           autoSearched.current = true
           triggerSearch(p.functietitel, p.woonplaats ?? '')
         }
-        // Pending apply from saved-jobs page
+        // Pending apply from saved-jobs page — pass p directly (state not yet updated)
         try {
           const raw = localStorage.getItem(PENDING_APPLY_KEY)
           if (raw) {
             localStorage.removeItem(PENDING_APPLY_KEY)
             const job = JSON.parse(raw) as Job
-            handleGenerateLetter(job)
+            handleGenerateLetter(job, p)
           }
         } catch {
           // ignore corrupt localStorage
@@ -274,13 +274,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     await triggerSearch(keywords, location)
   }
 
-  async function handleGenerateLetter(job: Job) {
-    if (!profile) return
+  async function handleGenerateLetter(job: Job, profileOverride?: Profile) {
+    const activeProfile = profileOverride ?? profile
+    if (!activeProfile) return
     setGeneratingLetter(true)
     setApplyError('')
     setApplySuccess('')
     try {
-      const res = await api.apply.generateLetter({ job_id: job.id, profile_id: profile.id, writing_style: writingStyle })
+      const res = await api.apply.generateLetter({ job_id: job.id, profile_id: activeProfile.id, writing_style: writingStyle })
       setApplyState({ job, applicationId: res.application_id ?? null, letter: res.letter_nl, regenRemaining: res.regenerations_remaining ?? null, sending: false, copied: false })
       trackEvent('Letter Generated')
     } catch (err) {
@@ -577,13 +578,42 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
+      {/* Profile completeness nudge — shown when CV is missing */}
+      {profile && !profile.cv_url && !profile.cv_expires_at && (
+        <a
+          href="/dashboard/profiel"
+          className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-xs transition hover:opacity-90"
+          style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span><strong>Voeg je CV toe</strong> voor sterkere, persoonlijkere brieven →</span>
+        </a>
+      )}
       {jobsStale && (
         <div className="mb-4 px-3 py-2 rounded-lg text-xs" style={{ background: '#fef3c7', color: '#92400e' }}>
           Vacatures worden vernieuwd op de achtergrond. Je ziet nu resultaten uit onze cache.
         </div>
       )}
       {searchError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{searchError}</p>}
-      {applySuccess && <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{applySuccess}</p>}
+      {applySuccess && (
+        <div className="mb-4 flex flex-col gap-2">
+          <p className="text-sm px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{applySuccess}</p>
+          {profile?.referral_code && (
+            <div className="px-3 py-2.5 rounded-lg text-xs flex items-center justify-between gap-3" style={{ background: 'var(--color-lavender-card)' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>
+                Ken je iemand die ook op zoek is? Deel Opstap en jullie krijgen allebei <strong style={{ color: 'var(--color-text-primary)' }}>+3 credits</strong>.
+              </span>
+              <button
+                onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/register?ref=${profile.referral_code}`).catch(() => {})}
+                className="shrink-0 text-xs px-3 py-1 rounded-lg font-medium transition hover:opacity-90"
+                style={{ background: 'var(--color-indigo-primary)', color: 'white' }}
+              >
+                Kopieer link
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {applyError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{applyError}</p>}
 
       {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}
@@ -623,8 +653,8 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
       {/* Letter modal */}
       {applyState && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
-          <div className="w-full max-w-lg rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.4)' }}>
+          <div className="w-full max-w-lg rounded-2xl p-6 my-4 max-h-[90vh] overflow-y-auto" style={{ background: 'var(--color-white)' }}>
             <h3 className="font-bold text-base mb-1" style={{ color: 'var(--color-text-primary)' }}>Motivatiebrief</h3>
             <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>{applyState.job.title} · {applyState.job.company}</p>
             <div className="flex items-center gap-3 mb-3">
@@ -656,7 +686,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             <textarea
               value={applyState.letter}
               onChange={e => setApplyState(s => s ? { ...s, letter: e.target.value } : s)}
-              rows={10}
+              rows={7}
               className="w-full px-3 py-2 rounded-lg border text-sm resize-none outline-none"
               style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
             />

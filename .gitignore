@@ -1,6 +1,7 @@
 # Local tool files
 .last_build_id
 .mcp.json
+Obsidian/
 
 # Old scaffold
 flutter_application_1/
