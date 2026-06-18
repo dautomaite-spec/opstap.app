@@ -358,6 +358,14 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>api.credits.purchase verwijderd uit web/src/lib/api.ts — frontend kan niet meer een betaling starten</span></li>
         </ul>
 
+        <div class="section-label">Fixes &amp; infra — 2026-06-18 (PRs #92–94)</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Bulk-solliciteer 404 + URL-brief doodlopend pad opgelost (#92)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Outlook / Meta-knoppen en "Overslaan"-link verwijderd van inlogpagina (#93)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>CSP <code>connect-src</code>: <code>https://opstapapp-production.up.railway.app</code> toegevoegd aan <code>web/next.config.ts</code> — one-line fix, voorkomt CSP-blokkering van Railway API-verzoeken vanuit de browser (#94)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dagelijkse credits cron geconfigureerd op cron-job.org — POST /admin/cron/daily-credits, dagelijks 06:00 Amsterdam-tijd, <code>x-admin-key</code> header, idempotent (cap 15)</span></li>
+        </ul>
+
         <div class="section-label">Nog te doen</div>
         <ul class="checklist">
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl registreren (handmatig, SIDN-registrar)</span></li>
