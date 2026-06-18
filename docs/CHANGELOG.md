@@ -1,5 +1,19 @@
 # Changelog — Opstap
 
+## 2026-06-18
+- fix: invite redemption now atomic via Supabase RPC (use_count increment in single transaction, prevents double-redemption race) — backend/app/api/invite.py, migration 010
+- fix: rate limits added to all public + protected invite endpoints (30/min per IP on validate/register, 5/min on admin create)
+- fix: silent exception swallow removed from invite endpoint — errors now propagate correctly
+- fix: PII (email, name) removed from invite code logs and admin notes
+- fix: invite code no longer returned in validate response (was leaking the raw code back to the caller)
+- fix: invite_waitlist_entry TOCTOU — check-then-insert replaced with upsert to eliminate race condition
+- fix: empty-key guard added to _check_admin_key — rejects blank strings that would previously pass
+- fix: AVG consent bullet in welkom/page.tsx — accurate description of Anthropic API data processing, removed trailing period for bullet list consistency
+- fix: AVG consent Anthropic disclosure in profiel/page.tsx (from previous session, now consistent across all consent surfaces)
+- fix: homepage fabricated stats replaced with honest qualitative benefits section
+- fix: WaitlistForm.tsx copy — "Geen spam." (removed "geen verplichtingen" which was unverifiable)
+- feat: migration 010_invite_redeem_rpc.sql — atomic use_count RPC for invite redemption
+
 ## 2026-06-17 (shared jobs pool)
 - feat: shared jobs pool — dropped scraped_for_user column, added PostgreSQL FTS (tsvector + GIN index, dutch dictionary), DB-first 6h cache in search_jobs, pg_cron stale-job cleanup (48h TTL)
 - feat: admin prefetch-jobs cron endpoint (POST /admin/prefetch-jobs) — warms 20 popular NL searches daily at 06:00 via cron-job.org

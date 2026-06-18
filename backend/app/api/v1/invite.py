@@ -18,13 +18,14 @@ Protected (JWT — called on register):
 import secrets
 import logging
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List
+from typing import Optional
 
 from app.core.config import settings
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
+from app.core.rate_limiter import check_ip_flood
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,8 @@ router = APIRouter(prefix="/invite", tags=["invite"])
 
 def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
     import hmac as _hmac
+    if not settings.admin_api_key:
+        raise HTTPException(status_code=500, detail="Server misconfiguration")
     if not _hmac.compare_digest(x_admin_key or "", settings.admin_api_key):
         raise HTTPException(status_code=403, detail="Forbidden")
 
@@ -51,24 +54,31 @@ class WaitlistJoin(BaseModel):
 
 
 @router.post("/waitlist", status_code=201)
-async def join_waitlist(body: WaitlistJoin, supabase=Depends(get_supabase)):
+async def join_waitlist(request: Request, body: WaitlistJoin, supabase=Depends(get_supabase)):
     """Join the beta waitlist. Idempotent — re-submitting the same email is a no-op."""
+    ip = request.client.host if request.client else "unknown"
+    if check_ip_flood(ip):
+        raise HTTPException(status_code=429, detail="Te veel verzoeken. Probeer het later opnieuw.")
     try:
         supabase.table("waitlist").upsert(
             {"email": str(body.email).lower(), "naam": body.naam},
             on_conflict="email",
         ).execute()
     except Exception:
-        logger.warning("Waitlist insert failed for %s", body.email, exc_info=True)
+        logger.warning("Waitlist insert failed", exc_info=True)
         raise HTTPException(status_code=500, detail="Aanmelden mislukt. Probeer het opnieuw.")
     return {"message": "Je staat op de lijst! We sturen je een uitnodiging zodra er plek is."}
 
 
 @router.get("/validate/{code}")
-async def validate_code(code: str, supabase=Depends(get_supabase)):
+async def validate_code(request: Request, code: str, supabase=Depends(get_supabase)):
     """Check whether an invite code exists and still has capacity."""
+    ip = request.client.host if request.client else "unknown"
+    if check_ip_flood(ip):
+        raise HTTPException(status_code=429, detail="Te veel verzoeken. Probeer het later opnieuw.")
+
     result = supabase.table("invite_codes").select(
-        "id,code,max_uses,use_count,expires_at"
+        "id,max_uses,use_count,expires_at"
     ).eq("code", code.upper()).maybe_single().execute()
 
     if not result.data:
@@ -83,7 +93,7 @@ async def validate_code(code: str, supabase=Depends(get_supabase)):
         if expires < datetime.now(timezone.utc):
             raise HTTPException(status_code=410, detail="Deze uitnodigingscode is verlopen.")
 
-    return {"valid": True, "code": row["code"]}
+    return {"valid": True}
 
 
 # ── JWT-protected — called after registration ─────────────────────────────────
@@ -94,21 +104,26 @@ class RedeemBody(BaseModel):
 
 @router.post("/redeem", status_code=200)
 async def redeem_code(
+    request: Request,
     body: RedeemBody,
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
     """Redeem an invite code. Called client-side immediately after registration."""
+    ip = request.client.host if request.client else "unknown"
+    if check_ip_flood(ip):
+        raise HTTPException(status_code=429, detail="Te veel verzoeken. Probeer het later opnieuw.")
+
     code = body.code.strip().upper()
 
-    result = supabase.table("invite_codes").select(
+    row_result = supabase.table("invite_codes").select(
         "id,max_uses,use_count,expires_at"
     ).eq("code", code).maybe_single().execute()
 
-    if not result.data:
+    if not row_result.data:
         raise HTTPException(status_code=404, detail="Ongeldige uitnodigingscode.")
 
-    row = result.data
+    row = row_result.data
     if row["use_count"] >= row["max_uses"]:
         raise HTTPException(status_code=410, detail="Deze uitnodigingscode is al volledig gebruikt.")
 
@@ -117,22 +132,18 @@ async def redeem_code(
         if expires < datetime.now(timezone.utc):
             raise HTTPException(status_code=410, detail="Deze uitnodigingscode is verlopen.")
 
-    # Record the use (unique constraint on user_id prevents double-redemption)
-    try:
-        supabase.table("invite_uses").insert({
-            "code_id": row["id"],
-            "user_id": user_id,
-        }).execute()
-    except Exception:
-        # Unique constraint → already redeemed, silent success
-        return {"redeemed": True}
+    # Server-side atomic increment via RPC — prevents race conditions that
+    # client-supplied SET values (last-write-wins) cannot solve.
+    rpc_result = supabase.rpc("redeem_invite_code", {
+        "p_code_id": row["id"],
+        "p_user_id": user_id,
+    }).execute()
 
-    # Increment use_count
-    supabase.table("invite_codes").update(
-        {"use_count": row["use_count"] + 1}
-    ).eq("id", row["id"]).execute()
+    outcome = rpc_result.data[0] if rpc_result.data else None
+    if not outcome or not outcome.get("ok"):
+        raise HTTPException(status_code=410, detail="Deze uitnodigingscode is al volledig gebruikt.")
 
-    logger.info("Invite code %s redeemed by user %s", code, user_id)
+    logger.info("Invite code redeemed by user %s", user_id)
     return {"redeemed": True}
 
 
@@ -167,13 +178,11 @@ async def list_codes(supabase=Depends(get_supabase)):
     ).order("created_at", desc=True).execute()
     codes = codes_result.data or []
 
-    # Fetch uses with user info
     uses_result = supabase.table("invite_uses").select(
         "code_id,user_id,used_at"
     ).execute()
     uses = uses_result.data or []
 
-    # Get profile data for redeemed users
     user_ids = [u["user_id"] for u in uses]
     profiles_by_uid: dict = {}
     if user_ids:
@@ -182,7 +191,6 @@ async def list_codes(supabase=Depends(get_supabase)):
         ).in_("user_id", user_ids).execute()
         profiles_by_uid = {p["user_id"]: p for p in (profiles_result.data or [])}
 
-    # Get application counts + interview counts per user
     app_counts: dict[str, int] = {}
     interview_counts: dict[str, int] = {}
     if user_ids:
@@ -195,7 +203,6 @@ async def list_codes(supabase=Depends(get_supabase)):
             if a["status"] == "interview":
                 interview_counts[uid] = interview_counts.get(uid, 0) + 1
 
-    # Build code_id → uses map
     uses_by_code: dict[str, list] = {}
     for u in uses:
         cid = u["code_id"]
@@ -246,20 +253,23 @@ async def invite_waitlist_entry(
     if not entry.data:
         raise HTTPException(status_code=404, detail="Waitlist entry not found")
 
-    if entry.data.get("invited_at"):
-        raise HTTPException(status_code=409, detail="Already invited")
-
     code = _generate_code()
     supabase.table("invite_codes").insert({
         "code": code,
-        "notes": body.notes or f"Waitlist: {entry.data['email']}",
+        "notes": body.notes or f"Waitlist entry {entry_id}",
         "max_uses": 1,
     }).execute()
 
-    supabase.table("waitlist").update({
+    # Atomic: only sets invited_at when it is still NULL — prevents double-invite race
+    update_result = supabase.table("waitlist").update({
         "invite_code": code,
         "invited_at": datetime.now(timezone.utc).isoformat(),
-    }).eq("id", entry_id).execute()
+    }).eq("id", entry_id).is_("invited_at", "null").execute()
+
+    if not update_result.data:
+        # Lost the race — clean up the orphaned code
+        supabase.table("invite_codes").delete().eq("code", code).execute()
+        raise HTTPException(status_code=409, detail="Already invited")
 
     return {
         "code": code,

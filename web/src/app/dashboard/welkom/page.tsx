@@ -175,7 +175,7 @@ export default function WelkomPage() {
                     <div className="text-sm mb-4 flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
                       <p>Je CV wordt versleuteld opgeslagen op EU-servers en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
                       <ul className="flex flex-col gap-1 pl-4 list-disc">
-                        <li>Voor het uitlezen van je CV wordt de inhoud eenmalig verstuurd naar de Anthropic API (AI-dienst). Anthropic slaat deze inhoud niet op en gebruikt deze niet voor training.</li>
+                        <li>Voor het genereren van je motivatiebrieven wordt je CV-inhoud verwerkt via de Anthropic API (AI-dienst). Anthropic gebruikt API-verzoeken niet voor het trainen van hun modellen</li>
                         <li>Je gegevens worden niet gedeeld met andere derden</li>
                         <li>Je kunt je CV op elk moment zelf verwijderen</li>
                       </ul>

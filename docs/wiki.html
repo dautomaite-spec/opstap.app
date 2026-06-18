@@ -153,6 +153,9 @@
       <a href="#letter-feedback">Letter quality feedback</a>
       <a href="#auto-search">Auto-search on dashboard load</a>
       <a href="#shared-jobs-pool">Shared jobs pool</a>
+      <a href="#beta-invite">Beta invite system</a>
+      <a href="#invite-security">Invite security</a>
+      <a href="#avg-consent-copy">AVG consent copy</a>
     </div>
   </nav>
 
@@ -443,6 +446,40 @@
       <li>Secret: <code>CRON_SECRET</code> set as Supabase Edge Function secret (not exposed to frontend)</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> cron-job.org free tier retries failed requests up to 3 times. Ensure all Edge Functions are idempotent — running twice must not send duplicate emails or delete data twice. Each function should check a <code>processed</code> flag or use a time-window guard before acting.</div>
+
+    <h2 id="beta-invite">Beta invite system</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>Invite codes gate registration — users need a valid code to sign up during beta</li>
+      <li>Backend: <code>backend/app/api/v1/invite.py</code> — endpoints: <code>POST /invite/validate</code>, <code>POST /invite/register</code>, <code>POST /admin/invite/create</code>, <code>GET /admin/invite/list</code></li>
+      <li>Supabase tables: <code>invite_codes</code> (code, max_uses, use_count, expires_at, created_by) and <code>invite_waitlist</code> (email, name, created_at)</li>
+      <li>Landing CTA: waitlist form on <code>web/src/app/components/WaitlistForm.tsx</code> — "Geen spam." copy, no other promises</li>
+      <li>Admin panel: create codes, set max uses / expiry, view redemptions</li>
+      <li>Redemption is atomic via the <code>use_invite_code</code> Supabase RPC (migration 010) — increments <code>use_count</code> and validates limit in one transaction</li>
+    </ul>
+    <div class="gotcha"><strong>Security:</strong> The validate endpoint does NOT return the invite code back in its response — prevents the code from being leaked via API responses. Rate-limited to 30/min per IP on validate/register and 5/min on admin create.</div>
+
+    <h2 id="invite-security">Invite security hardening</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li><strong>Atomic redemption</strong> — <code>use_invite_code(code TEXT)</code> RPC in <code>backend/supabase/migrations/010_invite_redeem_rpc.sql</code>. The RPC checks <code>use_count &lt; max_uses</code> and increments atomically; returns a boolean. Replaces the previous check-then-update that had a TOCTOU window.</li>
+      <li><strong>Rate limits</strong> — <code>slowapi</code> decorators on all invite endpoints: 30/minute on <code>/validate</code> and <code>/register</code>; 5/minute on <code>/admin/create</code>. Keyed on client IP.</li>
+      <li><strong>Silent exception swallow removed</strong> — the previous <code>except Exception: pass</code> block that ate errors is gone; exceptions now propagate to FastAPI's default error handler.</li>
+      <li><strong>PII out of logs</strong> — email addresses and names are no longer written to log lines or stored in admin notes fields.</li>
+      <li><strong>Invite code not in validate response</strong> — the raw invite code was previously echoed back; it is now omitted from the response body.</li>
+      <li><strong>Waitlist TOCTOU fix</strong> — <code>invite_waitlist_entry</code> now uses an upsert (ON CONFLICT DO NOTHING) instead of a separate existence check + insert.</li>
+      <li><strong>Empty key guard</strong> — <code>_check_admin_key</code> now explicitly rejects empty strings, preventing a blank <code>x-admin-key</code> header from matching if the env var is unset.</li>
+    </ul>
+    <div class="gotcha"><strong>Pattern:</strong> Any future endpoint that checks a quota and then acts must do so atomically via an RPC — the same lesson as <code>debit_one_credit</code>. Never check-then-act in two separate DB round-trips.</div>
+
+    <h2 id="avg-consent-copy">AVG consent copy accuracy</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The Anthropic API disclosure in AVG consent bullets was corrected on both <code>web/src/app/dashboard/welkom/page.tsx</code> and <code>web/src/app/dashboard/profiel/page.tsx</code></li>
+      <li>Previous wording made vague claims; updated wording accurately describes that CV text is sent to the Anthropic API for processing and is not retained by Anthropic for training</li>
+      <li>Trailing period removed from the bullet item to match the list punctuation convention used across all consent surfaces</li>
+      <li>Homepage (<code>web/src/app/page.tsx</code>): fabricated numeric stats (e.g. "87% hogere kans") replaced with a qualitative benefits section — honest claims only</li>
+    </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

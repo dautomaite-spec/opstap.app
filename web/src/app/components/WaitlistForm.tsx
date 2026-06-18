@@ -73,7 +73,7 @@ export default function WaitlistForm() {
         <p className="text-xs" style={{ color: 'var(--color-error)' }}>{errorMsg}</p>
       )}
       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-        We sturen je een persoonlijke uitnodigingslink. Geen spam, geen verplichtingen.
+        We sturen je een persoonlijke uitnodigingslink. Geen spam.
       </p>
     </form>
   )
