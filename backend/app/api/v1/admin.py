@@ -307,6 +307,51 @@ async def cron_monthly_credits(
     return {"granted": granted, "skipped": skipped, "month": month_key}
 
 
+# Beta: daily top-up — +2 credits for every user with balance < 15
+BETA_DAILY_GRANT = 2
+BETA_CREDIT_CAP = 15
+
+
+@router.post("/cron/daily-credits")
+async def cron_daily_credits(
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """
+    Grant +2 credits to every user whose balance is below 15.
+    Run daily. Safe to retry — balance cap prevents over-granting.
+    """
+    from datetime import date
+    day_key = date.today().isoformat()
+
+    profiles_result = (
+        supabase.table("profiles")
+        .select("user_id, credits_balance")
+        .lt("credits_balance", BETA_CREDIT_CAP)
+        .execute()
+    )
+    profiles = profiles_result.data or []
+
+    granted = 0
+    skipped = 0
+    for p in profiles:
+        uid = p["user_id"]
+        try:
+            supabase.rpc("grant_credits", {
+                "p_user_id": uid,
+                "p_delta": BETA_DAILY_GRANT,
+                "p_reason": "beta_daily_grant",
+                "p_reference_id": day_key,
+            }).execute()
+            granted += 1
+        except Exception:
+            logger.warning("Daily credit grant failed for user %s", uid, exc_info=True)
+            skipped += 1
+
+    logger.info("Daily credits cron: granted=%d skipped=%d day=%s", granted, skipped, day_key)
+    return {"granted": granted, "skipped": skipped, "day": day_key}
+
+
 @router.post("/cron/follow-up")
 async def cron_follow_up_reminder(
     _: None = Depends(_check_admin_key),

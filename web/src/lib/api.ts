@@ -45,8 +45,6 @@ export const api = {
   credits: {
     balance: () => request<BalanceOut>('GET', '/api/v1/credits/balance'),
     transactions: () => request<TransactionOut[]>('GET', '/api/v1/credits/transactions'),
-    purchase: (bundle: '10' | '30' | '75') =>
-      request<{ checkout_url: string }>('POST', '/api/v1/credits/purchase', { bundle }),
   },
   profile: {
     get: () => request<Profile>('GET', '/api/v1/profile/me'),
