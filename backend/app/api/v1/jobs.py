@@ -53,11 +53,6 @@ _FRESH_HOURS = 6   # DB results younger than this are served without re-scraping
 _STALE_DAYS = 14   # Fallback cap — never return results older than this
 
 
-def _keywords_to_tsquery(keywords: str) -> str:
-    """Convert a free-text keyword string to a simple AND tsquery."""
-    tokens = re.sub(r"[^\w\s]", " ", keywords).split()
-    return " & ".join(t for t in tokens if t)
-
 
 @router.post("/search", response_model=list[JobOut])
 async def search_jobs(
@@ -73,17 +68,24 @@ async def search_jobs(
     fresh_cutoff = (now - timedelta(hours=_FRESH_HOURS)).isoformat()
 
     # ── DB-first: check shared job pool for fresh matching results ────────────
-    # Apply ilike BEFORE text_search — text_search returns SyncQueryRequestBuilder
-    # which does not expose filter methods; SyncFilterRequestBuilder does.
+    # text_search() changes the builder type to SyncQueryRequestBuilder which
+    # lacks order/limit/filter — use client-side keyword filtering instead.
     db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff)
     if location:
         db_query = db_query.ilike("location", f"%{location}%")
-    if keywords:
-        tsquery = _keywords_to_tsquery(keywords)
-        if tsquery:
-            db_query = db_query.text_search("fts", tsquery)
+    cached_raw = (db_query.order("scraped_at", desc=True).limit(params.limit * 4).execute().data or [])
 
-    cached = (db_query.order("scraped_at", desc=True).limit(params.limit).execute().data or [])
+    if keywords:
+        kw_tokens = [t.lower() for t in re.sub(r"[^\w\s]", " ", keywords).split() if t]
+        cached = [
+            j for j in cached_raw
+            if not kw_tokens or any(
+                t in (j.get("title") or "").lower() or t in (j.get("description_snippet") or "").lower()
+                for t in kw_tokens
+            )
+        ]
+    else:
+        cached = cached_raw
 
     if len(cached) >= 10:
         return _dedup_by_company(cached)[:params.limit]
@@ -103,12 +105,19 @@ async def search_jobs(
         fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff)
         if location:
             fb_query = fb_query.ilike("location", f"%{location}%")
+        fb_raw = fb_query.order("scraped_at", desc=True).limit(params.limit * 4).execute().data or []
         if keywords:
-            tsquery = _keywords_to_tsquery(keywords)
-            if tsquery:
-                fb_query = fb_query.text_search("fts", tsquery)
+            kw_tokens = [t.lower() for t in re.sub(r"[^\w\s]", " ", keywords).split() if t]
+            stale_results = [
+                j for j in fb_raw
+                if not kw_tokens or any(
+                    t in (j.get("title") or "").lower() or t in (j.get("description_snippet") or "").lower()
+                    for t in kw_tokens
+                )
+            ] or cached
+        else:
+            stale_results = fb_raw or cached
         response.headers["X-Jobs-Source"] = "cache"
-        stale_results = fb_query.order("scraped_at", desc=True).limit(params.limit * 2).execute().data or cached
         return _dedup_by_company(stale_results)[:params.limit]
 
     # Deduplicate by URL then upsert to shared pool
