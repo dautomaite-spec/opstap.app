@@ -4,20 +4,21 @@ import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'
+const BETA_INVITE_LIMIT = 5
 
 export default function ReferralSection() {
   const [code, setCode] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [creditsEarned, setCreditsEarned] = useState(0)
+  const [referralCount, setReferralCount] = useState(0)
 
   useEffect(() => {
     api.credits.balance().then(b => setCode(b.referral_code)).catch(() => {})
     api.credits.transactions()
       .then(txs => {
-        const earned = txs
-          .filter(t => t.reason?.toLowerCase().includes('referral') && t.delta > 0)
-          .reduce((sum, t) => sum + t.delta, 0)
-        setCreditsEarned(earned)
+        const referrals = txs.filter(t => t.reason?.toLowerCase().includes('referral') && t.delta > 0)
+        setCreditsEarned(referrals.reduce((sum, t) => sum + t.delta, 0))
+        setReferralCount(referrals.length)
       })
       .catch(() => {})
   }, [])
@@ -60,6 +61,16 @@ export default function ReferralSection() {
           <p className="text-xs font-medium" style={{ color: '#065f46' }}>
             +{creditsEarned} credit{creditsEarned !== 1 ? 's' : ''} verdiend
           </p>
+        )}
+      </div>
+      <div className="flex items-center justify-between mt-1.5">
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          Jij hebt{' '}
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{referralCount} van {BETA_INVITE_LIMIT}</span>
+          {' '}uitnodigingen gebruikt
+        </p>
+        {referralCount >= BETA_INVITE_LIMIT && (
+          <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Limiet bereikt</p>
         )}
       </div>
     </div>

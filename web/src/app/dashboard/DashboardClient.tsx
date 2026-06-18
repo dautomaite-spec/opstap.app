@@ -260,8 +260,15 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setJobsStale(false)
     try {
       const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
-      setJobs(results)
-      setJobsStale(stale)
+      if (results.length < 3 && loc) {
+        // Too few results — retry without location filter to widen the search
+        const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 20 })
+        setJobs(wider)
+        setJobsStale(widerStale)
+      } else {
+        setJobs(results)
+        setJobsStale(stale)
+      }
     } catch (err) {
       setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
     } finally {
