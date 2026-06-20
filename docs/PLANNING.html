@@ -301,7 +301,7 @@
   <aside class="toc">
     <div class="toc-header">
       <h1>Opstap</h1>
-      <p>Planning — 2026-06-18</p>
+      <p>Planning — 2026-06-20</p>
     </div>
     <nav>
       <div class="toc-section">Documenten</div>
@@ -336,7 +336,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Planning</h1>
-      <p>Bijgewerkt op 2026-06-18</p>
+      <p>Bijgewerkt op 2026-06-20</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -725,6 +725,7 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Outlook / Meta-knoppen en "Overslaan"-link verwijderd van inlogpagina (#93)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>CSP <code>connect-src</code> uitgebreid met Railway-backend URL in <code>web/next.config.ts</code> — voorkomt CSP-blokkering van API-verzoeken vanuit de browser (#94)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dagelijkse credits cron actief op cron-job.org: POST /admin/cron/daily-credits, dagelijks 06:00 Amsterdam-tijd — verdeelt +2 credits aan gebruikers met saldo &lt; 15</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Backend hardening (#103): grant_credits RPC parameternaam gecorrigeerd (p_reference_id → p_reference) in admin.py en apply.py; adjust_credits → grant_credits RPC-aanroepen gecorrigeerd; CreditAdjust-model verhard (reason max_length=200, delta ±10.000); toggle_suspend existence-check voor schrijven; _fetch_job_page SSRF-check op elke redirect-hop (was alleen eerste hop)</span></li>
         </ul>
       </div>
 
