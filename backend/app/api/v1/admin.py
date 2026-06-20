@@ -43,8 +43,8 @@ def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
 # ── User management ────────────────────────────────────────────────────────────
 
 class CreditAdjust(BaseModel):
-    delta: int          # positive = grant, negative = debit
-    reason: str         # shown in credit_transactions ledger
+    delta: int = Field(..., ge=-1000, le=10000)
+    reason: str = Field(..., max_length=200)
 
 
 class SuspendUpdate(BaseModel):
@@ -169,7 +169,7 @@ async def adjust_credits(
         "p_user_id": user_id,
         "p_delta": body.delta,
         "p_reason": body.reason,
-        "p_reference_id": None,
+        "p_reference": None,
     }).execute()
 
     new_balance_result = supabase.table("profiles").select("credits_balance,naam").eq("user_id", user_id).single().execute()
@@ -199,10 +199,10 @@ async def toggle_suspend(
     supabase=Depends(get_supabase),
 ):
     """Suspend or unsuspend a user account."""
-    supabase.table("profiles").update({"is_suspended": body.suspended}).eq("user_id", user_id).execute()
     result = supabase.table("profiles").select("naam").eq("user_id", user_id).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="User not found")
+    supabase.table("profiles").update({"is_suspended": body.suspended}).eq("user_id", user_id).execute()
     naam = (result.data[0] or {}).get("naam", "") or ""
 
     try:
@@ -297,7 +297,7 @@ async def cron_monthly_credits(
                 "p_user_id": uid,
                 "p_delta": 1,
                 "p_reason": "monthly_engagement",
-                "p_reference_id": month_key,
+                "p_reference": month_key,
             }).execute()
             granted += 1
         except Exception:
@@ -342,7 +342,7 @@ async def cron_daily_credits(
                 "p_user_id": uid,
                 "p_delta": BETA_DAILY_GRANT,
                 "p_reason": "beta_daily_grant",
-                "p_reference_id": day_key,
+                "p_reference": day_key,
             }).execute()
             granted += 1
         except Exception:

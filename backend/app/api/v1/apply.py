@@ -506,17 +506,23 @@ def _is_safe_url(url: str) -> tuple[bool, str]:
 
 
 async def _fetch_job_page(url: str) -> str:
-    """Fetch a job page without following redirects. Validates the redirect target if one occurs."""
+    """Fetch a job page, following redirects while SSRF-checking every hop."""
+    _REDIRECT_CODES = {301, 302, 303, 307, 308}
+    MAX_HOPS = 5
+    current = url
     async with httpx.AsyncClient(timeout=15, headers=_URL_HEADERS, follow_redirects=False) as client:
-        resp = await client.get(url)
-        if resp.status_code in (301, 302, 303, 307, 308):
-            location = resp.headers.get("location", "")
-            safe, _ = _is_safe_url(location)
-            if not safe:
-                raise ValueError("Redirect naar ongeldige URL")
-            resp = await client.get(location)
-        resp.raise_for_status()
-        return resp.text
+        for _ in range(MAX_HOPS):
+            resp = await client.get(current)
+            if resp.status_code in _REDIRECT_CODES:
+                location = resp.headers.get("location", "")
+                safe, _ = _is_safe_url(location)
+                if not safe:
+                    raise ValueError("Redirect naar ongeldige URL")
+                current = location
+                continue
+            resp.raise_for_status()
+            return resp.text
+        raise ValueError("Te veel redirects")
 
 
 @router.post("/from-url", response_model=UrlLetterResponse)
@@ -553,7 +559,7 @@ async def letter_from_url(
         html = await _fetch_job_page(body.url)
     except Exception:
         # Refund — fetch failure is not the user's fault
-        supabase.rpc("adjust_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_fetch_refund", "p_reference_id": None}).execute()
+        supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_fetch_refund", "p_reference": None}).execute()
         raise HTTPException(status_code=422, detail="Vacaturepagina kon niet worden geladen")
 
     soup = BeautifulSoup(html, "html.parser")
@@ -581,7 +587,7 @@ async def letter_from_url(
     description = soup.get_text(separator=" ", strip=True)[:2000]
 
     if not title:
-        supabase.rpc("adjust_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_no_title_refund", "p_reference_id": None}).execute()
+        supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_no_title_refund", "p_reference": None}).execute()
         raise HTTPException(status_code=422, detail="Geen functietitel gevonden op de pagina")
 
     # Generate letter — PromptInjectionError: no refund (malicious input), other errors: refund
@@ -596,7 +602,7 @@ async def letter_from_url(
     except PromptInjectionError:
         raise HTTPException(status_code=422, detail="De vacaturepagina bevat ongeldige inhoud")
     except Exception as exc:
-        supabase.rpc("adjust_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "letter_from_url_refund", "p_reference_id": None}).execute()
+        supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "letter_from_url_refund", "p_reference": None}).execute()
         raise HTTPException(status_code=500, detail="Briefgeneratie mislukt") from exc
 
     return {

@@ -1,5 +1,12 @@
 # Changelog — Opstap
 
+## 2026-06-20 (PR #103 — admin/apply hardening)
+- fix: grant_credits RPC param corrected p_reference_id → p_reference in admin.py and apply.py — calls were silently failing with wrong param name (#103)
+- fix: replace calls to non-existent adjust_credits RPC with correct grant_credits RPC throughout admin and apply modules (#103)
+- fix: CreditAdjust Pydantic model — reason max_length=200, delta bounded ±10000 to prevent unbounded credit adjustments (#103)
+- fix: toggle_suspend — existence check before write; returns 404 instead of 500 for unknown user (#103)
+- fix: _fetch_job_page SSRF — IP-range validation now applied on every redirect hop, not just the first request (#103)
+
 ## 2026-06-18 (post-beta-credits)
 - ops: daily-credits cron added to cron-job.org — POST /admin/cron/daily-credits, daily at 06:00 Amsterdam time (Europe/Amsterdam), x-admin-key header, idempotent (cap 15 credits/user)
 - fix: CSP connect-src in web/next.config.ts — added https://opstapapp-production.up.railway.app so the frontend can reach the Railway backend without CSP violations (#94)

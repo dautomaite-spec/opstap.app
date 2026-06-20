@@ -170,6 +170,7 @@
       <a href="#ip-rate-limiter">Global IP rate limiter</a>
       <a href="#beta-credits">Beta daily credits</a>
       <a href="#csp-config">CSP config (next.config.ts)</a>
+      <a href="#admin-apply-hardening">Admin &amp; apply hardening (#103)</a>
     </div>
   </nav>
 
@@ -653,6 +654,18 @@
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> CSP violations are silent in production (no visible error to the user) but block API calls entirely. If the app ever stops talking to the backend after a deploy, check the browser console for CSP errors before debugging the backend.</div>
     <div class="gotcha"><strong>Gotcha:</strong> When adding a new external service (analytics, CDN, edge function URL), update <code>connect-src</code> (and <code>script-src</code> / <code>img-src</code> as needed) in <code>web/next.config.ts</code> at the same time as wiring up the integration.</div>
+
+    <h2 id="admin-apply-hardening">Admin &amp; apply hardening (PR #103)</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li><strong>grant_credits RPC param fix</strong> — the RPC was being called with <code>p_reference_id</code> but the Supabase function signature expects <code>p_reference</code>. Corrected in <code>backend/app/api/v1/admin.py</code> and <code>backend/app/api/v1/apply.py</code>. Calls were silently failing (Supabase ignored the unknown parameter) without raising an error.</li>
+      <li><strong>adjust_credits → grant_credits</strong> — several call sites referenced a non-existent <code>adjust_credits</code> RPC. Replaced with the correct <code>grant_credits</code> RPC throughout admin and apply modules.</li>
+      <li><strong>CreditAdjust model hardening</strong> — <code>reason</code> field now has <code>max_length=200</code> (was unbounded); <code>delta</code> is clamped to ±10,000 via Pydantic <code>ge</code>/<code>le</code> constraints. Prevents an admin from accidentally (or maliciously) granting an arbitrarily large credit amount via the API.</li>
+      <li><strong>toggle_suspend existence check</strong> — the suspend endpoint now verifies the target user exists before attempting the write. Previously a missing user caused a 500; now returns a 404 with a clear message.</li>
+      <li><strong>_fetch_job_page SSRF on every redirect hop</strong> — the SSRF IP-range check (blocks private/loopback/link-local addresses) was previously applied only to the initial URL. If the server returned a 3xx redirect, the redirect target was fetched without re-validation. Now every hop goes through the same <code>socket.getaddrinfo</code> + range-check pipeline. Key file: <code>backend/app/api/v1/apply.py</code>.</li>
+    </ul>
+    <div class="gotcha"><strong>Pattern:</strong> SSRF protection must be applied on every HTTP hop, not just the first request. Attackers can chain redirects through a safe-looking URL to an internal endpoint. Always re-validate after following any 3xx response.</div>
+    <div class="gotcha"><strong>Pattern:</strong> When calling Supabase RPCs with keyword arguments, verify the param names match the SQL function signature exactly — Supabase silently ignores unknown kwargs instead of raising an error, which can mask broken call sites.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
