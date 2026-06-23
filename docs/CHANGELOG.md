@@ -1,5 +1,10 @@
 # Changelog — Opstap
 
+## 2026-06-23 (PR #106 — sollicitaties letter toggle + heading rename)
+- feat: "Bekijk brief" / "Verberg brief" inline toggle on each application card in sollicitaties/page.tsx — expands letter_nl without a modal; letter text loaded with the list response (no extra request) (#106)
+- ux: page heading on sollicitaties page renamed "Jouw reacties" → "Jouw sollicitaties" — clearer label, matches nav item wording (#106)
+- docs: LinkedIn NL scraper IP limitation note added to wiki — cloud/data-center IPs blocked by LinkedIn; scraper returns [] gracefully; residential proxy needed post-beta (#106)
+
 ## 2026-06-23 (LinkedIn NL scraper + schema hardening)
 - feat: scrape_linkedin_nl() added to job_scraper.py — LinkedIn guest jobs API, no auth, up to 5 results, graceful 429 handling
 - security: URL injection guard in scrape_linkedin_nl — only /jobs/view/ paths accepted; canonical URL reconstructed from path only, discarding raw API response URL
