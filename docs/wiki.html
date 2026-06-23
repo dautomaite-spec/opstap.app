@@ -173,6 +173,7 @@
       <a href="#csp-config">CSP config (next.config.ts)</a>
       <a href="#admin-apply-hardening">Admin &amp; apply hardening (#103)</a>
       <a href="#qa-deliverability">QA — deliverability (2026-06-23)</a>
+      <a href="#sollicitaties-letter-toggle">Sollicitaties letter toggle (PR #106)</a>
     </div>
   </nav>
 
@@ -694,6 +695,16 @@
       <li><strong>Admin panel</strong> — confirmed: user list, <code>PATCH</code> suspend/unsuspend, <code>POST</code> credits adjust all working after PR #103 fixes.</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> SendGrid only authenticates email from verified sender domains. If <code>SENDGRID_FROM_EMAIL</code> uses a domain that isn't verified in SendGrid (e.g. opstap.nl vs opstapapp.nl), emails are silently dropped — no bounce, no error in the API response.</div>
+
+    <h2 id="sollicitaties-letter-toggle">Sollicitaties page — letter toggle (PR #106)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/sollicitaties/page.tsx</code></li>
+      <li>"Bekijk brief" / "Verberg brief" toggle button on each application card — expands and collapses the <code>letter_nl</code> content inline, without opening a modal</li>
+      <li>Letter text is included in the applications list response and stored in component state; no extra API request on expand</li>
+      <li>Page heading renamed from "Jouw reacties" to "Jouw sollicitaties" — matches nav item label and is clearer to users</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> If <code>letter_nl</code> is null (e.g. for very old applications created before the letter column was added), the toggle button is hidden — do not render an empty expand block.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
