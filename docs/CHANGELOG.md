@@ -1,5 +1,11 @@
 # Changelog — Opstap
 
+## 2026-06-23 (LinkedIn NL scraper + schema hardening)
+- feat: scrape_linkedin_nl() added to job_scraper.py — LinkedIn guest jobs API, no auth, up to 5 results, graceful 429 handling
+- security: URL injection guard in scrape_linkedin_nl — only /jobs/view/ paths accepted; canonical URL reconstructed from path only, discarding raw API response URL
+- feat: scrape_linkedin_nl added to asyncio.gather() in jobs.py alongside Adzuna and Indeed; linkedin_limit = min(params.limit // 3, 5)
+- security: contract_type in JobSearchParams hardened from Optional[str] to Optional[Literal["Vast","Tijdelijk","Fulltime","Parttime"]] — rejects unknown values at schema level
+
 ## 2026-06-23 (QA — deliverability)
 - qa: mail-tester.com score 9/10 — "Wow! Perfect, you can send". DKIM ✓, SPF ✓, not blocklisted, no broken links. -1 from RCVD_IN_BL_SPAMCOP_NET (SendGrid shared IP on SpamCop list — infrastructure issue, fix = dedicated IP on SendGrid paid plan). DMARC record not yet set for opstapapp.nl (no impact on current score but flagged; add `v=DMARC1; p=none` TXT record at `_dmarc.opstapapp.nl` to resolve).
 

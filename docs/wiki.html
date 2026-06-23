@@ -146,6 +146,7 @@
       <a href="#salary-range">Salary range</a>
       <a href="#beschikbaarheid">Beschikbaarheid field</a>
       <a href="#job-scrapers">Job scrapers</a>
+      <a href="#linkedin-scraper">LinkedIn NL scraper</a>
       <a href="#saved-jobs">Saved jobs</a>
       <a href="#application-status">Application status</a>
       <a href="#url-to-letter">URL-to-letter</a>
@@ -363,13 +364,27 @@
     <h2 id="job-scrapers">Job scrapers</h2>
     <p><span class="tag tag-backend">backend</span></p>
     <ul>
-      <li>Key file: <code>backend/app/services/job_scraper.py</code>, wired in <code>backend/app/api/jobs.py</code></li>
-      <li>Two scrapers run in parallel via <code>asyncio.gather</code>: <code>scrape_adzuna()</code> (Adzuna NL REST API) and <code>scrape_indeed_nl()</code> (Indeed NL HTML via BeautifulSoup)</li>
-      <li>The previous code called <code>scrape_adzuna</code> twice — removed; results are now deduplicated by job URL before returning</li>
+      <li>Key file: <code>backend/app/services/job_scraper.py</code>, wired in <code>backend/app/api/v1/jobs.py</code></li>
+      <li>Three scrapers run in parallel via <code>asyncio.gather</code>: <code>scrape_adzuna()</code> (Adzuna NL REST API), <code>scrape_indeed_nl()</code> (Indeed NL HTML via BeautifulSoup), and <code>scrape_linkedin_nl()</code> (LinkedIn guest jobs API)</li>
+      <li>Results are deduplicated by job URL before returning; company diversity dedup (<code>_dedup_by_company</code>) caps results at 2 per employer</li>
       <li><code>beautifulsoup4</code> added to <code>requirements.txt</code></li>
       <li>Indeed NL scraper parses <code>https://nl.indeed.com/jobs?q=...&amp;l=...</code> HTML — may need periodic selector updates if Indeed changes its markup</li>
+      <li><code>contract_type</code> in <code>JobSearchParams</code> is a <code>Literal</code> type — only <code>"Vast"</code>, <code>"Tijdelijk"</code>, <code>"Fulltime"</code>, <code>"Parttime"</code> accepted; Pydantic rejects anything else with a 422</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> Indeed NL blocks requests without a realistic <code>User-Agent</code> header. The scraper sets a browser UA; if Indeed adds more bot detection this scraper will silently return 0 results — monitor job count in logs.</div>
+
+    <h2 id="linkedin-scraper">LinkedIn NL scraper</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key file: <code>backend/app/services/job_scraper.py</code> — function <code>scrape_linkedin_nl(query, location, limit)</code></li>
+      <li>Uses LinkedIn's public guest jobs API endpoint (no authentication or OAuth required) — the same endpoint LinkedIn's own job search pages hit before login</li>
+      <li>Returns up to 5 results per search (<code>linkedin_limit = min(params.limit // 3, 5)</code> in <code>jobs.py</code>)</li>
+      <li>Graceful 429 handling: if LinkedIn rate-limits the request the function logs a warning and returns an empty list rather than raising — the gather still collects results from Adzuna and Indeed</li>
+      <li><strong>URL injection guard:</strong> only URLs whose path starts with <code>/jobs/view/</code> are accepted. The canonical job URL is reconstructed from the path only (scheme + <code>www.linkedin.com</code> + path), discarding any query params or alternative hostnames from the API response</li>
+      <li>Wired into <code>asyncio.gather()</code> in <code>backend/app/api/v1/jobs.py</code> alongside the existing Adzuna and Indeed calls</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> LinkedIn's guest API is undocumented and may change without notice. If it starts returning 403/429 consistently, monitor for API changes or consider an authenticated approach. The scraper is designed to fail silently — check job-count metrics if LinkedIn results stop appearing.</div>
+    <div class="gotcha"><strong>Security:</strong> The URL reconstruction from path-only (not from the raw API response URL) prevents a compromised or spoofed API response from injecting arbitrary URLs into the job pool. Never trust the full URL from an external source — always reconstruct from the validated path segment.</div>
 
     <h2 id="saved-jobs">Saved jobs</h2>
     <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span><span class="tag tag-db">supabase</span></p>

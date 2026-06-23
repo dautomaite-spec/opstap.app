@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4, HttpUrl, Field
-from typing import Optional
+from typing import Literal, Optional
 from datetime import datetime
 
 
@@ -27,6 +27,6 @@ class JobSearchParams(BaseModel):
     keywords: Optional[str] = Field(None, max_length=200)
     location: Optional[str] = Field(None, max_length=200)
     radius_km: int = 30
-    contract_type: Optional[str] = None
+    contract_type: Optional[Literal["Vast", "Tijdelijk", "Fulltime", "Parttime"]] = None
     salary_min: Optional[int] = None
     limit: int = Field(20, ge=1, le=100)
