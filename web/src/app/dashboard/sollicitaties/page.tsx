@@ -35,6 +35,7 @@ export default function SollicitatiesPage() {
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [retryingId, setRetryingId] = useState<string | null>(null)
+  const [expandedLetter, setExpandedLetter] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -117,7 +118,7 @@ export default function SollicitatiesPage() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Jouw reacties</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Jouw sollicitaties</h1>
         {interviewCount > 0 && (
           <span
             className="text-xs font-bold px-2.5 py-1 rounded-full"
@@ -223,6 +224,15 @@ export default function SollicitatiesPage() {
                       {isRetrying ? 'Bezig…' : 'Opnieuw'}
                     </button>
                   )}
+                  {app.letter_nl && (
+                    <button
+                      onClick={() => setExpandedLetter(expandedLetter === app.id ? null : app.id)}
+                      className="text-xs px-2.5 py-1 rounded-lg font-medium transition hover:opacity-80"
+                      style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
+                    >
+                      {expandedLetter === app.id ? 'Verberg brief' : 'Bekijk brief'}
+                    </button>
+                  )}
                 </div>
                 {app.status === 'sent' && (
                   <div className="flex items-center gap-1">
@@ -246,6 +256,13 @@ export default function SollicitatiesPage() {
                   </div>
                 )}
               </div>
+              {expandedLetter === app.id && app.letter_nl && (
+                <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <p className="text-xs whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
+                    {app.letter_nl}
+                  </p>
+                </div>
+              )}
             </div>
           )
         })}
