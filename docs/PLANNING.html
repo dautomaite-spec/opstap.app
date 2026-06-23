@@ -301,7 +301,7 @@
   <aside class="toc">
     <div class="toc-header">
       <h1>Opstap</h1>
-      <p>Planning — 2026-06-20</p>
+      <p>Planning — 2026-06-23</p>
     </div>
     <nav>
       <div class="toc-section">Documenten</div>
@@ -336,7 +336,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Planning</h1>
-      <p>Bijgewerkt op 2026-06-20</p>
+      <p>Bijgewerkt op 2026-06-23</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -748,10 +748,10 @@
 
         <p style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 2px">Post-launch verificaties</p>
         <ul class="checklist">
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Volledige sollicitatieflow testen: zoeken → brief genereren → sollicitatie versturen → e-mail ontvangen bij werkgever.</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>AVG-verwijderingsstroom testen: account verwijderen → Supabase Storage CV verwijderd + Edge Function bevestigd.</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Adminpaneel verifiëren (/admin): gebruikerslijst zichtbaar, credits aanpassen werkt, schorsing werkt.</span></li>
-          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>SendGrid bezorgbaarheid controleren: testmail versturen en headers/spamscore controleren via mail-tester.com.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Volledige sollicitatieflow testen: zoeken → brief genereren → sollicitatie versturen → e-mail ontvangen bij werkgever. Bevestigd 2026-06-23: brief gegenereerd, status "sent", e-mail bezorgd in Gmail via sollicitaties@opstapapp.nl. Fix: SENDGRID_FROM_EMAIL gecorrigeerd van opstap.nl → opstapapp.nl (geverifieerd domein).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG-verwijderingsstroom testen: account verwijderen → Supabase Storage CV verwijderd + Edge Function bevestigd. Bevestigd 2026-06-23: DELETE /profile/me geeft 200, profiel weg, auth-gebruiker weg, CV-bestand weg.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Adminpaneel verifiëren (/admin): gebruikerslijst zichtbaar, credits aanpassen werkt, schorsing werkt. Bevestigd 2026-06-23: alle drie endpoints werken na fixes in PR #103.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid bezorgbaarheid controleren: testmail versturen en headers/spamscore controleren via mail-tester.com. Bevestigd 2026-06-23: 9/10 — DKIM ✓, SPF ✓, niet op blocklists. -1 punt door RCVD_IN_BL_SPAMCOP_NET (gedeeld SendGrid IP op SpamCop-lijst — oplosbaar met dedicated IP). DMARC-record nog in te stellen voor opstapapp.nl.</span></li>
         </ul>
       </div>
 
