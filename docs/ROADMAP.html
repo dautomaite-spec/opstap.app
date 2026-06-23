@@ -389,6 +389,13 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LinkedIn NL scraper IP limitation documented in wiki — Railway EU West (and all cloud/data-center IPs) are blocked by LinkedIn; scraper returns [] gracefully. Will work with a residential proxy post-beta.</span></li>
         </ul>
 
+        <div class="section-label">AVG data export — 2026-06-23</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Backend: <code>GET /profile/export</code> — AVG Art. 20 data portability endpoint. Returns profile, applications (with <code>letter_nl</code>), saved_jobs, credit_transactions, referral_uses as JSON download. Per-user 60s cooldown rate limit; <code>.limit(500)</code> on each query; uses <code>Response</code> with pre-serialised JSON string (avoids FastAPI <code>JSONResponse</code> datetime serialisation bug); graceful try/except on referral_uses.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Frontend: <code>api.profile.exportData()</code> method in <code>web/src/lib/api.ts</code> — returns <code>Blob</code> for browser download trigger.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Frontend: "Jouw gegevens" section added above danger zone in <code>SettingsClient.tsx</code> — "Download mijn gegevens" button; description lists what is included (profiel, sollicitaties, opgeslagen vacatures, credits, referrals).</span></li>
+        </ul>
+
         <div class="section-label">Nog te doen</div>
         <ul class="checklist">
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl registreren (handmatig, SIDN-registrar)</span></li>

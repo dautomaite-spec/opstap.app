@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
+from fastapi.responses import Response
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
+import json
 import re
 
 from app.core.supabase import get_supabase
@@ -132,6 +134,67 @@ async def delete_account(
     supabase.table("profiles").delete().eq("user_id", user_id).execute()
 
     return {"message": "Account deleted"}
+
+
+_export_cooldown: dict[str, datetime] = {}
+
+@router.get("/export")
+async def export_my_data(
+    request: Request,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    """AVG Art. 20 — return all personal data for this user as a downloadable JSON file."""
+    # Per-user cooldown: max 1 export per 60 seconds
+    now = datetime.now(timezone.utc)
+    last = _export_cooldown.get(user_id)
+    if last and (now - last).total_seconds() < 60:
+        raise HTTPException(status_code=429, detail="Even wachten — je kunt maximaal 1 keer per minuut exporteren")
+    _export_cooldown[user_id] = now
+
+    profile_raw = supabase.table("profiles").select(
+        "naam,email,woonplaats,functietitel,werklocatie,opleidingsniveau,uren_per_week,"
+        "beschikbaarheid,brief_taal,leeftijd,extra_info,job_titles,salary_min,salary_max,"
+        "referral_code,created_at,updated_at,cv_expires_at,avg_consent_given_at"
+    ).eq("user_id", user_id).execute()
+
+    applications_raw = supabase.table("applications").select(
+        "id,job_title,company,job_location,job_salary,status,letter_nl,sent_at,created_at,replied_at,letter_rating"
+    ).eq("user_id", user_id).order("created_at", desc=True).limit(500).execute()
+
+    saved_raw = supabase.table("saved_jobs").select(
+        "job_id,job_data,saved_at"
+    ).eq("user_id", user_id).limit(500).execute()
+
+    credits_raw = supabase.table("credit_transactions").select(
+        "delta,reason,created_at"
+    ).eq("user_id", user_id).order("created_at", desc=True).limit(500).execute()
+
+    # referral_uses may not exist yet; skip gracefully
+    try:
+        referral_raw = supabase.table("referral_uses").select(
+            "referrer_user_id,referee_user_id,created_at"
+        ).or_(f"referrer_user_id.eq.{user_id},referee_user_id.eq.{user_id}").execute()
+        referrals = referral_raw.data or []
+    except Exception:
+        referrals = []
+
+    payload = {
+        "exported_at": now.isoformat(),
+        "user_id": user_id,
+        "profile": profile_raw.data[0] if profile_raw.data else {},
+        "applications": applications_raw.data or [],
+        "saved_jobs": saved_raw.data or [],
+        "credit_transactions": credits_raw.data or [],
+        "referral_uses": referrals,
+    }
+
+    content = json.dumps(payload, ensure_ascii=False, indent=2, default=str)
+    return Response(
+        content=content,
+        media_type="application/json",
+        headers={"Content-Disposition": 'attachment; filename="opstap-mijn-gegevens.json"'},
+    )
 
 
 @router.post("/cv", status_code=200)
