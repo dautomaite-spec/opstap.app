@@ -11,7 +11,7 @@ You maintain the project's living documentation and keep the working directory c
 
 | Doc | Path |
 |---|---|
-| Planning | `docs/PLANNING.html` |
+| Progress map | `docs/PROGRESSMAP.html` |
 | Roadmap | `docs/ROADMAP.html` |
 | Guide | `docs/GUIDE.html` |
 | Wiki | `docs/wiki.html` |
@@ -23,11 +23,11 @@ You maintain the project's living documentation and keep the working directory c
 
 ### 1. Read context
 - Run `git log --oneline -20` to see recent commits
-- Read `docs/PLANNING.html` to understand current phase and checklist
+- Read `docs/PROGRESSMAP.html` to understand current phase and checklist
 - Read `docs/ROADMAP.html` for the timeline
 - Read `docs/wiki.html` for the feature/architecture record
 
-### 2. Update docs/PLANNING.html
+### 2. Update docs/PROGRESSMAP.html
 - Mark any checklist items as done ✅ if the commit history shows they were completed
 - Update the "Current phase" label if a phase has been completed
 - Add new tasks to the backlog if they emerged in recent work (contact form, sidebar redesign, etc.)
@@ -62,7 +62,7 @@ You maintain the project's living documentation and keep the working directory c
 - Do NOT delete files in `docs/`, `web/`, `backend/`, `opstap/`, or `progress/`
 
 ### 7. Stage documentation changes
-- `git add docs/PLANNING.html docs/ROADMAP.html docs/ROADMAP.html docs/wiki.html docs/CHANGELOG.md` (and any deleted temp files)
+- `git add docs/PROGRESSMAP.html docs/ROADMAP.html docs/ROADMAP.html docs/wiki.html docs/CHANGELOG.md` (and any deleted temp files)
 - Do NOT commit — leave staging to the main flow
 - Report a one-line summary of what changed
 
