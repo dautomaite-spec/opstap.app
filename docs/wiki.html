@@ -174,6 +174,7 @@
       <a href="#admin-apply-hardening">Admin &amp; apply hardening (#103)</a>
       <a href="#qa-deliverability">QA — deliverability (2026-06-23)</a>
       <a href="#sollicitaties-letter-toggle">Sollicitaties letter toggle (PR #106)</a>
+      <a href="#avg-export">AVG data export (Art. 20)</a>
     </div>
   </nav>
 
@@ -705,6 +706,22 @@
       <li>Page heading renamed from "Jouw reacties" to "Jouw sollicitaties" — matches nav item label and is clearer to users</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> If <code>letter_nl</code> is null (e.g. for very old applications created before the letter column was added), the toggle button is hidden — do not render an empty expand block.</div>
+
+    <h2 id="avg-export">AVG data export (Art. 20 — right to data portability)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Endpoint: <code>GET /profile/export</code> in <code>backend/app/api/v1/profile.py</code> — auth-guarded to the requesting user</li>
+      <li>Returns a JSON file download containing: profile fields, all approved applications (including <code>letter_nl</code>), saved jobs, credit transaction history, and referral_uses</li>
+      <li>Rate limit: per-user 60-second cooldown stored in an in-process dict — prevents abuse while keeping the endpoint accessible for legitimate use</li>
+      <li><code>.limit(500)</code> applied to every Supabase query — bounds the response size even for power users with large histories</li>
+      <li><strong>Serialisation:</strong> uses FastAPI <code>Response</code> with a pre-serialised JSON string (via <code>json.dumps(..., default=str)</code>) instead of <code>JSONResponse</code> — avoids a FastAPI/Pydantic datetime serialisation bug that would raise a <code>TypeError</code> on <code>datetime</code> objects in nested dicts</li>
+      <li>referral_uses query wrapped in try/except — if the table is absent or the query fails, the export still succeeds with an empty list for that field</li>
+      <li>Frontend: <code>api.profile.exportData()</code> in <code>web/src/lib/api.ts</code> — fetches the endpoint, returns a <code>Blob</code>, triggers a browser download via a temporary <code>&lt;a&gt;</code> element</li>
+      <li>Frontend: "Jouw gegevens" section added above the danger zone in <code>web/src/app/dashboard/settings/SettingsClient.tsx</code> — "Download mijn gegevens" button with description of what is included</li>
+    </ul>
+    <div class="gotcha"><strong>AVG note:</strong> Art. 20 requires that data be provided in a structured, commonly used, machine-readable format — JSON satisfies this. The download must include all personal data the user has provided or that was generated from their activity. The current export covers all required categories.</div>
+    <div class="gotcha"><strong>Gotcha:</strong> The in-process rate limit dict resets on Railway dyno restart. This is acceptable for a single-instance deployment; if multiple replicas are added, move the cooldown tracking to Supabase (e.g. a <code>last_export_at</code> column on profiles).</div>
+    <div class="gotcha"><strong>Security:</strong> Security review scored 8/10 — rate limit, size cap, and serialisation bug were all hardened before merge. The endpoint is auth-guarded and only returns data belonging to the authenticated user.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

@@ -1,5 +1,12 @@
 # Changelog — Opstap
 
+## 2026-06-23 (AVG data export — Art. 20 data portability)
+- feat: GET /profile/export endpoint in backend/app/api/v1/profile.py — returns profile, applications (with letter_nl), saved_jobs, credit_transactions, referral_uses as JSON download; AVG Art. 20 right to data portability
+- security: per-user 60s cooldown rate limit on /profile/export (in-process dict); .limit(500) on each Supabase query to bound response size
+- fix: use Response + json.dumps(default=str) instead of JSONResponse — avoids FastAPI datetime serialisation TypeError on nested datetime objects
+- feat: api.profile.exportData() in web/src/lib/api.ts — returns Blob for browser download trigger
+- feat: "Jouw gegevens" section above danger zone in SettingsClient.tsx — "Download mijn gegevens" button with description of included data (profiel, sollicitaties, opgeslagen vacatures, credits, referrals)
+
 ## 2026-06-23 (PR #106 — sollicitaties letter toggle + heading rename)
 - feat: "Bekijk brief" / "Verberg brief" inline toggle on each application card in sollicitaties/page.tsx — expands letter_nl without a modal; letter text loaded with the list response (no extra request) (#106)
 - ux: page heading on sollicitaties page renamed "Jouw reacties" → "Jouw sollicitaties" — clearer label, matches nav item wording (#106)

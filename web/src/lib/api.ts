@@ -69,6 +69,17 @@ export const api = {
     },
     deleteCV: () => request<void>('DELETE', '/api/v1/profile/cv'),
     deleteAccount: () => request<void>('DELETE', '/api/v1/profile/me'),
+    exportData: async () => {
+      const token = await getToken()
+      const res = await fetch(`${BASE}/api/v1/profile/export`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }))
+        throw new ApiError(res.status, err.detail ?? res.statusText)
+      }
+      return res.blob()
+    },
   },
   jobs: {
     search: (params: JobSearchParams) => request<Job[]>('POST', '/api/v1/jobs/search', params),
