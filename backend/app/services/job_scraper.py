@@ -1,8 +1,9 @@
 """
-Job scraper service — Adzuna NL API (primary) + Indeed NL HTML scraper (secondary).
+Job scraper service — Adzuna NL API (primary) + Indeed NL + LinkedIn NL HTML scrapers.
 
 Adzuna: free REST API with native NL support — https://developer.adzuna.com/docs/search
 Indeed NL: HTML scraper using httpx + BeautifulSoup, respects robots.txt query limit.
+LinkedIn NL: guest jobs API (no auth) — returns HTML fragments, capped at 5 results/call.
 """
 
 import asyncio
@@ -243,6 +244,98 @@ async def scrape_indeed_nl(keywords: str, location: str = "", limit: int = 10) -
 
     except Exception:
         logger.warning("Indeed NL scraper error", exc_info=True)
+        return []
+
+
+async def scrape_linkedin_nl(keywords: str, location: str = "", limit: int = 5) -> list[dict]:
+    """
+    Scrapes LinkedIn NL via the public guest jobs API (no auth required).
+    Returns at most `limit` jobs (keep low — shared IP rate-limits quickly).
+    Gracefully returns [] on 429, bot-detection, or any error.
+    """
+    if not _BS4_AVAILABLE:
+        logger.warning("beautifulsoup4 not installed — LinkedIn NL scraper skipped")
+        return []
+
+    params = urlencode({
+        "keywords": keywords,
+        "location": location or "Nederland",
+        "f_TPR": "r86400",  # posted in last 24h
+        "start": "0",
+    })
+    url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?{params}"
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept-Language": "nl-NL,nl;q=0.9",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=headers, follow_redirects=True) as client:
+            resp = await client.get(url)
+            if resp.status_code == 429:
+                logger.warning("LinkedIn NL guest API rate-limited (429)")
+                return []
+            if resp.status_code != 200:
+                logger.warning("LinkedIn NL returned %s", resp.status_code)
+                return []
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+            results = []
+
+            for card in soup.select("div.base-card,li.jobs-search__results-list > div")[:limit]:
+                title_el = card.select_one("h3.base-search-card__title")
+                company_el = card.select_one("h4.base-search-card__subtitle")
+                location_el = card.select_one("span.job-search-card__location")
+                time_el = card.select_one("time")
+                link_el = card.select_one("a.base-card__full-link,a[href*='/jobs/view/']")
+
+                title = title_el.get_text(strip=True) if title_el else None
+                company = company_el.get_text(strip=True) if company_el else "Onbekend"
+                loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
+                href = link_el.get("href", "") if link_el else ""
+
+                # Only accept LinkedIn job view URLs to prevent open redirect injection
+                parsed = urlparse(href)
+                if parsed.netloc not in ("www.linkedin.com", "linkedin.com") or "/jobs/view/" not in parsed.path:
+                    continue
+
+                # Strip query/fragment — clean canonical URL
+                job_url = f"https://www.linkedin.com{parsed.path}"
+
+                if not title or not job_url:
+                    continue
+
+                posted_at = None
+                if time_el and time_el.get("datetime"):
+                    try:
+                        posted_at = datetime.fromisoformat(
+                            time_el["datetime"].replace("Z", "+00:00")
+                        ).isoformat()
+                    except ValueError:
+                        pass
+
+                results.append({
+                    "title": title,
+                    "company": company,
+                    "location": loc,
+                    "url": job_url,
+                    "description_snippet": "",
+                    "salary_range": "",
+                    "source": "linkedin",
+                    "scraped_at": _now(),
+                    "posted_at": posted_at,
+                    "contract_type": "",
+                    "salary_min_raw": None,
+                    "salary_max_raw": None,
+                    "salary_hourly": "",
+                })
+
+            return results
+
+    except Exception:
+        logger.warning("LinkedIn NL scraper error", exc_info=True)
         return []
 
 
