@@ -8,7 +8,7 @@ It helps users upload a CV or enter their profile manually, search Dutch job boa
 `C:\Users\donn9\Opstap.App`
 
 ## Current phase
-Planning — see PLANNING.md for full details and progress checklist.
+Beta — see docs/PROGRESSMAP.html for full details and progress checklist.
 
 ## Language
 - This project is in **English** in code, comments, and planning docs
