@@ -1,5 +1,14 @@
 # Changelog — Opstap
 
+## 2026-06-23 (QA — deliverability)
+- qa: mail-tester.com score 9/10 — "Wow! Perfect, you can send". DKIM ✓, SPF ✓, not blocklisted, no broken links. -1 from RCVD_IN_BL_SPAMCOP_NET (SendGrid shared IP on SpamCop list — infrastructure issue, fix = dedicated IP on SendGrid paid plan). DMARC record not yet set for opstapapp.nl (no impact on current score but flagged; add `v=DMARC1; p=none` TXT record at `_dmarc.opstapapp.nl` to resolve).
+
+## 2026-06-23 (QA — E2E apply flow fix)
+- fix: SENDGRID_FROM_EMAIL corrected from sollicitaties@opstap.nl → sollicitaties@opstapapp.nl in Railway env vars — opstap.nl was not authenticated in SendGrid so all application emails silently failed; opstapapp.nl is the verified domain (SendGrid domain auth: em5548.opstapapp.nl)
+- qa: E2E apply flow confirmed end-to-end: approve endpoint returns status "sent", email delivered to Gmail from sollicitaties@opstapapp.nl with correct Dutch motivation letter
+- qa: AVG delete flow confirmed: DELETE /profile/me wipes profile row, auth user, and CV from Supabase Storage in one call
+- qa: Admin panel confirmed: user list, PATCH suspend/unsuspend, POST credits adjust all working after PR #103 fixes
+
 ## 2026-06-20 (PR #103 — admin/apply hardening)
 - fix: grant_credits RPC param corrected p_reference_id → p_reference in admin.py and apply.py — calls were silently failing with wrong param name (#103)
 - fix: replace calls to non-existent adjust_credits RPC with correct grant_credits RPC throughout admin and apply modules (#103)

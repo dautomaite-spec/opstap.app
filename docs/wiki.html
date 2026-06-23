@@ -171,6 +171,7 @@
       <a href="#beta-credits">Beta daily credits</a>
       <a href="#csp-config">CSP config (next.config.ts)</a>
       <a href="#admin-apply-hardening">Admin &amp; apply hardening (#103)</a>
+      <a href="#qa-deliverability">QA — deliverability (2026-06-23)</a>
     </div>
   </nav>
 
@@ -666,6 +667,17 @@
     </ul>
     <div class="gotcha"><strong>Pattern:</strong> SSRF protection must be applied on every HTTP hop, not just the first request. Attackers can chain redirects through a safe-looking URL to an internal endpoint. Always re-validate after following any 3xx response.</div>
     <div class="gotcha"><strong>Pattern:</strong> When calling Supabase RPCs with keyword arguments, verify the param names match the SQL function signature exactly — Supabase silently ignores unknown kwargs instead of raising an error, which can mask broken call sites.</div>
+
+    <h2 id="qa-deliverability">QA — deliverability (2026-06-23)</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li><strong>E2E apply flow</strong> — confirmed end-to-end 2026-06-23: <code>POST /apply/approve</code> returns status <code>"sent"</code>, email arrives in Gmail from <code>sollicitaties@opstapapp.nl</code> with correct Dutch motivation letter. Root cause of previous silent failures: <code>SENDGRID_FROM_EMAIL</code> env var was set to <code>sollicitaties@opstap.nl</code> (unverified domain) — corrected to <code>sollicitaties@opstapapp.nl</code> in Railway.</li>
+      <li><strong>mail-tester.com score: 9/10</strong> — DKIM ✓, SPF ✓, not on major blocklists, no broken links. -1 from <code>RCVD_IN_BL_SPAMCOP_NET</code> (shared SendGrid IP on SpamCop list). Fix: dedicated IP on SendGrid paid plan.</li>
+      <li><strong>DMARC not yet set</strong> — no impact on current score but recommended. Add TXT record <code>v=DMARC1; p=none</code> at <code>_dmarc.opstapapp.nl</code> via Cloudflare DNS.</li>
+      <li><strong>AVG delete flow</strong> — confirmed: <code>DELETE /profile/me</code> returns 200, profile row deleted, auth user deleted, CV file deleted from Supabase Storage in one call.</li>
+      <li><strong>Admin panel</strong> — confirmed: user list, <code>PATCH</code> suspend/unsuspend, <code>POST</code> credits adjust all working after PR #103 fixes.</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> SendGrid only authenticates email from verified sender domains. If <code>SENDGRID_FROM_EMAIL</code> uses a domain that isn't verified in SendGrid (e.g. opstap.nl vs opstapapp.nl), emails are silently dropped — no bounce, no error in the API response.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
