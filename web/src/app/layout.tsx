@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: 'k-QpiKEmYnTZyhWo9BruNyPJmO45ZHfcVfJh1YfvI1g',
+  },
 }
 
 const themeScript = `
