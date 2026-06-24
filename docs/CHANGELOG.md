@@ -1,5 +1,25 @@
 # Changelog — Opstap
 
+## 2026-06-24 (PR #120 — remove all em dashes)
+- fix: removed every em dash (U+2014) from 28 web source files — replaced with hyphens, colons, pipes, or restructured sentences; covers page titles, visible UI copy, and code comments
+
+## 2026-06-24 (PR #119 — open registration CTA)
+- feat: replaced waitlist form on homepage with direct account creation CTA — product is live and registration is open
+
+## 2026-06-24 (PR #118 — invite landing page tone)
+- fix: rewrote /invite/[code] landing page with welcoming, personal tone; new headline "Fijn dat je er bent."; steps focus on user benefit
+
+## 2026-06-24 (PR #117 — invite page copy)
+- fix: removed em dashes and "geen creditcard nodig" line from /invite/[code] page
+
+## 2026-06-24 (PR #116 — invite landing page)
+- feat: new /invite/[code] landing page — explains what Opstap is, 4-step how-it-works flow, CTAs pre-filled with invite code; noindex so it does not pollute search results
+
+## 2026-06-24 (PR #115 — onboarding UX)
+- feat: required job title field in onboarding welkom step 1 so auto-search always fires on first dashboard visit
+- feat: added pulse skeleton for the searching state in DashboardClient
+- fix: asterisk legend added to welkom form for required fields (dutch-copy review)
+
 ## 2026-06-24 (PR #113 — reactivation email blast)
 - feat: send_reactivation() email function in email_sender.py — personalised Dutch re-engagement email to lapsed beta users
 - feat: POST /admin/blast/reactivation in admin.py — sends reactivation email to all users who have not logged in for 14+ days; admin-key guarded
