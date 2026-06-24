@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Q&amp;A Form 001</title>
+<style>
+  :root {
+    --indigo: #3d3a8c;
+    --indigo-light: #6c67c4;
+    --lavender: #eeedf8;
+    --lavender-card: #e2e0f5;
+    --text: #1a1830;
+    --muted: #6b6880;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --border: #d4d1ef;
+    --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--lavender);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 40px 20px 80px;
+  }
+  .container { max-width: 760px; margin: 0 auto; }
+
+  header {
+    background: var(--indigo);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    color: white;
+  }
+  header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+  header p { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+  .form-num {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .q-card {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+  }
+  .q-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--indigo-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .q-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .q-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .danger-badge {
+    display: inline-block;
+    background: #fee2e2;
+    color: var(--red);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fafafa;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  textarea:focus { border-color: var(--indigo-light); background: #fff; }
+
+  input[type="text"] {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]:focus { border-color: var(--indigo-light); background: #fff; }
+
+  .radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .radio-group label, .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: background 0.12s;
+    user-select: none;
+  }
+  .radio-group label:hover, .checkbox-group label:hover { background: var(--lavender); }
+  .radio-group input, .checkbox-group input { accent-color: var(--indigo); width: 15px; height: 15px; }
+
+  .inline-radio { flex-direction: row; flex-wrap: wrap; }
+  .inline-radio label { flex: 1 1 auto; min-width: 120px; }
+
+  .submit-row {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  button[type="submit"] {
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button[type="submit"]:hover { opacity: 0.88; }
+  .submit-note { font-size: 12px; color: var(--muted); }
+
+  #copy-output {
+    display: none;
+    margin-top: 28px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  #copy-output h2 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+  #output-text {
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: #f4f3fb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    min-height: 200px;
+    resize: vertical;
+    color: var(--text);
+    outline: none;
+  }
+  .copy-btn {
+    margin-top: 10px;
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .copy-btn:hover { opacity: 0.88; }
+  .copy-confirm { font-size: 12px; color: var(--green); margin-left: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="form-num">Form 001 — 2026-06-23</div>
+    <h1>Opstap — Q&amp;A Session</h1>
+    <p>Answer what you can, skip what's unclear. Hit "Compile answers" when done — copy the output and paste it to Claude.</p>
+  </header>
+
+  <form id="qa-form">
+
+    <!-- Q1 -->
+    <div class="q-card">
+      <div class="q-num">Question 1</div>
+      <div class="q-text">Who are the first beta users?</div>
+      <div class="q-sub">Names, roles, or just a rough description (e.g. "3 friends, 2 ex-colleagues"). Helps calibrate how much hand-holding to build in.</div>
+      <textarea name="q1" placeholder="e.g. Sander (friend), Roemer (colleague), a few people from my network…"></textarea>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card">
+      <div class="q-num">Question 2</div>
+      <div class="q-text">When do you want to send the first invites?</div>
+      <div class="q-sub">Today, this week, next week, after a specific fix?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q2" value="today"> Today</label>
+        <label><input type="radio" name="q2" value="this_week"> This week</label>
+        <label><input type="radio" name="q2" value="next_week"> Next week</label>
+        <label><input type="radio" name="q2" value="after_fix"> After a specific fix (explain in Q20)</label>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card">
+      <div class="q-num">Question 3</div>
+      <div class="q-text">DMARC record — should I set it up now?<span class="danger-badge">Deliverability</span></div>
+      <div class="q-sub">Adding <code>v=DMARC1; p=none; rua=mailto:dmarc@opstapapp.nl</code> as a TXT record at <code>_dmarc.opstapapp.nl</code> in Cloudflare improves email deliverability. Currently at 9/10 without it. Do you want me to walk through this, or do you want to do it yourself?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q3" value="yes_guide"> Yes — give me the exact steps to paste into Cloudflare</label>
+        <label><input type="radio" name="q3" value="yes_auto"> Yes — do it automatically if you can</label>
+        <label><input type="radio" name="q3" value="later"> Later — not a priority right now</label>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card">
+      <div class="q-num">Question 4</div>
+      <div class="q-text">Is opstap.nl (without "app") registered?</div>
+      <div class="q-sub">We're on opstapapp.nl. If you own opstap.nl too, we should redirect it. If not, someone else could register it and cause brand confusion.</div>
+      <div class="radio-group inline-radio">
+        <label><input type="radio" name="q4" value="yes_redirect"> I own it — redirect it</label>
+        <label><input type="radio" name="q4" value="yes_nothing"> I own it — leave it</label>
+        <label><input type="radio" name="q4" value="no"> I don't own it</label>
+        <label><input type="radio" name="q4" value="unsure"> Not sure</label>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q-card">
+      <div class="q-num">Question 5</div>
+      <div class="q-text">Mollie iDEAL payments — when should we build this?</div>
+      <div class="q-sub">Currently deferred. Beta users get daily free credits. When should real payments go live?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q5" value="before_10"> Before 10 users (immediately)</label>
+        <label><input type="radio" name="q5" value="after_10"> After first 10 active users</label>
+        <label><input type="radio" name="q5" value="after_50"> After 50 active users</label>
+        <label><input type="radio" name="q5" value="after_100"> After 100 active users</label>
+        <label><input type="radio" name="q5" value="manual"> When I say so</label>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q-card">
+      <div class="q-num">Question 6</div>
+      <div class="q-text">Flutter mobile app — in scope for beta?</div>
+      <div class="q-sub">The stack lists Flutter (iOS + Android) but all development has been web. Is web-only fine for beta, or do we need a mobile app?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q6" value="web_only"> Web-only is fine for beta — mobile is v2</label>
+        <label><input type="radio" name="q6" value="mobile_soon"> Build a basic Flutter app before inviting more than ~20 users</label>
+        <label><input type="radio" name="q6" value="mobile_now"> Start mobile now — it's a hard requirement</label>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="q-card">
+      <div class="q-num">Question 7</div>
+      <div class="q-text">LinkedIn job results are 0 in production<span class="danger-badge">Known bug</span></div>
+      <div class="q-sub">Railway's cloud IPs are blocked by LinkedIn's bot detection. Adzuna and Indeed still work. Options: (a) leave it — 2 sources is enough for beta, (b) pay for a residential proxy service (~€15–50/mo), (c) find a free workaround.</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q7" value="leave"> Leave it — 2 sources is fine for beta</label>
+        <label><input type="radio" name="q7" value="proxy_paid"> Pay for a residential proxy — investigate options</label>
+        <label><input type="radio" name="q7" value="workaround"> Find a free workaround first</label>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="q-card">
+      <div class="q-num">Question 8</div>
+      <div class="q-text">SpamCop -1 on deliverability — dedicated SendGrid IP?<span class="danger-badge">Deliverability</span></div>
+      <div class="q-sub">Currently 9/10 on mail-tester.com. The -1 is from a shared SendGrid IP on SpamCop's blocklist. A dedicated IP (SendGrid Pro, ~$30–90/mo) would fix it. Worth it now?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q8" value="now"> Yes — get dedicated IP now (9/10 isn't good enough)</label>
+        <label><input type="radio" name="q8" value="after_beta"> After beta — when there's actual revenue</label>
+        <label><input type="radio" name="q8" value="never"> No — 9/10 is fine, emails are landing</label>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="q-card">
+      <div class="q-num">Question 9</div>
+      <div class="q-text">Daily credits for beta — does the current setup feel right?</div>
+      <div class="q-sub">Currently: +5 at signup, +2/day up to max 15. Each application costs 1 credit. So a user can apply to ~2 jobs/day without ever running out. Too much? Too little?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q9" value="fine"> Feels right — keep it</label>
+        <label><input type="radio" name="q9" value="too_much"> Too generous — reduce it</label>
+        <label><input type="radio" name="q9" value="too_little"> Too restrictive — increase it</label>
+        <label><input type="radio" name="q9" value="change"> Change it (explain below)</label>
+      </div>
+      <textarea name="q9_note" placeholder="Optional: what would you change?"></textarea>
+    </div>
+
+    <!-- Q10 -->
+    <div class="q-card">
+      <div class="q-num">Question 10</div>
+      <div class="q-text">Any other Dutch job boards to add?</div>
+      <div class="q-sub">Currently: Adzuna NL, Indeed NL, LinkedIn NL (broken in prod). Other candidates: Nationale Vacaturebank, Jobbird, Werkzoeken.nl, Monsterboard. Worth adding any of these for beta?</div>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="q10" value="nvb"> Nationale Vacaturebank</label>
+        <label><input type="checkbox" name="q10" value="jobbird"> Jobbird</label>
+        <label><input type="checkbox" name="q10" value="monsterboard"> Monsterboard</label>
+        <label><input type="checkbox" name="q10" value="werkzoeken"> Werkzoeken.nl</label>
+        <label><input type="checkbox" name="q10" value="none"> None — 2-3 sources is enough</label>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="q-card">
+      <div class="q-num">Question 11</div>
+      <div class="q-text">Should there be a "Report a bug" button in the dashboard?</div>
+      <div class="q-sub">Beta users will find bugs. Options: a simple mailto: link, a Google Form, or a feedback widget. Worth adding before inviting people?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q11" value="mailto"> Yes — simple mailto: link to your email</label>
+        <label><input type="radio" name="q11" value="form"> Yes — Google Form or Tally form</label>
+        <label><input type="radio" name="q11" value="no"> No — I'll collect feedback manually</label>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="q-card">
+      <div class="q-num">Question 12</div>
+      <div class="q-text">Referral cap — should it stay at 5 per user?</div>
+      <div class="q-sub">Currently each beta user can invite 5 others (and both get +3 credits). During controlled beta this limits growth. Want to keep it at 5, lower it, raise it, or make it unlimited?</div>
+      <div class="radio-group inline-radio">
+        <label><input type="radio" name="q12" value="2"> Cap at 2</label>
+        <label><input type="radio" name="q12" value="5"> Keep at 5</label>
+        <label><input type="radio" name="q12" value="10"> Raise to 10</label>
+        <label><input type="radio" name="q12" value="unlimited"> Unlimited</label>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="q-card">
+      <div class="q-num">Question 13</div>
+      <div class="q-text">Admin notification when a new user signs up?</div>
+      <div class="q-sub">Would you want an email (to d.automaite@gmail.com) every time someone creates an account? Useful during early beta to track growth without opening Supabase.</div>
+      <div class="radio-group inline-radio">
+        <label><input type="radio" name="q13" value="yes"> Yes — notify me</label>
+        <label><input type="radio" name="q13" value="no"> No — I'll check the admin panel</label>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="q-card">
+      <div class="q-num">Question 14</div>
+      <div class="q-text">Terms of Service — do you have one?<span class="danger-badge">Legal</span></div>
+      <div class="q-sub">There's a /privacy page (AVG-compliant). But there's no Terms of Service page. For a beta this is low risk, but once real users apply for real jobs with real emails going out, ToS creates a legal baseline. Should I write a basic Dutch ToS for /voorwaarden?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q14" value="yes_now"> Yes — write a basic ToS before beta</label>
+        <label><input type="radio" name="q14" value="yes_later"> Yes — but after beta launch</label>
+        <label><input type="radio" name="q14" value="no"> No — privacy page is enough for now</label>
+      </div>
+    </div>
+
+    <!-- Q15 -->
+    <div class="q-card">
+      <div class="q-num">Question 15</div>
+      <div class="q-text">SendGrid API key is Full Access<span class="danger-badge">Security</span></div>
+      <div class="q-sub">The current SendGrid key has Full Access permissions. If it ever leaks (Railway breach, .env committed, etc.) an attacker could read all your email lists, contacts, and templates. Scoping it to "Mail Send" only takes 2 minutes in SendGrid dashboard. Should I guide you through this now?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q15" value="now"> Yes — scope it down now</label>
+        <label><input type="radio" name="q15" value="later"> Later</label>
+        <label><input type="radio" name="q15" value="skip"> Skip — not worried about it</label>
+      </div>
+    </div>
+
+    <!-- Q16 -->
+    <div class="q-card">
+      <div class="q-num">Question 16</div>
+      <div class="q-text">Plausible trial ends in ~25 days — then what?</div>
+      <div class="q-sub">Plausible costs €9/mo after the trial. Options: pay, switch to a free alternative (Umami self-hosted, PostHog free tier), or go without analytics. What's the plan?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q16" value="pay"> Pay Plausible — €9/mo is fine</label>
+        <label><input type="radio" name="q16" value="umami"> Switch to Umami (self-hosted, free)</label>
+        <label><input type="radio" name="q16" value="posthog"> Switch to PostHog free tier</label>
+        <label><input type="radio" name="q16" value="none"> Drop analytics entirely for now</label>
+      </div>
+    </div>
+
+    <!-- Q17 -->
+    <div class="q-card">
+      <div class="q-num">Question 17</div>
+      <div class="q-text">Railway costs — are you on a paid plan?</div>
+      <div class="q-sub">Railway's Hobby plan is $5/mo + usage. If beta gets more than ~50 active users the backend could need scaling. Are you monitoring Railway costs, and is there a spending limit set?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q17" value="yes_limit"> Yes — I have a spending limit set</label>
+        <label><input type="radio" name="q17" value="yes_no_limit"> Yes — but no spending limit (set one for me)</label>
+        <label><input type="radio" name="q17" value="free"> I'm on the free tier</label>
+        <label><input type="radio" name="q17" value="unsure"> Not sure</label>
+      </div>
+    </div>
+
+    <!-- Q18 -->
+    <div class="q-card">
+      <div class="q-num">Question 18</div>
+      <div class="q-text">What's the beta success target?</div>
+      <div class="q-sub">The roadmap gates App Store submission on 500 MAU. But what does success look like for the first 30 days?</div>
+      <textarea name="q18" placeholder="e.g. 20 active users, at least 50 job applications sent, 1 user lands an interview…"></textarea>
+    </div>
+
+    <!-- Q19 -->
+    <div class="q-card">
+      <div class="q-num">Question 19</div>
+      <div class="q-text">Any specific dangers or concerns I should investigate?</div>
+      <div class="q-sub">Security holes, legal risks, UX problems, edge cases — anything that's been on your mind that you haven't told me yet.</div>
+      <textarea name="q19" placeholder="Optional — skip if nothing comes to mind"></textarea>
+    </div>
+
+    <!-- Q20 -->
+    <div class="q-card">
+      <div class="q-num">Question 20</div>
+      <div class="q-text">What else should be on my to-do list?</div>
+      <div class="q-sub">Anything missing from the checklist, features you want before inviting more users, or things you want me to investigate that haven't come up yet.</div>
+      <textarea name="q20" placeholder="Free answer — anything goes"></textarea>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit">Compile answers</button>
+      <span class="submit-note">Generates a text block you can paste directly to Claude</span>
+    </div>
+  </form>
+
+  <div id="copy-output">
+    <h2>Copy this and paste it to Claude</h2>
+    <textarea id="output-text" readonly></textarea>
+    <br>
+    <button class="copy-btn" onclick="copyOutput()">Copy to clipboard</button>
+    <span class="copy-confirm" id="copy-confirm">Copied!</span>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('qa-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const labels = {
+      q1: "Who are the first beta users?",
+      q2: "When to send first invites?",
+      q3: "DMARC record setup",
+      q4: "opstap.nl registered?",
+      q5: "Mollie iDEAL timing",
+      q6: "Flutter mobile app scope",
+      q7: "LinkedIn 0 results in production",
+      q8: "Dedicated SendGrid IP",
+      q9: "Daily credits setup",
+      q9_note: "Credits note",
+      q10: "Additional job boards",
+      q11: "Bug report button",
+      q12: "Referral cap",
+      q13: "Admin signup notification",
+      q14: "Terms of Service",
+      q15: "SendGrid API key scope",
+      q16: "Plausible after trial",
+      q17: "Railway plan & costs",
+      q18: "Beta success target",
+      q19: "Dangers / concerns",
+      q20: "Other to-do items",
+    };
+
+    const fd = new FormData(this);
+    const out = [];
+    out.push("=== Q&A FORM 001 — 2026-06-23 ===\n");
+
+    for (const [key, label] of Object.entries(labels)) {
+      if (key === 'q9_note') continue; // handled with q9
+      const values = fd.getAll(key);
+      const value = values.length > 1 ? values.join(', ') : (values[0] || '(no answer)');
+      let line = `Q ${key.replace('q','')}: ${label}\n→ ${value}`;
+      if (key === 'q9') {
+        const note = fd.get('q9_note');
+        if (note) line += `\n  Note: ${note}`;
+      }
+      out.push(line);
+    }
+
+    out.push("\n=== END FORM 001 ===");
+    document.getElementById('output-text').value = out.join('\n\n');
+    document.getElementById('copy-output').style.display = 'block';
+    document.getElementById('copy-output').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  function copyOutput() {
+    const el = document.getElementById('output-text');
+    el.select();
+    document.execCommand('copy');
+    const confirm = document.getElementById('copy-confirm');
+    confirm.style.display = 'inline';
+    setTimeout(() => confirm.style.display = 'none', 2000);
+  }
+</script>
+</body>
+</html>

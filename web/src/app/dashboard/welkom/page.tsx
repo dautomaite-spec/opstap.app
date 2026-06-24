@@ -12,7 +12,7 @@ function markDone() {
 }
 
 function trackEvent(name: string) {
-  try { (window as { plausible?: (n: string) => void }).plausible?.(name) } catch {}
+  try { (window as { posthog?: { capture: (n: string) => void } }).posthog?.capture(name) } catch {}
 }
 
 type Step = 1 | 2 | 3
