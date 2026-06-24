@@ -26,7 +26,7 @@ const PENDING_APPLY_KEY = 'opstap_pending_apply'
 function trackEvent(name: string) {
   if (typeof window !== 'undefined') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).plausible?.(name)
+    ;(window as any).posthog?.capture(name)
   }
 }
 

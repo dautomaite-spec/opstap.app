@@ -301,7 +301,7 @@
   <aside class="toc">
     <div class="toc-header">
       <h1>Opstap</h1>
-      <p>Voortgangskaart — 2026-06-23</p>
+      <p>Voortgangskaart — 2026-06-24</p>
     </div>
     <nav>
       <div class="toc-section">Documenten</div>
@@ -336,7 +336,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Voortgangskaart</h1>
-      <p>Bijgewerkt op 2026-06-23</p>
+      <p>Bijgewerkt op 2026-06-24</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -557,13 +557,13 @@
           <tr><td><strong>Mobiele app</strong></td><td>Flutter 3.x</td><td>iOS + Android (v2)</td></tr>
           <tr><td><strong>Backend API</strong></td><td>Python FastAPI · Railway</td><td>Kernlogica, scraping, LLM-aanroepen</td></tr>
           <tr><td><strong>AI</strong></td><td>Claude API (claude-sonnet-4-6)</td><td>CV-parsing, vacaturematching, brieven</td></tr>
-          <tr><td><strong>Vacature scraping</strong></td><td>Adzuna NL API</td><td>Vacatures ophalen</td></tr>
+          <tr><td><strong>Vacature scraping</strong></td><td>Jobbird.com + Nationale Vacaturebank (user-facing); Adzuna NL API (admin digest only)</td><td>Vacatures ophalen</td></tr>
           <tr><td><strong>Database</strong></td><td>PostgreSQL (Supabase EU)</td><td>Gebruikers, vacatures, sollicitaties</td></tr>
           <tr><td><strong>Auth</strong></td><td>Supabase Auth</td><td>Login, sessies</td></tr>
           <tr><td><strong>Bestandsopslag</strong></td><td>Supabase Storage (EU)</td><td>CV-bestanden, versleuteld</td></tr>
           <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL (post-beta)</td><td>Credit-aankopen — uitgesteld; tijdens beta dagelijkse gratis credits via cron</td></tr>
           <tr><td><strong>E-mail</strong></td><td>SendGrid</td><td>Transactionele e-mails</td></tr>
-          <tr><td><strong>Analytics</strong></td><td>Plausible (cookieloos)</td><td>AVG-veilige statistieken</td></tr>
+          <tr><td><strong>Analytics</strong></td><td>PostHog EU (project 208801) — opt-in via CookieBanner</td><td>AVG-conforme statistieken + funnels; start opted-out, consent via localStorage</td></tr>
         </tbody>
       </table>
     </section>
@@ -729,6 +729,12 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LinkedIn NL scraper toegevoegd: scrape_linkedin_nl() via LinkedIn guest jobs API (geen auth), max 5 resultaten, 429-afhandeling, URL-injectiebeveiliging (alleen /jobs/view/-paden geaccepteerd); toegevoegd aan asyncio.gather() naast Adzuna en Indeed; contract_type in JobSearchParams verhard naar Literal["Vast","Tijdelijk","Fulltime","Parttime"]</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sollicitaties-pagina: "Bekijk brief" / "Verberg brief" toggle — letter_nl inline uitklapbaar per sollicitatiekaart; paginaheading hernoemd van "Jouw reacties" naar "Jouw sollicitaties"; LinkedIn IP-beperking (cloud/datacenter IPs geblokkeerd) gedocumenteerd in wiki (#106)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG Art. 20 gegevensexport: GET /profile/export geeft profiel, sollicitaties (incl. letter_nl), opgeslagen vacatures, credittransacties en referral-gebruik terug als JSON-download; per-gebruiker 60s cooldown rate limit; .limit(500) op elke query; FastAPI JSONResponse datetime-bug omzeild via pre-geserialiseerde string; api.ts exportData() + "Download mijn gegevens"-knop in Instellingen</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>WhatsApp referral delen (Q20): ReferralSection.tsx — WhatsApp-deelknop + "Kopieer bericht"-knop met vooraf samengesteld Nederlands uitnodigingsbericht. Vergroot organisch bereik via de app.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Cookie-toestemmingsbanner AVG/GDPR (Q7): CookieBanner.tsx — toestemming voor PostHog analytics. Begint opt-out; keuze opgeslagen in localStorage. Voldoet aan ePrivacy-richtlijn.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Analytics vervangen: Plausible → PostHog EU (project 208801). PostHog EU snippet in layout.tsx — start opted-out, checkt localStorage-toestemming; NEXT_PUBLIC_POSTHOG_KEY ingesteld in Vercel. DashboardClient.tsx: trackEvent van plausible() naar posthog.capture() bijgewerkt.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>CSP uitgebreid voor PostHog EU: next.config.ts — eu-assets.i.posthog.com en eu.i.posthog.com toegevoegd aan connect-src en script-src.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacature scrapers vervangen (Q13): job_scraper.py — scrape_jobbird() en scrape_nationale_vacaturebank() toegevoegd als primaire gebruikersgerichte scrapers; scrape_adzuna() gedegradeerd naar admin-digest-only. jobs.py: asyncio.gather() bijgewerkt naar scrape_jobbird + scrape_nationale_vacaturebank.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Credits-placeholder pagina (Q15): web/src/app/dashboard/credits/page.tsx — "Credits kopen — binnenkort beschikbaar" placeholder pagina aangemaakt; gebruikers niet langer doorgestuurd naar een 404.</span></li>
         </ul>
       </div>
 

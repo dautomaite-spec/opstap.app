@@ -1,5 +1,16 @@
 # Changelog — Opstap
 
+## 2026-06-24 (feat/qa-form-002-execution)
+- feat: WhatsApp referral share button + "Kopieer bericht" in ReferralSection.tsx — pre-composed Dutch invitation message, opens wa.me deeplink or copies to clipboard (Q20)
+- feat: CookieBanner.tsx (new) — GDPR/AVG cookie consent banner with PostHog opt-in/opt-out; consent stored in localStorage; required because PostHog uses cookies (Q7)
+- feat: layout.tsx — replaced Plausible analytics snippet with PostHog EU snippet (project 208801, eu.i.posthog.com); starts opted-out, reads localStorage consent on mount
+- fix: DashboardClient.tsx — trackEvent calls migrated from plausible() to posthog.capture()
+- security: next.config.ts CSP updated — eu-assets.i.posthog.com and eu.i.posthog.com added to connect-src and script-src for PostHog EU
+- ops: NEXT_PUBLIC_POSTHOG_KEY set in Vercel env vars (PostHog EU project 208801)
+- feat: job_scraper.py — scrape_jobbird() and scrape_nationale_vacaturebank() added as primary user-facing scrapers; scrape_adzuna() demoted to admin digest only (Q13)
+- refactor: jobs.py — asyncio.gather() updated to use scrape_jobbird + scrape_nationale_vacaturebank; adzuna removed from user search path
+- feat: web/src/app/dashboard/credits/page.tsx (new) — "Credits kopen — binnenkort beschikbaar" placeholder page; prevents 404 on /dashboard/credits route (Q15)
+
 ## 2026-06-23 (AVG data export — Art. 20 data portability)
 - feat: GET /profile/export endpoint in backend/app/api/v1/profile.py — returns profile, applications (with letter_nl), saved_jobs, credit_transactions, referral_uses as JSON download; AVG Art. 20 right to data portability
 - security: per-user 60s cooldown rate limit on /profile/export (in-process dict); .limit(500) on each Supabase query to bound response size
