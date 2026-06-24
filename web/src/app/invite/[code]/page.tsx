@@ -2,31 +2,31 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Welkom bij Opstap: automatisch solliciteren',
-  description: 'Opstap zoekt vacatures voor jou, schrijft je motivatiebrief en solliciteert automatisch. Probeer het gratis.',
+  title: 'Welkom bij Opstap',
+  description: 'Opstap helpt je automatisch solliciteren op Nederlandse vacatures. Persoonlijke brieven, meerdere jobs tegelijk.',
   robots: { index: false, follow: false },
 }
 
 const steps = [
   {
     number: '1',
-    title: 'Upload je CV of vul je profiel in',
-    body: 'Opstap haalt je werkervaring, opleiding en vaardigheden op. Je hoeft nooit meer hetzelfde formulier twee keer in te vullen.',
+    title: 'Vertel wie je bent',
+    body: 'Upload je CV of vul je profiel in. Opstap onthoudt je ervaring, opleiding en voorkeuren zodat jij dat nooit twee keer hoeft in te vullen.',
   },
   {
     number: '2',
-    title: 'Zoek vacatures op Nederlandse jobboards',
-    body: 'We doorzoeken Indeed, LinkedIn, Jobbird en Nationale Vacaturebank tegelijk. Kies de vacatures die je aanspreken.',
+    title: 'Kies vacatures die bij je passen',
+    body: 'We zoeken voor jou op Indeed, LinkedIn, Jobbird en meer. Jij bladert door de resultaten en tikt aan wat je aanspreekt.',
   },
   {
     number: '3',
     title: 'Opstap schrijft je motivatiebrief',
-    body: 'Voor elke vacature schrijft onze AI een persoonlijke brief in het Nederlands. Jij leest hem, past aan indien gewenst, en keurt goed.',
+    body: 'Voor elke vacature schrijft Opstap een persoonlijke brief in het Nederlands. Je leest hem, past aan wat je wil, en geeft het groene licht.',
   },
   {
     number: '4',
-    title: 'Wij versturen, jij wacht op een reactie',
-    body: 'Opstap stuurt je sollicitatie per e-mail of via het webformulier van het bedrijf. Je hoeft er niets meer aan te doen.',
+    title: 'Wij versturen, jij wacht op goed nieuws',
+    body: 'Opstap stuurt je sollicitatie per e-mail of via het webformulier van het bedrijf. Geen gedoe meer - gewoon wachten op een uitnodiging.',
   },
 ]
 
@@ -53,39 +53,20 @@ export default async function InvitePage({
 
       <div className="max-w-2xl mx-auto px-6 py-12">
 
-        {/* Invite badge */}
-        <div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8"
-          style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-indigo-primary)', display: 'inline-block' }} />
-          Je bent uitgenodigd - toegang direct beschikbaar
-        </div>
-
         {/* Hero */}
         <h1 className="text-4xl font-bold leading-tight mb-4" style={{ color: 'var(--color-indigo-primary)' }}>
-          Meer kansen.<br />Minder moeite.
+          Fijn dat je er bent.
         </h1>
+        <p className="text-lg mb-4" style={{ color: 'var(--color-text-muted)' }}>
+          Solliciteren kost veel tijd en energie. Opstap neemt dat grotendeels van je over - zodat jij je kunt focussen op de banen die er echt toe doen.
+        </p>
         <p className="text-lg mb-10" style={{ color: 'var(--color-text-muted)' }}>
-          Opstap is een Nederlandse sollicitatietool die vacatures zoekt, motivatiebrieven schrijft en voor jou solliciteert op meerdere functies tegelijk.
+          Je bent uitgenodigd om het gratis te proberen. Snel ingericht, en je eerste sollicitaties versturen kost je letterlijk minuten.
         </p>
 
-        {/* Why */}
-        <div
-          className="rounded-2xl p-6 mb-10"
-          style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.06)' }}
-        >
-          <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-            Waarom Opstap?
-          </h2>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-            Gemiddeld kost één sollicitatie 45 minuten. Opstap brengt dat terug naar minder dan 2 minuten per vacature. Je houdt volledige controle: elke brief is leesbaar en aanpasbaar voordat hij verstuurd wordt. Geen verrassingen, geen spam. Gewoon meer kansen in minder tijd.
-          </p>
-        </div>
-
         {/* How it works */}
-        <h2 className="text-lg font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>Zo werkt het</h2>
-        <div className="flex flex-col gap-4 mb-12">
+        <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>Zo werkt het</h2>
+        <div className="flex flex-col gap-3 mb-12">
           {steps.map(step => (
             <div
               key={step.number}
@@ -113,14 +94,14 @@ export default async function InvitePage({
         >
           <h2 className="text-xl font-bold text-white mb-2">Klaar om te beginnen?</h2>
           <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Maak gratis een account aan. Je krijgt direct credits om je eerste sollicitaties te versturen.
+            Maak een account aan en je eerste sollicitatie is onderweg voordat je het weet.
           </p>
           <Link
             href={`/register?invite=${code}`}
             className="inline-block px-8 py-3 rounded-xl font-semibold text-sm"
             style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
           >
-            Account aanmaken →
+            Account aanmaken
           </Link>
           <p className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
             Je gegevens blijven op EU-servers en worden nooit gedeeld.
