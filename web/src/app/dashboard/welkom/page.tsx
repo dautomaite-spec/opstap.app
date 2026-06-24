@@ -120,6 +120,7 @@ export default function WelkomPage() {
           {saveError && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{saveError}</p>
           )}
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Velden met * zijn verplicht</p>
           <form onSubmit={handleProfileSave} className="flex flex-col gap-4">
             <WField label="Hoe heet je? *" name="naam" required placeholder="Voor- en achternaam" />
             <datalist id="job-titles-list">
