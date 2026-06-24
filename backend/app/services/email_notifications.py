@@ -320,6 +320,46 @@ async def send_admin_signup_notification(naam: str, user_email: str) -> bool:
     return await _send(_ADMIN_EMAIL, "Admin", subject, plain, html)
 
 
+async def send_reactivation(to_email: str, naam: str, referral_code: str | None = None) -> bool:
+    """One-time reactivation blast — invites dormant beta users back and pushes referral."""
+    referral_url = f"https://opstapapp.nl/register?ref={referral_code}" if referral_code else "https://opstapapp.nl/register"
+    subject = "Ben je al aan het solliciteren? 🎯"
+    _naam = _html.escape(naam)
+    _ref_url = _html.escape(referral_url)
+    plain = f"""\
+Hallo {naam},
+
+Opstap is de afgelopen weken flink verbeterd. We hebben nu:
+
+- Vacatures van Jobbird, Nationale Vacaturebank, Indeed en LinkedIn
+- WhatsApp-deling voor je uitnodigingslink
+- Dagelijks +2 gratis credits (max 15)
+
+Ben je al bezig met solliciteren? Open je dashboard en zoek vandaag nog vacatures:
+{_DASHBOARD}
+
+Nodig ook iemand uit — jullie krijgen allebei +3 credits:
+{referral_url}
+
+Veel succes,
+Donny — Opstap
+"""
+    html = _base_html("Ben je al aan het solliciteren?", f"""
+<h2>Opstap is verbeterd — ben je er klaar voor?</h2>
+<p>Hallo {_naam},</p>
+<p>De afgelopen weken is Opstap flink uitgebreid. Je kunt nu zoeken op <strong>Jobbird, Nationale Vacaturebank, Indeed en LinkedIn</strong> — allemaal tegelijk.</p>
+<div class="card">
+  <strong>Jouw gratis credits</strong><br>
+  Je ontvangt elke dag automatisch +2 credits (max 15). 1 credit = 1 motivatiebrief.
+</div>
+<p style="margin-top:20px;"><a href="{_DASHBOARD}" class="btn">Vacatures zoeken →</a></p>
+<p style="margin-top:24px;font-size:14px;">Ken je iemand die ook op zoek is naar werk?<br>
+Deel je uitnodigingslink — jullie krijgen <strong>allebei +3 credits</strong>:</p>
+<p style="margin-top:8px;"><a href="{_ref_url}" style="color:#3d3a8c;word-break:break-all;">{_ref_url}</a></p>
+""")
+    return await _send(to_email, naam, subject, plain, html)
+
+
 async def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
     count = len(jobs)
     subject = f"{count} nieuwe vacatures voor jou — weekoverzicht Opstap"
