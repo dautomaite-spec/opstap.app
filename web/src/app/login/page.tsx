@@ -4,7 +4,7 @@ import { login } from '@/app/actions/auth'
 import SocialButtons from '@/app/components/SocialButtons'
 
 export const metadata: Metadata = {
-  title: 'Inloggen — Opstap',
+  title: 'Inloggen | Opstap',
   robots: { index: false, follow: false },
 }
 

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Algemene voorwaarden — Opstap',
+  title: 'Algemene voorwaarden | Opstap',
   description: 'Lees de algemene voorwaarden van Opstap.',
   alternates: { canonical: 'https://opstapapp.nl/voorwaarden' },
 }

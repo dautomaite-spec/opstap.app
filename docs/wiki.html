@@ -180,6 +180,9 @@
       <a href="#gsc-verification">GSC verification</a>
       <a href="#reactivation-blast">Reactivation blast</a>
       <a href="#credits-placeholder">Credits page placeholder</a>
+      <a href="#invite-landing">Invite landing page</a>
+      <a href="#open-registration">Open registration CTA</a>
+      <a href="#copy-rules">Copy rules (no em dashes)</a>
     </div>
   </nav>
 
@@ -783,6 +786,36 @@
     </ul>
     <div class="gotcha"><strong>AVG note:</strong> Reactivation emails are permissible for existing users under the "soft opt-in" rule (they already consented to transactional email at registration). Do not include marketing offers or third-party promotions without explicit opt-in consent.</div>
     <div class="gotcha"><strong>Gotcha:</strong> The blast is not idempotent — running it twice in quick succession will send duplicate emails. Add a <code>reactivation_sent_at</code> column to profiles if you need to rate-limit per-user sends post-beta.</div>
+
+    <h2 id="invite-landing">Invite landing page (/invite/[code])</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/invite/[code]/page.tsx</code> (new, PR #116)</li>
+      <li>Shown to users who follow a referral or admin-generated invite link — replaces going directly to <code>/register</code></li>
+      <li>Layout: short personal welcome ("Fijn dat je er bent."), 4-step how-it-works flow, two CTAs pre-filled with the invite code in the query string</li>
+      <li>Page is <code>noindex</code> (robots meta tag) so it does not appear in Google search results and dilute SEO</li>
+      <li>Tone rewritten in PR #118: product-spec language replaced with a warm, benefit-focused welcome; no em dashes, no "geen creditcard nodig" promise</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The <code>[code]</code> dynamic segment is passed as a query param to the register page, not in the URL path — the register page reads it from <code>searchParams.code</code> and pre-populates the invite code field.</div>
+
+    <h2 id="open-registration">Open registration CTA (homepage)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/page.tsx</code> (updated, PR #119)</li>
+      <li>The waitlist form below the hero has been removed and replaced with a direct "Account aanmaken" CTA button pointing to <code>/register</code></li>
+      <li>Rationale: the waitlist form signalled "not ready yet" to visitors who scrolled past the hero. Registration is now open so the waitlist was misleading and added friction.</li>
+      <li>The WaitlistForm component still exists in <code>web/src/app/components/WaitlistForm.tsx</code> for potential re-use (e.g. a separate waitlist page for a v2 feature)</li>
+    </ul>
+
+    <h2 id="copy-rules">Copy rules — no em dashes</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Em dashes (U+2014, &#x2014;) are banned from all web copy — they break visual rhythm in Dutch UI text and look out of place in a clean sans-serif interface</li>
+      <li>PR #120 removed every em dash from 28 files: page titles, visible UI copy, and code comments. Replaced with hyphens (<code>-</code>), colons (<code>:</code>), pipes (<code>|</code>), or restructured sentences</li>
+      <li>Also banned: "geen creditcard nodig" — this phrase was unverifiable when Mollie was deferred; removed from the invite landing page in PR #117</li>
+      <li>Enforcement: run a grep for <code>—</code> or the literal <code>—</code> character before merging any web copy change</li>
+    </ul>
+    <div class="gotcha"><strong>Pattern:</strong> When generating Dutch UI copy with Claude, instruct it explicitly: no em dashes, no "geen creditcard nodig". The model's default Dutch writing style tends to use em dashes as stylistic separators.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

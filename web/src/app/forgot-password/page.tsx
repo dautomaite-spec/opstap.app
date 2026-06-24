@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { forgotPassword } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Wachtwoord vergeten — Opstap',
+  title: 'Wachtwoord vergeten | Opstap',
   robots: { index: false, follow: false },
 }
 

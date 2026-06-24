@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Blog — Opstap | Tips voor solliciteren in Nederland',
+  title: 'Blog | Opstap | Tips voor solliciteren in Nederland',
   description: 'Praktische tips en gidsen over solliciteren, motivatiebrieven schrijven en vacatures vinden in Nederland.',
   openGraph: {
-    title: 'Blog — Opstap',
+    title: 'Blog | Opstap',
     description: 'Praktische tips over solliciteren in Nederland.',
     url: 'https://opstapapp.nl/blog',
   },

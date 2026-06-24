@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import PublicShell from '@/app/components/PublicShell'
 
 export const metadata: Metadata = {
-  title: 'Over Opstap — Meer kansen. Minder moeite.',
+  title: 'Over Opstap | Meer kansen. Minder moeite.',
   description: 'Opstap is gebouwd door een ervaren recruiter die weet wat hiring managers echt zoeken. Lees ons verhaal.',
 }
 

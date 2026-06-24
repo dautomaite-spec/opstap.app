@@ -16,7 +16,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-lavender-bg)' }}>
 
-      {/* Fixed decorative blobs — stay in place while content scrolls */}
+      {/* Fixed decorative blobs -stay in place while content scrolls */}
       <div aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
         <div style={{ position: 'absolute', width: 500, height: 440, top: -80, right: -60, background: 'var(--color-indigo-primary)', opacity: 0.07, borderRadius: '62% 38% 46% 54% / 58% 44% 56% 42%', transform: 'rotate(-18deg)' }} />
         <div style={{ position: 'absolute', width: 420, height: 380, bottom: -100, right: 120, background: 'var(--color-indigo-primary)', opacity: 0.06, borderRadius: '38% 62% 54% 46% / 42% 58% 40% 60%', transform: 'rotate(22deg)' }} />
@@ -36,7 +36,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
           <circle cx="140" cy="740" r="85" fill="rgba(255,255,255,0.03)" />
         </svg>
 
-        {/* Organic right-edge wave — paints page bg over sidebar edge */}
+        {/* Organic right-edge wave -paints page bg over sidebar edge */}
         <svg aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 40, height: '100%', zIndex: 5, pointerEvents: 'none' }} viewBox="0 0 40 1000" preserveAspectRatio="none">
           <path d="M22,0 C34,120 38,240 24,370 C16,480 32,580 22,700 C14,820 22,1000 22,1000 L40,1000 L40,0 Z" fill="var(--color-lavender-bg)" />
         </svg>
@@ -109,9 +109,9 @@ export default async function PublicShell({ children }: { children: React.ReactN
         </div>
       </div>
 
-      {/* Page content — scrolls internally so sidebar stays fixed */}
+      {/* Page content -scrolls internally so sidebar stays fixed */}
       <main className="flex-1 flex flex-col overflow-auto pt-14 md:pt-0" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Desktop language switcher — top-right of content area, outside sidebar overflow:hidden */}
+        {/* Desktop language switcher -top-right of content area, outside sidebar overflow:hidden */}
         <div className="hidden md:flex justify-end px-6 py-3">
           <LanguageSwitcherPublic />
         </div>

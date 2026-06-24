@@ -302,7 +302,7 @@ export default function DashboardShell({
         className="hidden md:flex shrink-0 transition-all duration-200"
         style={{ width: sidebarW, position: 'relative' }}
       >
-        {/* Decorative background circles — only when expanded */}
+        {/* Decorative background circles -only when expanded */}
         {!collapsed && (
           <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 240 800" preserveAspectRatio="xMidYMid slice">
             <circle cx="215" cy="85" r="75" fill="rgba(255,255,255,0.06)" />
@@ -365,7 +365,7 @@ export default function DashboardShell({
           </div>
         </header>
 
-        {/* Desktop top bar — shows language switcher on right */}
+        {/* Desktop top bar -shows language switcher on right */}
         <div
           className="hidden md:flex items-center justify-end px-6 py-2 border-b shrink-0"
           style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-white)' }}

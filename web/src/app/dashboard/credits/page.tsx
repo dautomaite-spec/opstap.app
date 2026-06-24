@@ -20,7 +20,7 @@ export default function CreditsPage() {
         </div>
 
         <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-          Credits kopen — binnenkort
+          Credits kopen (binnenkort)
         </h1>
         <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--color-text-muted)' }}>
           Betaalde credits zijn nog niet beschikbaar. Tijdens de beta ontvang je elke dag automatisch

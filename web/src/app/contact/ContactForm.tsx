@@ -77,7 +77,7 @@ export default function ContactForm() {
         </select>
       </div>
 
-      {/* Subject — only shown after type is chosen */}
+      {/* Subject - only shown after type is chosen */}
       {type && (
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>

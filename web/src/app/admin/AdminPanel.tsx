@@ -50,7 +50,7 @@ function RotateKeyPanel() {
       )}
       {newKey && (
         <p style={{ margin: '8px 0 0', fontSize: 11, color: '#dc2626' }}>
-          Sla de sleutel eerst op in Railway voordat je de pagina verlaat — daarna update ook <code>.env.local</code>.
+          Sla de sleutel eerst op in Railway voordat je de pagina verlaat. Daarna update ook <code>.env.local</code>.
         </p>
       )}
     </div>
@@ -99,7 +99,7 @@ const S = {
 }
 
 function nl(dt?: string) {
-  if (!dt) return '—'
+  if (!dt) return '-'
   return new Date(dt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
@@ -128,7 +128,7 @@ function CreditForm({ user, onDone }: { user: User; onDone: () => void }) {
 
   return (
     <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12, padding: 12, background: '#f5f3ff', borderRadius: 8 }}>
-      <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#3d3a8c' }}>Credits aanpassen — {user.email}</p>
+      <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#3d3a8c' }}>Credits aanpassen: {user.email}</p>
       <p style={{ margin: 0, fontSize: 12, color: '#555' }}>Huidig saldo: {user.credits_balance}</p>
       <div style={{ display: 'flex', gap: 8 }}>
         <input
@@ -323,18 +323,18 @@ function InvitePanel() {
                 <td style={S.td}>
                   <code style={{ background: '#f5f3ff', borderRadius: 4, padding: '2px 6px', fontSize: 13, fontWeight: 700, color: '#3d3a8c' }}>{c.code}</code>
                 </td>
-                <td style={{ ...S.td, fontSize: 12, color: '#888' }}>{c.notes || '—'}</td>
+                <td style={{ ...S.td, fontSize: 12, color: '#888' }}>{c.notes || '-'}</td>
                 <td style={S.td}>
                   <span style={{ fontWeight: c.use_count >= c.max_uses ? 700 : 400, color: c.use_count >= c.max_uses ? '#dc2626' : undefined }}>
                     {c.use_count}/{c.max_uses}
                   </span>
                 </td>
                 <td style={S.td}>
-                  {c.users.length === 0 ? <span style={{ color: '#aaa', fontSize: 12 }}>—</span> : (
+                  {c.users.length === 0 ? <span style={{ color: '#aaa', fontSize: 12 }}>-</span> : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {c.users.map(u => (
                         <div key={u.user_id} style={{ fontSize: 12 }}>
-                          <span style={{ fontWeight: 600 }}>{u.naam || '—'}</span>
+                          <span style={{ fontWeight: 600 }}>{u.naam || '-'}</span>
                           <span style={{ color: '#888', marginLeft: 6 }}>
                             {u.applications} sollicitaties · {u.interviews} gesprekken
                           </span>
@@ -419,7 +419,7 @@ function WaitlistPanel() {
             <tr><td colSpan={5} style={{ ...S.td, textAlign: 'center', color: '#888', padding: '32px 0' }}>Wachtlijst is leeg.</td></tr>
           ) : entries.map(e => (
             <tr key={e.id}>
-              <td style={S.td}>{e.naam || '—'}</td>
+              <td style={S.td}>{e.naam || '-'}</td>
               <td style={S.td}>{e.email}</td>
               <td style={{ ...S.td, fontSize: 12 }}>{nl(e.created_at)}</td>
               <td style={S.td}>

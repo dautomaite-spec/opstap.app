@@ -65,7 +65,7 @@ export default function SollicitatiesPage() {
         return next
       })
     } catch {
-      // silently ignore — user can retry
+      // silently ignore -user can retry
     } finally {
       setUpdatingId(null)
     }
@@ -77,7 +77,7 @@ export default function SollicitatiesPage() {
       const updated = await api.apply.retry(app.id)
       setHistory(prev => prev.map(a => a.id === updated.id ? updated : a))
     } catch {
-      // leave status as failed — user sees the button again
+      // leave status as failed -user sees the button again
     } finally {
       setRetryingId(null)
     }

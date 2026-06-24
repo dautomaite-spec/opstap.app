@@ -4,7 +4,7 @@ import FaqAccordion from './FaqAccordion'
 import PublicShell from '@/app/components/PublicShell'
 
 export const metadata: Metadata = {
-  title: 'Help & FAQ — Opstap',
+  title: 'Help & FAQ | Opstap',
   description: 'Veelgestelde vragen over Opstap: hoe werkt het, wat kost het en hoe beschermen we je gegevens?',
 }
 
