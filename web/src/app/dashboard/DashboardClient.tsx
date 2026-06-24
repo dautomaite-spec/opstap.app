@@ -775,6 +775,19 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
+      {/* Loading skeleton — shown while auto-search fires on first dashboard visit */}
+      {searching && jobs.length === 0 && (
+        <div className="flex flex-col gap-3 mt-2">
+          {[1, 2, 3].map(n => (
+            <div key={n} className="rounded-xl p-4 animate-pulse" style={{ background: 'var(--color-lavender-card)' }}>
+              <div className="h-4 rounded w-2/3 mb-2" style={{ background: 'var(--color-lavender-bg)' }} />
+              <div className="h-3 rounded w-1/2 mb-3" style={{ background: 'var(--color-lavender-bg)' }} />
+              <div className="h-3 rounded w-3/4" style={{ background: 'var(--color-lavender-bg)' }} />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Empty states */}
       {jobs.length === 0 && !searching && !searchError && keywords === '' && location === '' && (
         <div className="text-center py-16">

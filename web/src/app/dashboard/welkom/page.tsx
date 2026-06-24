@@ -120,15 +120,16 @@ export default function WelkomPage() {
           {saveError && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{saveError}</p>
           )}
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Velden met * zijn verplicht</p>
           <form onSubmit={handleProfileSave} className="flex flex-col gap-4">
             <WField label="Hoe heet je? *" name="naam" required placeholder="Voor- en achternaam" />
             <datalist id="job-titles-list">
               {JOB_TITLES.map(t => <option key={t} value={t} />)}
             </datalist>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je?</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je? *</label>
               <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Voeg tot 3 rollen toe — Opstap zoekt voor al je titels.</p>
-              <input list="job-titles-list" name="functietitel" placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <input list="job-titles-list" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               <input list="job-titles-list" name="functietitel_2" placeholder="Tweede rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               <input list="job-titles-list" name="functietitel_3" placeholder="Derde rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
             </div>
