@@ -177,6 +177,8 @@
       <a href="#avg-export">AVG data export (Art. 20)</a>
       <a href="#cookie-banner">Cookie consent banner</a>
       <a href="#whatsapp-referral">WhatsApp referral sharing</a>
+      <a href="#gsc-verification">GSC verification</a>
+      <a href="#reactivation-blast">Reactivation blast</a>
       <a href="#credits-placeholder">Credits page placeholder</a>
     </div>
   </nav>
@@ -761,6 +763,26 @@
       <li>Placeholder page for the future credits purchase flow — shows "Credits kopen — binnenkort beschikbaar" so the route returns a 200 instead of a 404</li>
       <li>During beta, credits are granted automatically via the daily cron; this page will be replaced with the Mollie iDEAL flow post-beta</li>
     </ul>
+
+    <h2 id="gsc-verification">Google Search Console verification (PR #112)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/layout.tsx</code> — GSC verification <code>&lt;meta name="google-site-verification" content="..."&gt;</code> tag added to the root layout <code>&lt;head&gt;</code></li>
+      <li>opstapapp.nl is now verified in Google Search Console as of 2026-06-24</li>
+      <li>sitemap.xml submitted via GSC — all public pages indexed</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The verification meta tag only needs to be present once per domain verification; it does not affect page performance or SEO ranking directly. Remove it only if you re-verify via an alternative method (DNS TXT record or HTML file upload).</div>
+
+    <h2 id="reactivation-blast">Reactivation email blast (PR #113)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li><code>send_reactivation()</code> in <code>backend/app/utils/email_sender.py</code> — personalised Dutch re-engagement email; highlights that new jobs and free credits are waiting</li>
+      <li><code>POST /admin/blast/reactivation</code> in <code>backend/app/api/v1/admin.py</code> — queries all users who have not logged in for 14+ days (<code>last_sign_in_at &lt; now() - interval '14 days'</code>); sends each a reactivation email via SendGrid; returns success and failure counts</li>
+      <li>AdminPanel button in <code>web/src/app/admin/AdminPanel.tsx</code> — triggers the blast with one click; displays result summary</li>
+      <li>Endpoint is admin-key guarded (same <code>x-admin-key</code> header check as all other admin endpoints)</li>
+    </ul>
+    <div class="gotcha"><strong>AVG note:</strong> Reactivation emails are permissible for existing users under the "soft opt-in" rule (they already consented to transactional email at registration). Do not include marketing offers or third-party promotions without explicit opt-in consent.</div>
+    <div class="gotcha"><strong>Gotcha:</strong> The blast is not idempotent — running it twice in quick succession will send duplicate emails. Add a <code>reactivation_sent_at</code> column to profiles if you need to rate-limit per-user sends post-beta.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
