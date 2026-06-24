@@ -22,11 +22,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://plausible.io",
+              "script-src 'self' 'unsafe-inline' https://eu-assets.i.posthog.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co https://plausible.io https://opstapapp-production.up.railway.app",
+              "connect-src 'self' https://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com https://opstapapp-production.up.railway.app",
               "frame-ancestors 'none'",
             ].join('; '),
           },
