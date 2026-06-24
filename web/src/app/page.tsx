@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import PublicShell from '@/app/components/PublicShell'
-import WaitlistForm from '@/app/components/WaitlistForm'
 
 export const metadata: Metadata = {
   alternates: { canonical: 'https://opstapapp.nl' },
@@ -203,29 +202,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Beta waitlist CTA */}
+      {/* Bottom CTA */}
       <section className="py-16 px-8">
-        <div className="max-w-2xl mx-auto text-center">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4"
-            style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
-          >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-            Vroege toegang
-          </div>
-          <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>
-            Word één van de eerste gebruikers
+        <div
+          className="max-w-2xl mx-auto rounded-2xl p-10 text-center"
+          style={{ background: 'var(--color-indigo-primary)' }}
+        >
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Klaar om te beginnen?
           </h2>
-          <p className="text-sm mb-8" style={{ color: 'var(--color-text-muted)' }}>
-            Opstap is nu in besloten beta. Meld je aan voor de wachtlijst en ontvang een persoonlijke uitnodiging.
+          <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            Maak een account aan en verstuur je eerste sollicitaties binnen enkele minuten.
           </p>
-          <WaitlistForm />
-          <p className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
-            Al een uitnodiging?{' '}
-            <Link href="/register" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-              Maak een account aan
-            </Link>
-          </p>
+          <Link
+            href="/register"
+            className="inline-block px-8 py-3 rounded-xl font-semibold text-sm"
+            style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
+          >
+            Account aanmaken
+          </Link>
         </div>
       </section>
 
