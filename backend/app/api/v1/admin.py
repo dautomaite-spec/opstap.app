@@ -25,7 +25,7 @@ from typing import Optional, List
 from app.core.config import settings
 from app.core.supabase import get_supabase
 from app.services.job_scraper import scrape_adzuna, scrape_indeed_nl
-from app.services.email_notifications import send_follow_up_reminder, send_job_digest, send_credits_adjusted, send_account_suspended
+from app.services.email_notifications import send_follow_up_reminder, send_job_digest, send_credits_adjusted, send_account_suspended, send_reactivation
 
 logger = logging.getLogger(__name__)
 
@@ -579,6 +579,53 @@ class IngestJob(BaseModel):
 class IngestJobsBody(BaseModel):
     jobs: List[IngestJob] = Field(..., max_length=200)
     source_keyword: Optional[str] = Field(None, max_length=200)
+
+
+@router.post("/blast/reactivation", status_code=202)
+async def blast_reactivation(
+    background_tasks: BackgroundTasks,
+    _: None = Depends(_check_admin_key),
+    supabase=Depends(get_supabase),
+):
+    """
+    Send a one-time reactivation email to all confirmed, non-suspended users.
+    Fire-and-forget via BackgroundTasks. Returns immediately with a count estimate.
+    """
+    users_rows = supabase.table("profiles").select("user_id, naam").execute().data or []
+    credits_rows = supabase.table("credits").select("user_id, referral_code").execute().data or []
+    ref_map = {r["user_id"]: r.get("referral_code") for r in credits_rows}
+
+    auth_rows = supabase.auth.admin.list_users()
+    confirmed_ids: set[str] = set()
+    email_map: dict[str, str] = {}
+    suspended_ids: set[str] = set()
+
+    for u in (auth_rows or []):
+        uid = u.id
+        meta = u.user_metadata or {}
+        if u.email_confirmed_at and not meta.get("suspended"):
+            confirmed_ids.add(uid)
+            if u.email:
+                email_map[uid] = u.email
+
+    targets = [r for r in users_rows if r["user_id"] in confirmed_ids and r["user_id"] in email_map]
+
+    async def _send_all():
+        sent = 0
+        for r in targets:
+            uid = r["user_id"]
+            ok = await send_reactivation(
+                to_email=email_map[uid],
+                naam=r.get("naam") or email_map[uid].split("@")[0],
+                referral_code=ref_map.get(uid),
+            )
+            if ok:
+                sent += 1
+            await asyncio.sleep(0.1)
+        logger.info("Reactivation blast: sent=%d total=%d", sent, len(targets))
+
+    background_tasks.add_task(_send_all)
+    return {"queued": len(targets)}
 
 
 @router.post("/ingest/jobs")

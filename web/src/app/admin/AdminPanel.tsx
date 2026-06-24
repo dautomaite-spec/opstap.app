@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useCallback } from 'react'
-import { adjustCredits, toggleSuspend, deleteUser, adminLogout, fetchInviteCodes, generateInviteCodes, fetchWaitlist, inviteWaitlistEntry } from './actions'
+import { adjustCredits, toggleSuspend, deleteUser, adminLogout, fetchInviteCodes, generateInviteCodes, fetchWaitlist, inviteWaitlistEntry, blastReactivation } from './actions'
 
 type InviteUser = { user_id: string; naam: string; used_at: string; applications: number; interviews: number }
 type InviteCode = { id: string; code: string; notes?: string; max_uses: number; use_count: number; created_at: string; invite_url: string; users: InviteUser[] }
@@ -458,6 +458,7 @@ export default function AdminPanel({ initialUsers }: { initialUsers: User[] }) {
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState<'users' | 'invites' | 'waitlist'>('users')
   const [, startTransition] = useTransition()
+  const [blastState, setBlastState] = useState<'idle' | 'sending' | 'done'>('idle')
 
   function refresh() {
     startTransition(async () => {
@@ -479,9 +480,26 @@ export default function AdminPanel({ initialUsers }: { initialUsers: User[] }) {
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#3d3a8c' }}>Opstap Admin</h1>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: '#888' }}>{users.length} gebruiker{users.length !== 1 ? 's' : ''}</p>
         </div>
-        <form action={adminLogout}>
-          <button type="submit" style={{ ...S.btn('ghost'), fontSize: 13 }}>Uitloggen</button>
-        </form>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            onClick={async () => {
+              if (blastState !== 'idle') return
+              if (!confirm(`Reactivation email sturen naar alle ${users.length} gebruikers?`)) return
+              setBlastState('sending')
+              try {
+                await blastReactivation()
+                setBlastState('done')
+              } catch { setBlastState('idle') }
+            }}
+            disabled={blastState !== 'idle'}
+            style={{ ...S.btn('primary'), fontSize: 12, opacity: blastState !== 'idle' ? 0.6 : 1 }}
+          >
+            {blastState === 'sending' ? 'Versturen…' : blastState === 'done' ? 'Verstuurd!' : 'Reactivation email'}
+          </button>
+          <form action={adminLogout}>
+            <button type="submit" style={{ ...S.btn('ghost'), fontSize: 13 }}>Uitloggen</button>
+          </form>
+        </div>
       </div>
 
       {/* Stats strip */}

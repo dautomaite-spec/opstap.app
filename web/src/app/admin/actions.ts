@@ -115,3 +115,12 @@ export async function inviteWaitlistEntry(id: string) {
   if (!res.ok) throw new Error('Uitnodigen mislukt')
   return res.json()
 }
+
+export async function blastReactivation(): Promise<{ queued: number }> {
+  const res = await fetch(`${API}/api/v1/admin/blast/reactivation`, {
+    method: 'POST',
+    headers: adminHeaders(),
+  })
+  if (!res.ok) throw new Error('Blast mislukt')
+  return res.json()
+}
