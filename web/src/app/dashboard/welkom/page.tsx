@@ -126,9 +126,9 @@ export default function WelkomPage() {
               {JOB_TITLES.map(t => <option key={t} value={t} />)}
             </datalist>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je?</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je? *</label>
               <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Voeg tot 3 rollen toe — Opstap zoekt voor al je titels.</p>
-              <input list="job-titles-list" name="functietitel" placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <input list="job-titles-list" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               <input list="job-titles-list" name="functietitel_2" placeholder="Tweede rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               <input list="job-titles-list" name="functietitel_3" placeholder="Derde rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
             </div>
