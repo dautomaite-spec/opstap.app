@@ -62,7 +62,7 @@ export default function Achievements({ profile, applications }: Props) {
       done: pct === 100,
       icon: '⭐',
       title: 'Profiel compleet',
-      desc: pct === 100 ? 'Alle velden zijn ingevuld.' : `${pct}% compleet — nog: ${missing.join(', ')}.`,
+      desc: pct === 100 ? 'Alle velden zijn ingevuld.' : `${pct}% compleet. Nog: ${missing.join(', ')}.`,
       cta: pct < 100 ? { label: 'Aanvullen', href: '/dashboard/settings' } : undefined,
     },
   ]

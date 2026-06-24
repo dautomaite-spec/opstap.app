@@ -4,7 +4,7 @@ import SettingsClient from './SettingsClient'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Instellingen — Opstap',
+  title: 'Instellingen | Opstap',
 }
 
 export default async function SettingsPage() {

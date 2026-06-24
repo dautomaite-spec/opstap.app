@@ -9,7 +9,7 @@ export default function BuyCreditsModal({ onClose }: { onClose: () => void }) {
     >
       <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
         <div className="flex items-start justify-between mb-4">
-          <h3 className="font-bold text-base" style={{ color: 'var(--color-text-primary)' }}>Credits — beta</h3>
+          <h3 className="font-bold text-base" style={{ color: 'var(--color-text-primary)' }}>Credits (beta)</h3>
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-lg text-sm transition"
@@ -35,7 +35,7 @@ export default function BuyCreditsModal({ onClose }: { onClose: () => void }) {
           </div>
           <div className="flex items-center gap-2">
             <span style={{ color: 'var(--color-indigo-primary)' }}>✓</span>
-            <span>Nodig iemand uit — jullie krijgen allebei +3 credits</span>
+            <span>Nodig iemand uit. Jullie krijgen allebei +3 credits</span>
           </div>
           <div className="flex items-center gap-2">
             <span style={{ color: 'var(--color-indigo-primary)' }}>✓</span>
@@ -51,7 +51,7 @@ export default function BuyCreditsModal({ onClose }: { onClose: () => void }) {
           Begrepen
         </button>
         <p className="text-xs text-center mt-3" style={{ color: 'var(--color-text-muted)' }}>
-          Betalen komt na de beta — nu gratis
+          Betalen komt na de beta, nu gratis
         </p>
       </div>
     </div>

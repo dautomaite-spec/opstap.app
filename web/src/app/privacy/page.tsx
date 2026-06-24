@@ -3,7 +3,7 @@ import Link from 'next/link'
 import PublicShell from '@/app/components/PublicShell'
 
 export const metadata: Metadata = {
-  title: 'Privacybeleid — Opstap',
+  title: 'Privacybeleid | Opstap',
   description: 'Hoe Opstap omgaat met je persoonsgegevens, CV en sollicitatie-informatie. AVG-conform, geen trackers.',
 }
 
@@ -103,7 +103,7 @@ const SECTIONS = [
                 ['Supabase (PostgreSQL + Storage)', 'Database en CV-opslag'],
                 ['Anthropic Claude API', 'Genereren van motivatiebrieven (tijdelijke verwerking, geen opslag)'],
                 ['SendGrid (Twilio)', 'Versturen van e-mails'],
-                ['PostHog EU (Frankfurt)', 'Productanalytics — alleen na jouw toestemming via de cookiebanner'],
+                ['PostHog EU (Frankfurt)', 'Productanalytics, alleen na jouw toestemming via de cookiebanner'],
               ].map(([verwerker, doel], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--color-lavender-card)' }}>
                   <td className="px-4 py-2.5 font-medium">{verwerker}</td>
@@ -124,7 +124,7 @@ const SECTIONS = [
     content: (
       <ul className="list-disc pl-5 flex flex-col gap-1.5">
         <li>Alle data wordt versleuteld opgeslagen (AES-256 at rest, TLS 1.3 in transit)</li>
-        <li>CV-bestanden worden opgeslagen in een private Supabase Storage bucket — alleen toegankelijk met jouw JWT</li>
+        <li>CV-bestanden worden opgeslagen in een private Supabase Storage bucket, alleen toegankelijk met jouw JWT</li>
         <li>Row-Level Security (RLS) zorgt ervoor dat je uitsluitend je eigen gegevens kunt inzien</li>
         <li>Wachtwoorden worden gehashed opgeslagen via Supabase Auth (bcrypt)</li>
       </ul>
@@ -157,12 +157,12 @@ const SECTIONS = [
           Opstap gebruikt <strong>geen</strong> advertentiecookies of commerciële trackers. Wij gebruiken geen Google Analytics of vergelijkbare reclamediensten.
         </p>
         <p className="mb-3">
-          Wij gebruiken <strong>PostHog</strong> voor productanalytics — uitsluitend om te begrijpen hoe de app gebruikt wordt (bijv. welke functies populair zijn), zodat wij de dienst kunnen verbeteren. PostHog slaat gegevens op in de EU (Frankfurt).
+          Wij gebruiken <strong>PostHog</strong> voor productanalytics, uitsluitend om te begrijpen hoe de app gebruikt wordt (bijv. welke functies populair zijn), zodat wij de dienst kunnen verbeteren. PostHog slaat gegevens op in de EU (Frankfurt).
         </p>
         <ul className="list-disc pl-5 flex flex-col gap-1.5">
           <li>Analytics worden <strong>alleen geactiveerd</strong> nadat jij expliciet toestemming geeft via de cookiemelding onderaan de pagina</li>
           <li>Zonder toestemming wordt er <strong>niets</strong> gemeten</li>
-          <li>PostHog ontvangt nooit je CV-inhoud, motivatiebrieven of persoonsgegevens uit je profiel — alleen anonieme gebruiksgebeurtenissen (pagina&apos;s bezocht, knoppen geklikt)</li>
+          <li>PostHog ontvangt nooit je CV-inhoud, motivatiebrieven of persoonsgegevens uit je profiel. Alleen anonieme gebruiksgebeurtenissen (pagina&apos;s bezocht, knoppen geklikt) worden gedeeld</li>
           <li>Je kunt je toestemming op elk moment intrekken door de cookiemelding opnieuw op te roepen of je browserdata te wissen</li>
         </ul>
       </>
@@ -172,7 +172,7 @@ const SECTIONS = [
     id: 'ai',
     title: '9. Geautomatiseerde besluitvorming',
     content: (
-      <p>De AI genereert motivatiebrieven op basis van jouw profiel en de vacaturetekst. Dit is een <strong>ondersteunende</strong> functie — jij ziet de brief altijd vóór hij verstuurd wordt en kunt hem aanpassen of weigeren. Er worden geen juridisch of anderszins significante beslissingen uitsluitend op basis van geautomatiseerde verwerking genomen.</p>
+      <p>De AI genereert motivatiebrieven op basis van jouw profiel en de vacaturetekst. Dit is een <strong>ondersteunende</strong> functie: jij ziet de brief altijd vóór hij verstuurd wordt en kunt hem aanpassen of weigeren. Er worden geen juridisch of anderszins significante beslissingen uitsluitend op basis van geautomatiseerde verwerking genomen.</p>
     ),
   },
   {
@@ -189,7 +189,7 @@ const SECTIONS = [
       <>
         <p className="mb-2">Voor vragen over privacy of het uitoefenen van je rechten:</p>
         <p><strong>E-mail</strong>: privacy@opstapapp.nl</p>
-        <p><strong>Opstap</strong> — Nederland</p>
+        <p><strong>Opstap</strong>, Nederland</p>
       </>
     ),
   },

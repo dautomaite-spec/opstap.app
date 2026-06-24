@@ -99,7 +99,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         setSavedJobs(map)
         writeSavedJobsLocal(map)
       })
-      .catch(() => { /* offline or not authed — local cache is fine */ })
+      .catch(() => { /* offline or not authed -local cache is fine */ })
   }, [])
 
   const toggleSave = useCallback((job: Job) => {
@@ -150,12 +150,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         setProfile(p)
         if (p.functietitel) setKeywords(p.functietitel)
         if (p.woonplaats) setLocation(p.woonplaats)
-        // Auto-load matching jobs on every dashboard open — gives users immediate value
+        // Auto-load matching jobs on every dashboard open -gives users immediate value
         if (p.functietitel && !autoSearched.current) {
           autoSearched.current = true
           triggerSearch(p.functietitel, p.woonplaats ?? '')
         }
-        // Pending apply from saved-jobs page — pass p directly (state not yet updated)
+        // Pending apply from saved-jobs page -pass p directly (state not yet updated)
         try {
           const raw = localStorage.getItem(PENDING_APPLY_KEY)
           if (raw) {
@@ -222,7 +222,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         triggerSearch(saved.functietitel, saved.woonplaats ?? '')
       }
     } catch (err) {
-      // Profile may already exist — fall back to update
+      // Profile may already exist -fall back to update
       if (err instanceof ApiError && err.status === 409) {
         try {
           const saved = await api.profile.update(data)
@@ -261,7 +261,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     try {
       const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
       if (results.length < 3 && loc) {
-        // Too few results — retry without location filter to widen the search
+        // Too few results -retry without location filter to widen the search
         const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 20 })
         setJobs(wider)
         setJobsStale(widerStale)
@@ -381,7 +381,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Functietitel(s) *</label>
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Voeg tot 3 rollen toe — Opstap zoekt voor al je titels.
+              Voeg tot 3 rollen toe. Opstap zoekt voor al je titels.
             </p>
             <input list="db-job-titles" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
             <input list="db-job-titles" name="functietitel_2" placeholder="Tweede functietitel (optioneel)" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
@@ -510,7 +510,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             {urlLetterResult && (
               <div className="mt-4 flex flex-col gap-3">
                 <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {urlLetterResult.job_title} — {urlLetterResult.company}
+                  {urlLetterResult.job_title} bij {urlLetterResult.company}
                 </p>
                 <textarea
                   rows={12}
@@ -547,7 +547,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         )}
       </div>
 
-      {/* Sort bar — only shown when there are results */}
+      {/* Sort bar -only shown when there are results */}
       {sortedJobs.length > 0 && (
         <div className="flex items-center gap-3 mb-5 flex-wrap">
           {!multiSelect && (
@@ -600,7 +600,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
-      {/* Profile completeness nudge — shown when CV is missing */}
+      {/* Profile completeness nudge -shown when CV is missing */}
       {profile && !profile.cv_url && !profile.cv_expires_at && (
         <a
           href="/dashboard/profiel"
@@ -775,7 +775,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
-      {/* Loading skeleton — shown while auto-search fires on first dashboard visit */}
+      {/* Loading skeleton -shown while auto-search fires on first dashboard visit */}
       {searching && jobs.length === 0 && (
         <div className="flex flex-col gap-3 mt-2">
           {[1, 2, 3].map(n => (

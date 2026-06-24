@@ -7,7 +7,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'
 const BETA_INVITE_LIMIT = 10
 
 function shareMessage(link: string) {
-  return `Probeer Opstap nu gratis via mijn link — we ontvangen allebei credits om onze droombaan te vinden! 🎯\n\n${link}`
+  return `Probeer Opstap nu gratis via mijn link, we ontvangen allebei credits om onze droombaan te vinden! 🎯\n\n${link}`
 }
 
 export default function ReferralSection() {

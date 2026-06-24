@@ -3,7 +3,7 @@ import PublicShell from '@/app/components/PublicShell'
 import ContactForm from './ContactForm'
 
 export const metadata: Metadata = {
-  title: 'Contact — Opstap',
+  title: 'Contact | Opstap',
   description: 'Neem contact op met Opstap. Voor werkgevers, samenwerkingen of vragen.',
 }
 

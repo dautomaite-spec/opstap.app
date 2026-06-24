@@ -180,7 +180,7 @@ export default function ProfielPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Functietitel(s)</label>
                 <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Voeg tot 3 rollen toe — Opstap zoekt en solliciteert voor al je titels.
+                  Voeg tot 3 rollen toe. Opstap zoekt en solliciteert voor al je titels.
                 </p>
                 <input list="job-titles-list" name="functietitel" placeholder="bijv. Software Developer" defaultValue={profile.functietitel ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
                 <input list="job-titles-list" name="functietitel_2" placeholder="Tweede functietitel (optioneel)" defaultValue={profile.functietitel_2 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
@@ -248,7 +248,7 @@ export default function ProfielPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Over jezelf</label>
                 <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Vertel iets over wie je bent — je hobby's, interesses, hoe jij werkt, wat je drijft. Hoe meer je deelt, hoe persoonlijker je motivatiebrief wordt.
+                  Vertel iets over wie je bent: je hobby's, interesses, hoe jij werkt, wat je drijft. Hoe meer je deelt, hoe persoonlijker je motivatiebrief wordt.
                 </p>
                 <textarea
                   name="extra_info"
@@ -285,7 +285,7 @@ export default function ProfielPage() {
                     </svg>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
-                        CV geüpload{profile.cv_parsed ? ' — gegevens verwerkt ✓' : ''}
+                        CV geüpload{profile.cv_parsed ? ' - gegevens verwerkt ✓' : ''}
                       </p>
                       {profile.cv_expires_at && (
                         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>

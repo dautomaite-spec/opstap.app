@@ -161,7 +161,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      // silently fail — user can retry
+      // silently fail -user can retry
     } finally {
       setExportingData(false)
     }
@@ -302,7 +302,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
             <p className="text-sm mb-3 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{cvUploadSuccess}</p>
           )}
           {cvError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
-          {/* Hidden file input — triggered after AVG consent */}
+          {/* Hidden file input -triggered after AVG consent */}
           <input ref={fileInputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={handleUploadCV} disabled={uploadingCV} />
           {profile?.cv_url ? (
             <>

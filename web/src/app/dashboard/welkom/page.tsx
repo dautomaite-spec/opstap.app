@@ -30,11 +30,11 @@ export default function WelkomPage() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Step 1 — profile
+  // Step 1 -profile
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
 
-  // Step 2 — CV
+  // Step 2 -CV
   const [uploadingCV, setUploadingCV] = useState(false)
   const [cvDone, setCvDone] = useState(false)
   const [cvError, setCvError] = useState('')
@@ -108,7 +108,7 @@ export default function WelkomPage() {
         ))}
       </div>
 
-      {/* Step 1 — Profile */}
+      {/* Step 1 -Profile */}
       {step === 1 && (
         <div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-indigo-primary)' }}>
@@ -128,7 +128,7 @@ export default function WelkomPage() {
             </datalist>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je? *</label>
-              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Voeg tot 3 rollen toe — Opstap zoekt voor al je titels.</p>
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Voeg tot 3 rollen toe. Opstap zoekt voor al je titels.</p>
               <input list="job-titles-list" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               <input list="job-titles-list" name="functietitel_2" placeholder="Tweede rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               <input list="job-titles-list" name="functietitel_3" placeholder="Derde rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
@@ -151,7 +151,7 @@ export default function WelkomPage() {
         </div>
       )}
 
-      {/* Step 2 — CV */}
+      {/* Step 2 -CV */}
       {step === 2 && (
         <div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-indigo-primary)' }}>
@@ -240,7 +240,7 @@ export default function WelkomPage() {
         </div>
       )}
 
-      {/* Step 3 — Ready */}
+      {/* Step 3 -Ready */}
       {step === 3 && (
         <div className="text-center">
           <div

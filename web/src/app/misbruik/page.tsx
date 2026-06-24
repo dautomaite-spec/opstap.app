@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Misbruik melden — Opstap',
+  title: 'Misbruik melden | Opstap',
   description: 'Meld misbruik van het Opstap platform.',
   robots: { index: false, follow: false },
 }
