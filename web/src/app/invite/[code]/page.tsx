@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Welkom bij Opstap — automatisch solliciteren',
+  title: 'Welkom bij Opstap: automatisch solliciteren',
   description: 'Opstap zoekt vacatures voor jou, schrijft je motivatiebrief en solliciteert automatisch. Probeer het gratis.',
   robots: { index: false, follow: false },
 }
@@ -25,7 +25,7 @@ const steps = [
   },
   {
     number: '4',
-    title: 'Wij versturen — jij wacht op een reactie',
+    title: 'Wij versturen, jij wacht op een reactie',
     body: 'Opstap stuurt je sollicitatie per e-mail of via het webformulier van het bedrijf. Je hoeft er niets meer aan te doen.',
   },
 ]
@@ -59,7 +59,7 @@ export default async function InvitePage({
           style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
         >
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-indigo-primary)', display: 'inline-block' }} />
-          Je bent uitgenodigd — toegang direct beschikbaar
+          Je bent uitgenodigd - toegang direct beschikbaar
         </div>
 
         {/* Hero */}
@@ -67,7 +67,7 @@ export default async function InvitePage({
           Meer kansen.<br />Minder moeite.
         </h1>
         <p className="text-lg mb-10" style={{ color: 'var(--color-text-muted)' }}>
-          Opstap is een Nederlandse sollicitatietool die vacatures zoekt, motivatiebrieven schrijft en voor jou solliciteert — op meerdere functies tegelijk.
+          Opstap is een Nederlandse sollicitatietool die vacatures zoekt, motivatiebrieven schrijft en voor jou solliciteert op meerdere functies tegelijk.
         </p>
 
         {/* Why */}
@@ -79,7 +79,7 @@ export default async function InvitePage({
             Waarom Opstap?
           </h2>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-            Gemiddeld kost één sollicitatie 45 minuten. Opstap brengt dat terug naar minder dan 2 minuten per vacature. Je houdt volledige controle: elke brief is leesbaar en aanpasbaar voordat hij verstuurd wordt. Geen verrassingen, geen spam — gewoon meer kansen in minder tijd.
+            Gemiddeld kost één sollicitatie 45 minuten. Opstap brengt dat terug naar minder dan 2 minuten per vacature. Je houdt volledige controle: elke brief is leesbaar en aanpasbaar voordat hij verstuurd wordt. Geen verrassingen, geen spam. Gewoon meer kansen in minder tijd.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export default async function InvitePage({
             Account aanmaken →
           </Link>
           <p className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            Geen creditcard nodig. Je gegevens blijven op EU-servers en worden nooit gedeeld.
+            Je gegevens blijven op EU-servers en worden nooit gedeeld.
           </p>
         </div>
 
