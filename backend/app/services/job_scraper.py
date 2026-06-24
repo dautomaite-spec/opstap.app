@@ -1,9 +1,9 @@
 """
-Job scraper service — Adzuna NL API (primary) + Indeed NL + LinkedIn NL HTML scrapers.
+Job scraper service — Jobbird NL + Nationale Vacaturebank + Indeed NL + LinkedIn NL HTML scrapers.
 
-Adzuna: free REST API with native NL support — https://developer.adzuna.com/docs/search
-Indeed NL: HTML scraper using httpx + BeautifulSoup, respects robots.txt query limit.
-LinkedIn NL: guest jobs API (no auth) — returns HTML fragments, capped at 5 results/call.
+Adzuna is kept as a fallback (admin weekly digest) but no longer used in user-facing search.
+Primary sources: Jobbird (NL-native, no auth), NVB (NL-native, no auth).
+Secondary: Indeed NL, LinkedIn NL (HTML/guest API).
 """
 
 import asyncio
@@ -339,188 +339,173 @@ async def scrape_linkedin_nl(keywords: str, location: str = "", limit: int = 5) 
         return []
 
 
-async def scrape_nationale_vacaturebank(keywords: str, location: str = "", limit: int = 8) -> list[dict]:
-    """Scrapes Nationale Vacaturebank (NVB) via HTML. Gracefully returns [] on any error."""
+async def scrape_jobbird(keywords: str, location: str = "", limit: int = 20) -> list[dict]:
+    """Scrapes Jobbird.nl — Dutch-native job board, no auth required."""
     if not _BS4_AVAILABLE:
-        return []
-    qs = urlencode({"query": keywords, "location": location or ""})
-    url = f"https://www.nationalevacaturebank.nl/vacature/zoeken?{qs}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Accept-Language": "nl-NL,nl;q=0.9",
-    }
-    try:
-        async with httpx.AsyncClient(timeout=15, headers=headers, follow_redirects=True) as client:
-            resp = await client.get(url)
-            if resp.status_code != 200:
-                logger.warning("NVB returned %s", resp.status_code)
-                return []
-            soup = BeautifulSoup(resp.text, "html.parser")
-            results = []
-            for card in soup.select("article.vacancy-tile,div.vacature-item,div[class*='vacancy']")[:limit]:
-                title_el = card.select_one("h2,h3,.vacancy-title,.vacature-title,a[class*='title']")
-                company_el = card.select_one(".company-name,.employer-name,[class*='company'],[class*='employer']")
-                location_el = card.select_one(".location,[class*='location'],[class*='plaats']")
-                link_el = card.select_one("a[href*='/vacature/']")
-                title = title_el.get_text(strip=True) if title_el else None
-                if not title:
-                    continue
-                company = company_el.get_text(strip=True) if company_el else "Onbekend"
-                loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
-                href = link_el.get("href", "") if link_el else ""
-                if not href:
-                    continue
-                job_url = href if href.startswith("http") else f"https://www.nationalevacaturebank.nl{href}"
-                results.append({
-                    "title": title, "company": company, "location": loc,
-                    "url": job_url, "description_snippet": "", "salary_range": "",
-                    "source": "nvb", "scraped_at": _now(), "posted_at": None,
-                    "contract_type": "", "salary_min_raw": None, "salary_max_raw": None, "salary_hourly": "",
-                })
-            return results
-    except Exception:
-        logger.warning("NVB scraper error", exc_info=True)
+        logger.warning("beautifulsoup4 not installed — Jobbird scraper skipped")
         return []
 
-
-async def scrape_jobbird(keywords: str, location: str = "", limit: int = 8) -> list[dict]:
-    """Scrapes Jobbird.com via HTML. Gracefully returns [] on any error."""
-    if not _BS4_AVAILABLE:
-        return []
-    qs = urlencode({"s": keywords, "l": location or ""})
+    qs = urlencode({"s": keywords, "locatie": location or ""}, quote_via=quote_plus)
     url = f"https://www.jobbird.com/nl/vacature?{qs}"
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
         "Accept-Language": "nl-NL,nl;q=0.9",
+        "Accept": "text/html,application/xhtml+xml",
     }
+
     try:
         async with httpx.AsyncClient(timeout=15, headers=headers, follow_redirects=True) as client:
             resp = await client.get(url)
             if resp.status_code != 200:
                 logger.warning("Jobbird returned %s", resp.status_code)
                 return []
+
             soup = BeautifulSoup(resp.text, "html.parser")
             results = []
-            for card in soup.select("article.job,div.job-card,li.job-item,div[class*='job-card']")[:limit]:
-                title_el = card.select_one("h2 a,h3 a,.job-title a,[class*='job-title'] a,a[class*='title']")
-                if not title_el:
-                    title_el = card.select_one("h2,h3,.job-title,[class*='title']")
-                company_el = card.select_one(".company,[class*='company'],[class*='employer']")
-                location_el = card.select_one(".location,[class*='location'],[class*='city'],[class*='plaats']")
-                link_el = card.select_one("a[href*='/nl/vacature/'],a[href*='/vacature/']")
-                title = title_el.get_text(strip=True) if title_el else None
+
+            # Jobbird renders jobs in <article> tags or result divs
+            cards = soup.select("article.job, article[class*='job'], div.job-result, div[class*='vacancyitem'], li.job-list-item")
+            if not cards:
+                # Broader fallback: any article with a link containing /nl/vacature/
+                cards = [a.find_parent("article") or a.find_parent("div") for a in soup.select("a[href*='/nl/vacature/']")]
+                cards = [c for c in cards if c][:limit * 2]
+
+            seen_urls: set[str] = set()
+            for card in cards[:limit * 2]:
+                link_el = card.select_one("a[href*='/nl/vacature/']") if card else None
+                if not link_el:
+                    continue
+                href = link_el.get("href", "")
+                parsed = urlparse(href)
+                if parsed.netloc and parsed.netloc not in ("www.jobbird.com", "jobbird.com"):
+                    continue
+                if parsed.netloc:
+                    job_url = f"https://www.jobbird.com{parsed.path}"
+                else:
+                    job_url = f"https://www.jobbird.com{href.split('?')[0]}"
+                if job_url in seen_urls:
+                    continue
+                seen_urls.add(job_url)
+
+                title_el = (card.select_one("h2 a, h3 a, .job-title a, .title a")
+                            or card.select_one("h2, h3, .job-title, .title"))
+                company_el = card.select_one(".company, .employer, .company-name, [class*='company']")
+                location_el = card.select_one(".location, .city, [class*='location'], [class*='place']")
+
+                title = (title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True))[:300]
+                company = (company_el.get_text(strip=True) if company_el else "Onbekend")[:200]
+                loc = (location_el.get_text(strip=True) if location_el else (location or "Nederland"))[:200]
+
                 if not title:
                     continue
-                company = company_el.get_text(strip=True) if company_el else "Onbekend"
-                loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
-                href = link_el.get("href", "") if link_el else ""
-                if not href:
-                    continue
-                job_url = href if href.startswith("http") else f"https://www.jobbird.com{href}"
-                parsed = urlparse(job_url)
-                if parsed.netloc not in ("www.jobbird.com", "jobbird.com"):
-                    continue
+
                 results.append({
-                    "title": title, "company": company, "location": loc,
-                    "url": job_url, "description_snippet": "", "salary_range": "",
-                    "source": "jobbird", "scraped_at": _now(), "posted_at": None,
-                    "contract_type": "", "salary_min_raw": None, "salary_max_raw": None, "salary_hourly": "",
+                    "title": title,
+                    "company": company,
+                    "location": loc,
+                    "url": job_url,
+                    "description_snippet": "",
+                    "salary_range": "",
+                    "source": "jobbird",
+                    "scraped_at": _now(),
+                    "posted_at": None,
+                    "contract_type": "",
+                    "salary_min_raw": None,
+                    "salary_max_raw": None,
+                    "salary_hourly": "",
                 })
+                if len(results) >= limit:
+                    break
+
             return results
+
     except Exception:
         logger.warning("Jobbird scraper error", exc_info=True)
         return []
 
 
-async def scrape_monsterboard(keywords: str, location: str = "", limit: int = 8) -> list[dict]:
-    """Scrapes Monsterboard.nl via HTML. Gracefully returns [] on any error."""
+async def scrape_nationale_vacaturebank(keywords: str, location: str = "", limit: int = 20) -> list[dict]:
+    """Scrapes Nationale Vacaturebank — major Dutch job board, no auth required."""
     if not _BS4_AVAILABLE:
+        logger.warning("beautifulsoup4 not installed — NVB scraper skipped")
         return []
-    qs = urlencode({"q": keywords, "l": location or ""})
-    url = f"https://www.monsterboard.nl/vacature-zoeken/?{qs}"
+
+    qs = urlencode({"query": keywords, "locatie": location or ""}, quote_via=quote_plus)
+    url = f"https://www.nationalevacaturebank.nl/vacature/zoeken/?{qs}"
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
         "Accept-Language": "nl-NL,nl;q=0.9",
+        "Accept": "text/html,application/xhtml+xml",
     }
+
     try:
         async with httpx.AsyncClient(timeout=15, headers=headers, follow_redirects=True) as client:
             resp = await client.get(url)
             if resp.status_code != 200:
-                logger.warning("Monsterboard returned %s", resp.status_code)
+                logger.warning("NVB returned %s", resp.status_code)
                 return []
+
             soup = BeautifulSoup(resp.text, "html.parser")
             results = []
-            for card in soup.select("section.card-applied,div.job-card,article[class*='job'],div[class*='vacancy']")[:limit]:
-                title_el = card.select_one("h2 a,h3 a,[class*='job-title'] a,[class*='title'] a,h2,h3")
-                company_el = card.select_one("[class*='company'],[class*='employer'],[class*='organization']")
-                location_el = card.select_one("[class*='location'],[class*='city'],[class*='plaats']")
-                link_el = card.select_one("a[href*='/vacature/'],a[href*='/job/']")
-                title = title_el.get_text(strip=True) if title_el else None
+
+            cards = soup.select("article.vacancyCard, div.vacancyCard, div[class*='vacancy-card'], li[class*='vacancy']")
+            if not cards:
+                cards = [a.find_parent("article") or a.find_parent("li") or a.find_parent("div")
+                         for a in soup.select("a[href*='/vacature/']")]
+                cards = [c for c in cards if c][:limit * 2]
+
+            seen_urls: set[str] = set()
+            for card in cards[:limit * 2]:
+                link_el = card.select_one("a[href*='/vacature/']") if card else None
+                if not link_el:
+                    continue
+                href = link_el.get("href", "")
+                parsed = urlparse(href)
+                if parsed.netloc and parsed.netloc not in ("www.nationalevacaturebank.nl", "nationalevacaturebank.nl"):
+                    continue
+                if parsed.netloc:
+                    job_url = f"https://www.nationalevacaturebank.nl{parsed.path}"
+                else:
+                    job_url = f"https://www.nationalevacaturebank.nl{href.split('?')[0]}"
+                if job_url in seen_urls:
+                    continue
+                seen_urls.add(job_url)
+
+                title_el = card.select_one("h2 a, h3 a, h2, h3, .title, .job-title, [class*='title']")
+                company_el = card.select_one(".company, .employer, [class*='company'], [class*='employer']")
+                location_el = card.select_one(".location, [class*='location'], [class*='place'], [class*='city']")
+                salary_el = card.select_one(".salary, [class*='salary'], [class*='salaris']")
+
+                title = (title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True))[:300]
+                company = (company_el.get_text(strip=True) if company_el else "Onbekend")[:200]
+                loc = (location_el.get_text(strip=True) if location_el else (location or "Nederland"))[:200]
+                salary = (salary_el.get_text(strip=True) if salary_el else "")[:100]
+
                 if not title:
                     continue
-                company = company_el.get_text(strip=True) if company_el else "Onbekend"
-                loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
-                href = link_el.get("href", "") if link_el else ""
-                if not href:
-                    continue
-                job_url = href if href.startswith("http") else f"https://www.monsterboard.nl{href}"
-                parsed = urlparse(job_url)
-                if parsed.netloc not in ("www.monsterboard.nl", "monsterboard.nl"):
-                    continue
-                results.append({
-                    "title": title, "company": company, "location": loc,
-                    "url": job_url, "description_snippet": "", "salary_range": "",
-                    "source": "monsterboard", "scraped_at": _now(), "posted_at": None,
-                    "contract_type": "", "salary_min_raw": None, "salary_max_raw": None, "salary_hourly": "",
-                })
-            return results
-    except Exception:
-        logger.warning("Monsterboard scraper error", exc_info=True)
-        return []
 
-
-async def scrape_werkzoeken(keywords: str, location: str = "", limit: int = 8) -> list[dict]:
-    """Scrapes Werkzoeken.nl via HTML. Gracefully returns [] on any error."""
-    if not _BS4_AVAILABLE:
-        return []
-    qs = urlencode({"q": keywords, "l": location or ""})
-    url = f"https://www.werkzoeken.nl/vacatures/?{qs}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Accept-Language": "nl-NL,nl;q=0.9",
-    }
-    try:
-        async with httpx.AsyncClient(timeout=15, headers=headers, follow_redirects=True) as client:
-            resp = await client.get(url)
-            if resp.status_code != 200:
-                logger.warning("Werkzoeken returned %s", resp.status_code)
-                return []
-            soup = BeautifulSoup(resp.text, "html.parser")
-            results = []
-            for card in soup.select("div.vacancy,article.vacancy,li.job,div[class*='vacancy'],div[class*='job-item']")[:limit]:
-                title_el = card.select_one("h2 a,h3 a,.vacancy-title a,[class*='title'] a,h2,h3")
-                company_el = card.select_one("[class*='company'],[class*='employer'],[class*='bedrijf']")
-                location_el = card.select_one("[class*='location'],[class*='city'],[class*='stad'],[class*='plaats']")
-                link_el = card.select_one("a[href*='/vacature'],a[href*='/job']")
-                title = title_el.get_text(strip=True) if title_el else None
-                if not title:
-                    continue
-                company = company_el.get_text(strip=True) if company_el else "Onbekend"
-                loc = location_el.get_text(strip=True) if location_el else (location or "Nederland")
-                href = link_el.get("href", "") if link_el else ""
-                if not href:
-                    continue
-                job_url = href if href.startswith("http") else f"https://www.werkzoeken.nl{href}"
-                parsed = urlparse(job_url)
-                if parsed.netloc not in ("www.werkzoeken.nl", "werkzoeken.nl"):
-                    continue
                 results.append({
-                    "title": title, "company": company, "location": loc,
-                    "url": job_url, "description_snippet": "", "salary_range": "",
-                    "source": "werkzoeken", "scraped_at": _now(), "posted_at": None,
-                    "contract_type": "", "salary_min_raw": None, "salary_max_raw": None, "salary_hourly": "",
+                    "title": title,
+                    "company": company,
+                    "location": loc,
+                    "url": job_url,
+                    "description_snippet": "",
+                    "salary_range": salary,
+                    "source": "nvb",
+                    "scraped_at": _now(),
+                    "posted_at": None,
+                    "contract_type": "",
+                    "salary_min_raw": None,
+                    "salary_max_raw": None,
+                    "salary_hourly": "",
                 })
+                if len(results) >= limit:
+                    break
+
             return results
+
     except Exception:
-        logger.warning("Werkzoeken scraper error", exc_info=True)
+        logger.warning("NVB scraper error", exc_info=True)
         return []

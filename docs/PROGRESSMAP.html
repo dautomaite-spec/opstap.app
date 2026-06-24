@@ -340,8 +340,8 @@
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
-        <div class="status-pill"><span class="dot dot-amber"></span>Traction: 0 / 50 MAU (Android)</div>
-        <div class="status-pill"><span class="dot dot-gray"></span>App Store: na 100 MAU</div>
+        <div class="status-pill"><span class="dot dot-amber"></span>Traction: 0 / 500 MAU</div>
+        <div class="status-pill"><span class="dot dot-gray"></span>App Store: uitgesteld</div>
       </div>
     </div>
 
@@ -358,15 +358,15 @@
         </ul>
       </div>
 
-      <div class="milestone">🎯 App-mijlpalen: 50 MAU → Android-app bouwen · 100 MAU → iOS-app bouwen</div>
+      <div class="milestone">🎯 App Store-mijlpaal: 500 unieke maandelijkse actieve gebruikers (ingelogd, minimaal één zoekopdracht)</div>
 
       <table style="margin-top:14px">
         <thead><tr><th>Prioriteit</th><th>Stap</th><th>Status</th></tr></thead>
         <tbody>
           <tr><td>1</td><td>Website — Next.js, Vercel, opstapapp.nl</td><td style="color:var(--green);font-weight:600">✅ Live</td></tr>
-          <tr><td>2</td><td>Traction — 50 MAU-mijlpaal (Android)</td><td style="color:var(--amber);font-weight:600">⏳ Bezig</td></tr>
-          <tr><td>3</td><td>Android-app bouwen (Flutter) — Play Store</td><td style="color:var(--muted)">⏸ Na 50 MAU</td></tr>
-          <tr><td>4</td><td>iOS-app bouwen (Flutter) — App Store</td><td style="color:var(--muted)">⏸ Na 100 MAU</td></tr>
+          <tr><td>2</td><td>Traction — 500 MAU-mijlpaal</td><td style="color:var(--amber);font-weight:600">⏳ Bezig</td></tr>
+          <tr><td>3</td><td>Play Store submission</td><td style="color:var(--muted)">⏸ Uitgesteld</td></tr>
+          <tr><td>4</td><td>Apple App Store submission</td><td style="color:var(--muted)">⏸ Uitgesteld</td></tr>
         </tbody>
       </table>
     </section>
@@ -557,13 +557,13 @@
           <tr><td><strong>Mobiele app</strong></td><td>Flutter 3.x</td><td>iOS + Android (v2)</td></tr>
           <tr><td><strong>Backend API</strong></td><td>Python FastAPI · Railway</td><td>Kernlogica, scraping, LLM-aanroepen</td></tr>
           <tr><td><strong>AI</strong></td><td>Claude API (claude-sonnet-4-6)</td><td>CV-parsing, vacaturematching, brieven</td></tr>
-          <tr><td><strong>Vacature scraping</strong></td><td>Adzuna NL API</td><td>Vacatures ophalen</td></tr>
+          <tr><td><strong>Vacature scraping</strong></td><td>Jobbird.com + Nationale Vacaturebank (user-facing); Adzuna NL API (admin digest only)</td><td>Vacatures ophalen</td></tr>
           <tr><td><strong>Database</strong></td><td>PostgreSQL (Supabase EU)</td><td>Gebruikers, vacatures, sollicitaties</td></tr>
           <tr><td><strong>Auth</strong></td><td>Supabase Auth</td><td>Login, sessies</td></tr>
           <tr><td><strong>Bestandsopslag</strong></td><td>Supabase Storage (EU)</td><td>CV-bestanden, versleuteld</td></tr>
           <tr><td><strong>Betaling</strong></td><td>Mollie iDEAL (post-beta)</td><td>Credit-aankopen — uitgesteld; tijdens beta dagelijkse gratis credits via cron</td></tr>
           <tr><td><strong>E-mail</strong></td><td>SendGrid</td><td>Transactionele e-mails</td></tr>
-          <tr><td><strong>Analytics</strong></td><td>PostHog (EU Cloud)</td><td>Product analytics, funnels, session replay</td></tr>
+          <tr><td><strong>Analytics</strong></td><td>PostHog EU (project 208801) — opt-in via CookieBanner</td><td>AVG-conforme statistieken + funnels; start opted-out, consent via localStorage</td></tr>
         </tbody>
       </table>
     </section>
@@ -648,7 +648,7 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>E-mailnotificaties: credit-waarschuwing, reactie-felicitaties, follow-up-reminder, vacaturedigest</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Opgeslagen vacatures (localStorage)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profielvoortgangsbalk (6 velden, bonus bij volledig)</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Analytics: Plausible vervangen door PostHog EU Cloud — trackEvent geswitcht in DashboardClient.tsx en welkom/page.tsx; PostHog init in layout.tsx; CSP bijgewerkt voor PostHog-domeinen in next.config.ts</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Analytics (Plausible — cookieloos, AVG-veilig, domein via NEXT_PUBLIC_PLAUSIBLE_DOMAIN env var)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Mobiele navigatie: hamburger-menu op publieke pagina's + dashboard</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Privacypagina (/privacy) — volledige AVG-conforme privacyverklaring in het Nederlands</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Auth e-mailredirect dynamisch (automatische host-detectie, geen hardcoded URL)</span></li>
@@ -729,13 +729,12 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LinkedIn NL scraper toegevoegd: scrape_linkedin_nl() via LinkedIn guest jobs API (geen auth), max 5 resultaten, 429-afhandeling, URL-injectiebeveiliging (alleen /jobs/view/-paden geaccepteerd); toegevoegd aan asyncio.gather() naast Adzuna en Indeed; contract_type in JobSearchParams verhard naar Literal["Vast","Tijdelijk","Fulltime","Parttime"]</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sollicitaties-pagina: "Bekijk brief" / "Verberg brief" toggle — letter_nl inline uitklapbaar per sollicitatiekaart; paginaheading hernoemd van "Jouw reacties" naar "Jouw sollicitaties"; LinkedIn IP-beperking (cloud/datacenter IPs geblokkeerd) gedocumenteerd in wiki (#106)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG Art. 20 gegevensexport: GET /profile/export geeft profiel, sollicitaties (incl. letter_nl), opgeslagen vacatures, credittransacties en referral-gebruik terug als JSON-download; per-gebruiker 60s cooldown rate limit; .limit(500) op elke query; FastAPI JSONResponse datetime-bug omzeild via pre-geserialiseerde string; api.ts exportData() + "Download mijn gegevens"-knop in Instellingen</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacature scraping uitgebreid: scrape_nvb() (Nationale Vacaturebank), scrape_jobbird(), scrape_monsterboard(), scrape_werkzoeken() toegevoegd aan job_scraper.py; asyncio.gather bijgewerkt naar 7 scrapers in jobs.py — zoekdekking sterk vergroot</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Admin signup-notificatie: send_admin_signup_notification() toegevoegd aan email_notifications.py; fire-and-forget aanroep in profile.py bij nieuwe gebruikersregistratie — admin ontvangt e-mail bij elke nieuwe aanmelding</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Referral cap verhoogd van 5 naar 10 uitnodigingen per gebruiker (ReferralSection.tsx)</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dashboard: "Probleem melden" bug-report-knop toegevoegd aan DashboardShell.tsx; nav-label fix doorgevoerd</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Cloudflare DNS: _dmarc.opstapapp.nl TXT-record toegevoegd (DMARC v=DMARC1; p=none) — lost eerder geconstateerde mail-tester.com DMARC-waarschuwing op</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid API-sleutel scope beperkt van Full Access naar Mail Send only — minste-privilege beveiligingsverbetering</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>QA Form 002 gepubliceerd (qa-form.html vervangen); Form 001 gearchiveerd in qa-archive/qa-form-001-2026-06-24.html</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>WhatsApp referral delen (Q20): ReferralSection.tsx — WhatsApp-deelknop + "Kopieer bericht"-knop met vooraf samengesteld Nederlands uitnodigingsbericht. Vergroot organisch bereik via de app.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Cookie-toestemmingsbanner AVG/GDPR (Q7): CookieBanner.tsx — toestemming voor PostHog analytics. Begint opt-out; keuze opgeslagen in localStorage. Voldoet aan ePrivacy-richtlijn.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Analytics vervangen: Plausible → PostHog EU (project 208801). PostHog EU snippet in layout.tsx — start opted-out, checkt localStorage-toestemming; NEXT_PUBLIC_POSTHOG_KEY ingesteld in Vercel. DashboardClient.tsx: trackEvent van plausible() naar posthog.capture() bijgewerkt.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>CSP uitgebreid voor PostHog EU: next.config.ts — eu-assets.i.posthog.com en eu.i.posthog.com toegevoegd aan connect-src en script-src.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacature scrapers vervangen (Q13): job_scraper.py — scrape_jobbird() en scrape_nationale_vacaturebank() toegevoegd als primaire gebruikersgerichte scrapers; scrape_adzuna() gedegradeerd naar admin-digest-only. jobs.py: asyncio.gather() bijgewerkt naar scrape_jobbird + scrape_nationale_vacaturebank.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Credits-placeholder pagina (Q15): web/src/app/dashboard/credits/page.tsx — "Credits kopen — binnenkort beschikbaar" placeholder pagina aangemaakt; gebruikers niet langer doorgestuurd naar een 404.</span></li>
         </ul>
       </div>
 
@@ -761,13 +760,13 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Volledige sollicitatieflow testen: zoeken → brief genereren → sollicitatie versturen → e-mail ontvangen bij werkgever. Bevestigd 2026-06-23: brief gegenereerd, status "sent", e-mail bezorgd in Gmail via sollicitaties@opstapapp.nl. Fix: SENDGRID_FROM_EMAIL gecorrigeerd van opstap.nl → opstapapp.nl (geverifieerd domein).</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG-verwijderingsstroom testen: account verwijderen → Supabase Storage CV verwijderd + Edge Function bevestigd. Bevestigd 2026-06-23: DELETE /profile/me geeft 200, profiel weg, auth-gebruiker weg, CV-bestand weg.</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Adminpaneel verifiëren (/admin): gebruikerslijst zichtbaar, credits aanpassen werkt, schorsing werkt. Bevestigd 2026-06-23: alle drie endpoints werken na fixes in PR #103.</span></li>
-          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid bezorgbaarheid controleren: testmail versturen en headers/spamscore controleren via mail-tester.com. Bevestigd 2026-06-23: 9/10 — DKIM ✓, SPF ✓, niet op blocklists. -1 punt door RCVD_IN_BL_SPAMCOP_NET (gedeeld SendGrid IP op SpamCop-lijst — oplosbaar met dedicated IP). DMARC-record toegevoegd 2026-06-24 (_dmarc.opstapapp.nl TXT via Cloudflare).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SendGrid bezorgbaarheid controleren: testmail versturen en headers/spamscore controleren via mail-tester.com. Bevestigd 2026-06-23: 9/10 — DKIM ✓, SPF ✓, niet op blocklists. -1 punt door RCVD_IN_BL_SPAMCOP_NET (gedeeld SendGrid IP op SpamCop-lijst — oplosbaar met dedicated IP). DMARC-record nog in te stellen voor opstapapp.nl.</span></li>
         </ul>
       </div>
 
       <!-- Milestone -->
       <div class="callout" style="margin:16px 0">
-        <p>🎯 <strong>Traction-mijlpalen:</strong> 50 MAU (ingelogd + minimaal één zoekopdracht) → Android-app bouwen · 100 MAU → iOS-app bouwen</p>
+        <p>🎯 <strong>Traction-mijlpaal:</strong> 500 unieke maandelijks actieve gebruikers (ingelogd + minimaal één zoekopdracht) → unlocked Play Store + App Store submissions</p>
       </div>
 
       <!-- Phase 4 -->

@@ -103,6 +103,7 @@ const SECTIONS = [
                 ['Supabase (PostgreSQL + Storage)', 'Database en CV-opslag'],
                 ['Anthropic Claude API', 'Genereren van motivatiebrieven (tijdelijke verwerking, geen opslag)'],
                 ['SendGrid (Twilio)', 'Versturen van e-mails'],
+                ['PostHog EU (Frankfurt)', 'Productanalytics — alleen na jouw toestemming via de cookiebanner'],
               ].map(([verwerker, doel], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--color-lavender-card)' }}>
                   <td className="px-4 py-2.5 font-medium">{verwerker}</td>
@@ -151,7 +152,20 @@ const SECTIONS = [
     id: 'cookies',
     title: '8. Cookies en tracking',
     content: (
-      <p>Opstap gebruikt <strong>geen</strong> cookies, advertentietrackers of analysediensten van derden. Er is geen Google Analytics, Firebase Analytics of vergelijkbare dienst actief.</p>
+      <>
+        <p className="mb-3">
+          Opstap gebruikt <strong>geen</strong> advertentiecookies of commerciële trackers. Wij gebruiken geen Google Analytics of vergelijkbare reclamediensten.
+        </p>
+        <p className="mb-3">
+          Wij gebruiken <strong>PostHog</strong> voor productanalytics — uitsluitend om te begrijpen hoe de app gebruikt wordt (bijv. welke functies populair zijn), zodat wij de dienst kunnen verbeteren. PostHog slaat gegevens op in de EU (Frankfurt).
+        </p>
+        <ul className="list-disc pl-5 flex flex-col gap-1.5">
+          <li>Analytics worden <strong>alleen geactiveerd</strong> nadat jij expliciet toestemming geeft via de cookiemelding onderaan de pagina</li>
+          <li>Zonder toestemming wordt er <strong>niets</strong> gemeten</li>
+          <li>PostHog ontvangt nooit je CV-inhoud, motivatiebrieven of persoonsgegevens uit je profiel — alleen anonieme gebruiksgebeurtenissen (pagina&apos;s bezocht, knoppen geklikt)</li>
+          <li>Je kunt je toestemming op elk moment intrekken door de cookiemelding opnieuw op te roepen of je browserdata te wissen</li>
+        </ul>
+      </>
     ),
   },
   {

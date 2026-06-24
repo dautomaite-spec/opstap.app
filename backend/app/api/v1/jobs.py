@@ -9,10 +9,7 @@ from uuid import uuid4
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.job import JobOut, JobSearchParams
-from app.services.job_scraper import (
-    scrape_adzuna, scrape_indeed_nl, scrape_linkedin_nl,
-    scrape_nationale_vacaturebank, scrape_jobbird, scrape_monsterboard, scrape_werkzoeken,
-)
+from app.services.job_scraper import scrape_jobbird, scrape_nationale_vacaturebank, scrape_indeed_nl, scrape_linkedin_nl
 
 _LOCATION_REPLACEMENTS = {
     "netherlands": "Nederland",
@@ -94,26 +91,16 @@ async def search_jobs(
         return _dedup_by_company(cached)[:params.limit]
 
     # ── Not enough fresh results — hit the scrapers ───────────────────────────
-    adzuna_limit = params.limit
+    primary_limit = params.limit
     indeed_limit = min(params.limit // 2, 10)
     linkedin_limit = min(params.limit // 3, 5)
-    board_limit = 8
-    (
-        adzuna_results, indeed_results, linkedin_results,
-        nvb_results, jobbird_results, monsterboard_results, werkzoeken_results,
-    ) = await asyncio.gather(
-        scrape_adzuna(keywords, location, adzuna_limit),
+    jobbird_results, nvb_results, indeed_results, linkedin_results = await asyncio.gather(
+        scrape_jobbird(keywords, location, primary_limit),
+        scrape_nationale_vacaturebank(keywords, location, primary_limit),
         scrape_indeed_nl(keywords, location, indeed_limit),
         scrape_linkedin_nl(keywords, location, linkedin_limit),
-        scrape_nationale_vacaturebank(keywords, location, board_limit),
-        scrape_jobbird(keywords, location, board_limit),
-        scrape_monsterboard(keywords, location, board_limit),
-        scrape_werkzoeken(keywords, location, board_limit),
     )
-    raw = (
-        adzuna_results + indeed_results + linkedin_results
-        + nvb_results + jobbird_results + monsterboard_results + werkzoeken_results
-    )
+    raw = jobbird_results + nvb_results + indeed_results + linkedin_results
 
     if not raw:
         # Scrapers returned nothing — fall back to DB with a 14-day staleness cap

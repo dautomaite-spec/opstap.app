@@ -175,6 +175,9 @@
       <a href="#qa-deliverability">QA — deliverability (2026-06-23)</a>
       <a href="#sollicitaties-letter-toggle">Sollicitaties letter toggle (PR #106)</a>
       <a href="#avg-export">AVG data export (Art. 20)</a>
+      <a href="#cookie-banner">Cookie consent banner</a>
+      <a href="#whatsapp-referral">WhatsApp referral sharing</a>
+      <a href="#credits-placeholder">Credits page placeholder</a>
     </div>
   </nav>
 
@@ -272,14 +275,18 @@
       <li>Linked from footer on all public pages and from the over-ons "Juridisch" section</li>
     </ul>
 
-    <h2 id="analytics">Analytics (Plausible)</h2>
+    <h2 id="analytics">Analytics (PostHog EU)</h2>
     <p><span class="tag tag-web">web</span></p>
     <ul>
-      <li>Cookieless, AVG-safe — no consent banner required</li>
-      <li>Script domain driven by <code>NEXT_PUBLIC_PLAUSIBLE_DOMAIN</code> env var — was previously hardcoded to <code>opstapapp.nl</code></li>
-      <li>Set in Vercel env vars; falls back gracefully if not set (script not injected)</li>
-      <li>Account activated 2026-06-17 — <code>opstapapp.nl</code> registered in Plausible, 1 visitor tracked, 25 trial days remaining</li>
+      <li>Replaced Plausible with PostHog EU (project 208801) — provides full funnel analytics, session recording capability, and feature flags in addition to pageviews</li>
+      <li>PostHog EU snippet injected in <code>web/src/app/layout.tsx</code> — starts in opted-out mode; only activates tracking when the user accepts cookies via the CookieBanner</li>
+      <li>Consent stored in <code>localStorage</code> key <code>posthog_consent</code>; layout reads this on mount and calls <code>posthog.opt_in_capturing()</code> or <code>posthog.opt_out_capturing()</code> accordingly</li>
+      <li>Env var: <code>NEXT_PUBLIC_POSTHOG_KEY</code> — set in Vercel env vars. PostHog EU region: <code>eu.i.posthog.com</code> (all data stays in EU)</li>
+      <li>CSP updated in <code>next.config.ts</code>: <code>eu-assets.i.posthog.com</code> and <code>eu.i.posthog.com</code> added to <code>connect-src</code> and <code>script-src</code></li>
+      <li>Custom events in <code>DashboardClient.tsx</code> migrated from <code>plausible()</code> calls to <code>posthog.capture()</code></li>
     </ul>
+    <div class="gotcha"><strong>AVG note:</strong> Because PostHog sets cookies and processes behavioural data, a consent banner is required under ePrivacy directive — unlike Plausible which was cookieless. The CookieBanner (Q7) satisfies this requirement. PostHog must stay opted-out until the user accepts.</div>
+    <div class="gotcha"><strong>Gotcha:</strong> PostHog's EU region endpoints differ from the default US endpoints. Always use <code>eu.i.posthog.com</code> as the <code>api_host</code> in the snippet, not the default <code>app.posthog.com</code>. Sending data to the US endpoint would violate the EU-servers-only commitment.</div>
 
     <h2 id="cv-upload">CV upload</h2>
     <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
@@ -367,12 +374,14 @@
     <p><span class="tag tag-backend">backend</span></p>
     <ul>
       <li>Key file: <code>backend/app/services/job_scraper.py</code>, wired in <code>backend/app/api/v1/jobs.py</code></li>
-      <li>Three scrapers run in parallel via <code>asyncio.gather</code>: <code>scrape_adzuna()</code> (Adzuna NL REST API), <code>scrape_indeed_nl()</code> (Indeed NL HTML via BeautifulSoup), and <code>scrape_linkedin_nl()</code> (LinkedIn guest jobs API)</li>
+      <li><strong>User-facing scrapers (primary, run in parallel via <code>asyncio.gather</code>):</strong> <code>scrape_jobbird()</code> (Jobbird.com HTML) and <code>scrape_nationale_vacaturebank()</code> (Nationale Vacaturebank HTML) — both are real Dutch job boards with large volumes of native NL listings</li>
+      <li><strong>Admin-only scraper:</strong> <code>scrape_adzuna()</code> (Adzuna NL REST API) — retained for admin digest/prefetch cron only; no longer included in user-facing <code>asyncio.gather()</code></li>
+      <li>Also still present: <code>scrape_indeed_nl()</code> (Indeed NL HTML via BeautifulSoup), <code>scrape_linkedin_nl()</code> (LinkedIn guest jobs API)</li>
       <li>Results are deduplicated by job URL before returning; company diversity dedup (<code>_dedup_by_company</code>) caps results at 2 per employer</li>
       <li><code>beautifulsoup4</code> added to <code>requirements.txt</code></li>
-      <li>Indeed NL scraper parses <code>https://nl.indeed.com/jobs?q=...&amp;l=...</code> HTML — may need periodic selector updates if Indeed changes its markup</li>
       <li><code>contract_type</code> in <code>JobSearchParams</code> is a <code>Literal</code> type — only <code>"Vast"</code>, <code>"Tijdelijk"</code>, <code>"Fulltime"</code>, <code>"Parttime"</code> accepted; Pydantic rejects anything else with a 422</li>
     </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Both Jobbird and Nationale Vacaturebank scrape HTML — selectors may need periodic updates if they change their markup. Monitor job counts in logs after each deploy.</div>
     <div class="gotcha"><strong>Gotcha:</strong> Indeed NL blocks requests without a realistic <code>User-Agent</code> header. The scraper sets a browser UA; if Indeed adds more bot detection this scraper will silently return 0 results — monitor job count in logs.</div>
 
     <h2 id="linkedin-scraper">LinkedIn NL scraper</h2>
@@ -722,6 +731,36 @@
     <div class="gotcha"><strong>AVG note:</strong> Art. 20 requires that data be provided in a structured, commonly used, machine-readable format — JSON satisfies this. The download must include all personal data the user has provided or that was generated from their activity. The current export covers all required categories.</div>
     <div class="gotcha"><strong>Gotcha:</strong> The in-process rate limit dict resets on Railway dyno restart. This is acceptable for a single-instance deployment; if multiple replicas are added, move the cooldown tracking to Supabase (e.g. a <code>last_export_at</code> column on profiles).</div>
     <div class="gotcha"><strong>Security:</strong> Security review scored 8/10 — rate limit, size cap, and serialisation bug were all hardened before merge. The endpoint is auth-guarded and only returns data belonging to the authenticated user.</div>
+
+    <h2 id="cookie-banner">Cookie consent banner (CookieBanner.tsx)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/components/CookieBanner.tsx</code> (new, Q7)</li>
+      <li>Shown on first visit to any page — fixed bottom bar with "Accepteren" and "Weigeren" buttons</li>
+      <li>On accept: sets <code>localStorage.posthog_consent = 'true'</code> and calls <code>posthog.opt_in_capturing()</code></li>
+      <li>On decline: sets <code>localStorage.posthog_consent = 'false'</code> and calls <code>posthog.opt_out_capturing()</code></li>
+      <li>Banner is hidden once a choice is stored in localStorage — only shows on the first visit or after clearing storage</li>
+      <li>Required because PostHog sets cookies; Plausible did not require a banner (cookieless)</li>
+    </ul>
+    <div class="gotcha"><strong>AVG / ePrivacy:</strong> Consent must be freely given, specific, informed, and unambiguous. "Accepteren" = opt-in; "Weigeren" = opt-out. Both options must be equally prominent — do not pre-tick or visually downplay the refuse option.</div>
+
+    <h2 id="whatsapp-referral">WhatsApp referral sharing (ReferralSection.tsx)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/components/ReferralSection.tsx</code> (updated, Q20)</li>
+      <li>WhatsApp share button opens <code>https://wa.me/?text=...</code> with a pre-composed Dutch invitation message that includes the user's referral link</li>
+      <li>"Kopieer bericht" button copies the same pre-composed message to the clipboard — for users who prefer to paste into other apps (SMS, email, Telegram)</li>
+      <li>The referral message text is composed client-side from <code>profile.referral_code</code> — no server call needed</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> WhatsApp deeplinks (<code>wa.me</code>) open the WhatsApp app on mobile or WhatsApp Web on desktop. Test on both — the URL-encoding of the text parameter must not break on either platform.</div>
+
+    <h2 id="credits-placeholder">Credits page placeholder (Q15)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/credits/page.tsx</code> (new)</li>
+      <li>Placeholder page for the future credits purchase flow — shows "Credits kopen — binnenkort beschikbaar" so the route returns a 200 instead of a 404</li>
+      <li>During beta, credits are granted automatically via the daily cron; this page will be replaced with the Mollie iDEAL flow post-beta</li>
+    </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
