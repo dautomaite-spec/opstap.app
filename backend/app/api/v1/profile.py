@@ -16,6 +16,7 @@ from app.services.credits import (
     generate_referral_code,
 )
 from app.services.cv_parser import parse_cv_async
+from app.services.email_notifications import send_admin_signup_notification
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
@@ -68,6 +69,16 @@ async def create_profile(
             await award_referral_signup_credits(user_id, ref_code, supabase)
     except Exception:
         pass
+
+    # Notify admin of new signup — fire-and-forget
+    import asyncio as _asyncio
+    user_email = ""
+    try:
+        auth_user = supabase.auth.admin.get_user_by_id(user_id)
+        user_email = auth_user.user.email or ""
+    except Exception:
+        pass
+    _asyncio.create_task(send_admin_signup_notification(data.get("naam", ""), user_email))
 
     return _attach_cv_url(profile, supabase)
 

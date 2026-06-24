@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'
-const BETA_INVITE_LIMIT = 5
+const BETA_INVITE_LIMIT = 10
 
 export default function ReferralSection() {
   const [code, setCode] = useState<string | null>(null)

@@ -1,5 +1,15 @@
 # Changelog — Opstap
 
+## 2026-06-24
+- feat: scrape_nvb(), scrape_jobbird(), scrape_monsterboard(), scrape_werkzoeken() added to job_scraper.py; asyncio.gather updated to 7 scrapers in jobs.py — full NL board coverage
+- feat: send_admin_signup_notification() in email_notifications.py; fire-and-forget call in profile.py on new user signup
+- feat: referral cap raised from 5 to 10 in ReferralSection.tsx
+- feat: "Probleem melden" bug-report button added to DashboardShell.tsx; nav label fix
+- refactor: trackEvent switched from Plausible to PostHog in DashboardClient.tsx and welkom/page.tsx; PostHog init added to layout.tsx; CSP updated in next.config.ts for PostHog domains
+- ops: Cloudflare DNS — _dmarc.opstapapp.nl TXT record added (DMARC v=DMARC1; p=none) — resolves mail-tester.com DMARC warning from 2026-06-23 QA
+- ops: SendGrid opstap-backend API key scope reduced from Full Access to Mail Send only
+- qa: QA Form 002 published (qa-form.html replaced); Form 001 archived to qa-archive/qa-form-001-2026-06-24.html
+
 ## 2026-06-23 (AVG data export — Art. 20 data portability)
 - feat: GET /profile/export endpoint in backend/app/api/v1/profile.py — returns profile, applications (with letter_nl), saved_jobs, credit_transactions, referral_uses as JSON download; AVG Art. 20 right to data portability
 - security: per-user 60s cooldown rate limit on /profile/export (in-process dict); .limit(500) on each Supabase query to bound response size

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opstap — Q&amp;A Form 002</title>
+<style>
+  :root {
+    --indigo: #3d3a8c;
+    --indigo-light: #6c67c4;
+    --lavender: #eeedf8;
+    --lavender-card: #e2e0f5;
+    --text: #1a1830;
+    --muted: #6b6880;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --border: #d4d1ef;
+    --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--lavender);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 40px 20px 80px;
+  }
+  .container { max-width: 760px; margin: 0 auto; }
+
+  header {
+    background: var(--indigo);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    color: white;
+  }
+  header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+  header p { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+  .form-num {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .q-card {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+  }
+  .q-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--indigo-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .q-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .q-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .danger-badge {
+    display: inline-block;
+    background: #fee2e2;
+    color: var(--red);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .info-badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fafafa;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  textarea:focus { border-color: var(--indigo-light); background: #fff; }
+
+  input[type="text"] {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]:focus { border-color: var(--indigo-light); background: #fff; }
+
+  .radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .radio-group label, .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: background 0.12s;
+    user-select: none;
+  }
+  .radio-group label:hover, .checkbox-group label:hover { background: var(--lavender); }
+  .radio-group input, .checkbox-group input { accent-color: var(--indigo); width: 15px; height: 15px; }
+
+  .inline-radio { flex-direction: row; flex-wrap: wrap; }
+  .inline-radio label { flex: 1 1 auto; min-width: 120px; }
+
+  .submit-row {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  button[type="submit"] {
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button[type="submit"]:hover { opacity: 0.88; }
+  .submit-note { font-size: 12px; color: var(--muted); }
+
+  #copy-output {
+    display: none;
+    margin-top: 28px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  #copy-output h2 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+  #output-text {
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: #f4f3fb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    min-height: 200px;
+    resize: vertical;
+    color: var(--text);
+    outline: none;
+  }
+  .copy-btn {
+    margin-top: 10px;
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .copy-btn:hover { opacity: 0.88; }
+  .copy-confirm { font-size: 12px; color: var(--green); margin-left: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="form-num">Form 002 — 2026-06-24</div>
+    <h1>Opstap — Q&amp;A Session</h1>
+    <p>Answer what you can, skip what's unclear. Hit "Compile answers" when done — copy the output and paste it to Claude.</p>
+  </header>
+
+  <form id="qa-form">
+
+    <!-- Q1 -->
+    <div class="q-card">
+      <div class="q-num">Question 1</div>
+      <div class="q-text">PostHog is set up in the code — do you have a PostHog account yet?<span class="info-badge">Action needed</span></div>
+      <div class="q-sub">The frontend now uses PostHog (EU) for analytics. It reads from <code>NEXT_PUBLIC_POSTHOG_KEY</code>. You need to: create an account at app.posthog.com, create a project (EU region), copy the API key, and add it to Vercel as <code>NEXT_PUBLIC_POSTHOG_KEY</code>. Have you done this?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q1" value="done"> Done — key is already in Vercel</label>
+        <label><input type="radio" name="q1" value="do_it"> No — please walk me through it / do it for me</label>
+        <label><input type="radio" name="q1" value="skip"> Skip PostHog for now — analytics can wait</label>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card">
+      <div class="q-num">Question 2</div>
+      <div class="q-text">How are you inviting the first beta users?</div>
+      <div class="q-sub">There's a referral link system but no dedicated invite flow. Will you share a direct link to opstapapp.nl/register, or do you want me to build a waitlist/invite-code gate first?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q2" value="direct_link"> Direct link to /register — no gate needed</label>
+        <label><input type="radio" name="q2" value="invite_code"> Build an invite-code gate first (only people with a code can register)</label>
+        <label><input type="radio" name="q2" value="waitlist"> Build a waitlist first (they sign up and I approve them)</label>
+        <label><input type="radio" name="q2" value="referral"> Via the referral link from my own account</label>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card">
+      <div class="q-num">Question 3</div>
+      <div class="q-text">The /admin page doesn't exist yet<span class="danger-badge">Missing</span></div>
+      <div class="q-sub">The admin signup notification email links to <code>opstapapp.nl/admin</code>. Currently that 404s. Should I build a basic admin panel (user list, credit adjustments, suspension toggle), or is Supabase Table Editor enough for now?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q3" value="build_basic"> Build a basic /admin page (read-only user list + link to Supabase)</label>
+        <label><input type="radio" name="q3" value="build_full"> Build a full admin panel (manage users, credits, suspend)</label>
+        <label><input type="radio" name="q3" value="supabase_only"> Supabase Table Editor is enough — skip for now</label>
+        <label><input type="radio" name="q3" value="fix_link"> Just fix the email link to point to Supabase directly</label>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card">
+      <div class="q-num">Question 4</div>
+      <div class="q-text">Error monitoring — are you getting notified when the backend crashes?</div>
+      <div class="q-sub">Currently there's no Sentry or error tracking. If a Railway deploy fails or an endpoint throws a 500 in production, you won't know until a user complains. Worth adding Sentry (free tier) before inviting people?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q4" value="yes_sentry"> Yes — add Sentry free tier to the backend</label>
+        <label><input type="radio" name="q4" value="yes_posthog"> PostHog can catch JS errors on frontend — that's enough for now</label>
+        <label><input type="radio" name="q4" value="railway_logs"> Railway logs are enough — I'll check manually</label>
+        <label><input type="radio" name="q4" value="skip"> Skip — not a priority for early beta</label>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q-card">
+      <div class="q-num">Question 5</div>
+      <div class="q-text">What does the motivation letter generation screen look like?</div>
+      <div class="q-sub">The backend generates Dutch letters via Claude API. Have you actually tested the full flow end-to-end on production? (Search → see a job → generate letter → review → send) If yes, is the output quality good enough to show to friends?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q5" value="tested_great"> Tested it — letter quality is good</label>
+        <label><input type="radio" name="q5" value="tested_meh"> Tested it — quality needs work (explain below)</label>
+        <label><input type="radio" name="q5" value="not_tested"> Haven't fully tested the end-to-end flow yet</label>
+      </div>
+      <textarea name="q5_note" placeholder="Optional: what's wrong with the output, or what specifically to improve?"></textarea>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q-card">
+      <div class="q-num">Question 6</div>
+      <div class="q-text">Is there a custom 404 page?</div>
+      <div class="q-sub">Next.js shows a default 404. A branded 404 with a link back to the dashboard takes 10 minutes and looks more professional when a beta user hits a broken link.</div>
+      <div class="radio-group inline-radio">
+        <label><input type="radio" name="q6" value="yes"> Already built</label>
+        <label><input type="radio" name="q6" value="build"> Build one</label>
+        <label><input type="radio" name="q6" value="skip"> Skip for now</label>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="q-card">
+      <div class="q-num">Question 7</div>
+      <div class="q-text">Cookie/GDPR consent banner — do you have one?<span class="danger-badge">AVG</span></div>
+      <div class="q-sub">PostHog tracks users by default. Under AVG you need consent before placing analytics cookies. A simple "Accept / Reject" banner on first visit is required. Does one exist, or should I build it?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q7" value="exists"> Already built</label>
+        <label><input type="radio" name="q7" value="build"> Build one before launch</label>
+        <label><input type="radio" name="q7" value="posthog_no_cookies"> PostHog set to cookieless — no banner needed</label>
+        <label><input type="radio" name="q7" value="skip"> Skip for beta — too few users to matter</label>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="q-card">
+      <div class="q-num">Question 8</div>
+      <div class="q-text">Is the site indexed by Google yet?</div>
+      <div class="q-sub">Google Search Console can verify the domain and submit a sitemap. This takes ~10 minutes and starts SEO from day 1. Have you done this? Is there a sitemap.xml?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q8" value="done"> Yes — verified and sitemap submitted</label>
+        <label><input type="radio" name="q8" value="verified_no_sitemap"> Domain verified but no sitemap yet</label>
+        <label><input type="radio" name="q8" value="not_done"> Not done — please set it up</label>
+        <label><input type="radio" name="q8" value="skip"> Skip — SEO isn't a priority yet</label>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="q-card">
+      <div class="q-num">Question 9</div>
+      <div class="q-text">What happens when zero jobs are found?</div>
+      <div class="q-sub">If all scrapers return empty (Adzuna API limit, blocked IPs, etc.) the user sees nothing. Is there a "no results" message with a fallback, or does the UI just show an empty list?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q9" value="looks_fine"> Looks fine — tested this case</label>
+        <label><input type="radio" name="q9" value="empty_list"> Shows empty list — needs a friendly message</label>
+        <label><input type="radio" name="q9" value="unknown"> Not sure — haven't tested it</label>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="q-card">
+      <div class="q-num">Question 10</div>
+      <div class="q-text">How is the application actually sent to the employer?</div>
+      <div class="q-sub">The backend has an "apply" endpoint that sends an email via SendGrid to the employer. But job listings often have an application form, not an email address. Have you decided: email only, or also form submissions via web automation?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q10" value="email_only"> Email only — if there's no email, the user applies manually</label>
+        <label><input type="radio" name="q10" value="form_too"> Eventually also form submissions — investigate options</label>
+        <label><input type="radio" name="q10" value="link_only"> Just open the job URL — user applies themselves</label>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="q-card">
+      <div class="q-num">Question 11</div>
+      <div class="q-text">What's your growth plan for getting to 50 MAU?</div>
+      <div class="q-sub">50 MAU triggers the Android build milestone. What's the channel: personal network, LinkedIn posts, a landing page with SEO, paid ads, Reddit/DutchJobSeeker communities, or something else?</div>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="q11" value="personal_network"> Personal network (friends, ex-colleagues)</label>
+        <label><input type="checkbox" name="q11" value="linkedin_posts"> LinkedIn posts about the product</label>
+        <label><input type="checkbox" name="q11" value="seo"> SEO / blog content targeting Dutch job seekers</label>
+        <label><input type="checkbox" name="q11" value="communities"> Reddit / Facebook groups / Dutch expat communities</label>
+        <label><input type="checkbox" name="q11" value="ads"> Paid ads (Google, Meta)</label>
+        <label><input type="checkbox" name="q11" value="other"> Other (explain below)</label>
+      </div>
+      <textarea name="q11_note" placeholder="Optional details"></textarea>
+    </div>
+
+    <!-- Q12 -->
+    <div class="q-card">
+      <div class="q-num">Question 12</div>
+      <div class="q-text">Does Opstap have a social presence yet?</div>
+      <div class="q-sub">LinkedIn company page, Instagram, TikTok — anything. Even a basic LinkedIn page helps with B2B credibility and SEO.</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q12" value="linkedin"> LinkedIn company page exists</label>
+        <label><input type="radio" name="q12" value="multiple"> Multiple channels already set up</label>
+        <label><input type="radio" name="q12" value="none_build"> None yet — create a LinkedIn page</label>
+        <label><input type="radio" name="q12" value="none_skip"> None — not a priority now</label>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="q-card">
+      <div class="q-num">Question 13</div>
+      <div class="q-text">The Adzuna API has rate limits — do you have a paid plan?</div>
+      <div class="q-sub">Adzuna free tier: 1000 calls/month. At 50 beta users doing 1 search/day that's 1500 calls/month — already over. Paid plan is ~€50/mo. Worth upgrading now, or wait until actual traffic hits?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q13" value="paid"> Already on paid plan</label>
+        <label><input type="radio" name="q13" value="upgrade_now"> Upgrade now — don't want outages</label>
+        <label><input type="radio" name="q13" value="wait"> Wait until we hit the limit</label>
+        <label><input type="radio" name="q13" value="replace"> Replace Adzuna with a free alternative</label>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="q-card">
+      <div class="q-num">Question 14</div>
+      <div class="q-text">Is there a loading / onboarding screen after first login?</div>
+      <div class="q-sub">A first-time user lands at the dashboard — do they know what to do? Is there a welcome screen, a checklist, or any onboarding guidance, or do they just see the empty dashboard?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q14" value="welkom_exists"> There's a /welkom page — it works</label>
+        <label><input type="radio" name="q14" value="needs_work"> There is one but it needs improvement</label>
+        <label><input type="radio" name="q14" value="nothing"> No onboarding — user is dropped in the dashboard cold</label>
+      </div>
+    </div>
+
+    <!-- Q15 -->
+    <div class="q-card">
+      <div class="q-num">Question 15</div>
+      <div class="q-text">Mollie is deferred — what do users see when they run out of credits?</div>
+      <div class="q-sub">With daily credits, a user could exhaust them by applying to a lot of jobs. When they hit 0, what happens? Is there a "buy more credits" page, or just an error message? Since Mollie isn't built yet, the page should explain that payments are coming.</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q15" value="page_exists"> There's already a credits/payment page</label>
+        <label><input type="radio" name="q15" value="build_placeholder"> Build a "coming soon" credits page with a message</label>
+        <label><input type="radio" name="q15" value="error_message"> Just an error message is fine for now</label>
+      </div>
+    </div>
+
+    <!-- Q16 -->
+    <div class="q-card">
+      <div class="q-num">Question 16</div>
+      <div class="q-text">Is there a privacy policy page at /privacy?</div>
+      <div class="q-sub">The CLAUDE.md mentions a /privacy page exists. The /voorwaarden (ToS) page also exists. Are both linked from the footer of every page?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q16" value="both_linked"> Both /privacy and /voorwaarden are linked in the footer</label>
+        <label><input type="radio" name="q16" value="privacy_only"> Only /privacy is linked</label>
+        <label><input type="radio" name="q16" value="neither"> Neither is linked yet</label>
+        <label><input type="radio" name="q16" value="no_privacy"> /privacy doesn't exist — needs to be created</label>
+      </div>
+    </div>
+
+    <!-- Q17 -->
+    <div class="q-card">
+      <div class="q-num">Question 17</div>
+      <div class="q-text">Supabase email confirmations — are they on or off?</div>
+      <div class="q-sub">By default Supabase requires email confirmation before login. During beta this could drop users. Is email confirmation currently required, or disabled?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q17" value="required"> Email confirmation is required — users must click a link</label>
+        <label><input type="radio" name="q17" value="disabled"> Disabled — users log in immediately after signup</label>
+        <label><input type="radio" name="q17" value="unknown"> Not sure — please check</label>
+      </div>
+    </div>
+
+    <!-- Q18 -->
+    <div class="q-card">
+      <div class="q-num">Question 18</div>
+      <div class="q-text">How satisfied are you with the current UI design?</div>
+      <div class="q-sub">The dashboard was built without a design system. Now that Stitch is in the stack, we could redesign screens. Is the current UI good enough for beta, or should we redesign before inviting people?</div>
+      <div class="radio-group">
+        <label><input type="radio" name="q18" value="good_enough"> Good enough — don't spend time on design now</label>
+        <label><input type="radio" name="q18" value="one_screen"> One screen needs a redesign (which one?)</label>
+        <label><input type="radio" name="q18" value="full_redesign"> Redesign before beta — it needs to look more polished</label>
+      </div>
+      <textarea name="q18_note" placeholder="Optional: which screen, or what's wrong with the current design?"></textarea>
+    </div>
+
+    <!-- Q19 -->
+    <div class="q-card">
+      <div class="q-num">Question 19</div>
+      <div class="q-text">Any new dangers or blockers you've noticed?<span class="danger-badge">Risk</span></div>
+      <div class="q-sub">Anything that's been on your mind — security, legal, UX, infrastructure, competitor risk. Especially things that could block or embarrass you during beta.</div>
+      <textarea name="q19" placeholder="Optional — skip if nothing comes to mind"></textarea>
+    </div>
+
+    <!-- Q20 -->
+    <div class="q-card">
+      <div class="q-num">Question 20</div>
+      <div class="q-text">What should I work on next after this form?</div>
+      <div class="q-sub">If you had to pick one thing for me to build or fix right now — the one thing that makes beta more likely to succeed — what is it?</div>
+      <textarea name="q20" placeholder="e.g. fix the job search results, improve the letter quality, build the admin panel, set up PostHog…"></textarea>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit">Compile answers</button>
+      <span class="submit-note">Generates a text block you can paste directly to Claude</span>
+    </div>
+  </form>
+
+  <div id="copy-output">
+    <h2>Copy this and paste it to Claude</h2>
+    <textarea id="output-text" readonly></textarea>
+    <br>
+    <button class="copy-btn" onclick="copyOutput()">Copy to clipboard</button>
+    <span class="copy-confirm" id="copy-confirm">Copied!</span>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('qa-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const labels = {
+      q1: "PostHog account status",
+      q2: "How to invite first beta users",
+      q3: "Admin panel (/admin missing)",
+      q4: "Error monitoring / Sentry",
+      q5: "Motivation letter quality",
+      q5_note: "Letter quality note",
+      q6: "Custom 404 page",
+      q7: "Cookie / GDPR consent banner",
+      q8: "Google Search Console / sitemap",
+      q9: "Zero jobs found — empty state",
+      q10: "How applications are sent",
+      q11: "Growth plan to 50 MAU",
+      q11_note: "Growth plan details",
+      q12: "Social media presence",
+      q13: "Adzuna API rate limits",
+      q14: "Onboarding / welcome screen",
+      q15: "Out-of-credits experience",
+      q16: "Privacy & ToS footer links",
+      q17: "Supabase email confirmation",
+      q18: "UI design quality",
+      q18_note: "Design notes",
+      q19: "New dangers / blockers",
+      q20: "Top priority next task",
+    };
+
+    const fd = new FormData(this);
+    const out = [];
+    out.push("=== Q&A FORM 002 — 2026-06-24 ===\n");
+
+    for (const [key, label] of Object.entries(labels)) {
+      if (key === 'q5_note' || key === 'q11_note' || key === 'q18_note') continue;
+      const values = fd.getAll(key);
+      const value = values.length > 1 ? values.join(', ') : (values[0] || '(no answer)');
+      let line = `Q ${key.replace('q','').replace('_note','')}: ${label}\n→ ${value}`;
+      if (key === 'q5') {
+        const note = fd.get('q5_note');
+        if (note) line += `\n  Note: ${note}`;
+      }
+      if (key === 'q11') {
+        const note = fd.get('q11_note');
+        if (note) line += `\n  Details: ${note}`;
+      }
+      if (key === 'q18') {
+        const note = fd.get('q18_note');
+        if (note) line += `\n  Design notes: ${note}`;
+      }
+      out.push(line);
+    }
+
+    out.push("\n=== END FORM 002 ===");
+    document.getElementById('output-text').value = out.join('\n\n');
+    document.getElementById('copy-output').style.display = 'block';
+    document.getElementById('copy-output').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  function copyOutput() {
+    const el = document.getElementById('output-text');
+    el.select();
+    document.execCommand('copy');
+    const confirm = document.getElementById('copy-confirm');
+    confirm.style.display = 'inline';
+    setTimeout(() => confirm.style.display = 'none', 2000);
+  }
+</script>
+</body>
+</html>

@@ -300,6 +300,26 @@ op grond van je privacyinstellingen (AVG).</p>
     return await _send(to_email, naam, subject, plain, html)
 
 
+_ADMIN_EMAIL = "admin@opstapapp.nl"
+
+
+async def send_admin_signup_notification(naam: str, user_email: str) -> bool:
+    """Sends a notification to the admin when a new user signs up."""
+    subject = f"Nieuwe gebruiker: {naam}"
+    _naam = _html.escape(naam)
+    _email = _html.escape(user_email)
+    plain = f"Nieuwe gebruiker op Opstap:\nNaam: {naam}\nE-mail: {user_email}\n\nBeheer: https://opstapapp.nl/admin"
+    html = _base_html("Nieuwe gebruiker", f"""
+<h2>Nieuwe gebruiker aangemeld</h2>
+<div class="card">
+  <strong>{_naam}</strong><br>
+  <span style="font-size:13px;color:#555;">{_email}</span>
+</div>
+<p style="margin-top:16px;"><a href="https://opstapapp.nl/admin" class="btn">Bekijk in admin</a></p>
+""")
+    return await _send(_ADMIN_EMAIL, "Admin", subject, plain, html)
+
+
 async def send_job_digest(to_email: str, naam: str, jobs: list[dict]) -> bool:
     count = len(jobs)
     subject = f"{count} nieuwe vacatures voor jou — weekoverzicht Opstap"
