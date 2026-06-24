@@ -1,5 +1,14 @@
 # Changelog — Opstap
 
+## 2026-06-24 (PR #113 — reactivation email blast)
+- feat: send_reactivation() email function in email_sender.py — personalised Dutch re-engagement email to lapsed beta users
+- feat: POST /admin/blast/reactivation in admin.py — sends reactivation email to all users who have not logged in for 14+ days; admin-key guarded
+- feat: AdminPanel reactivation button — triggers the blast endpoint from the /admin UI; shows success/failure count
+
+## 2026-06-24 (PR #112 — Google Search Console verification)
+- ops: Google Search Console meta tag added to web/src/app/layout.tsx — opstapapp.nl now verified in GSC
+- ops: sitemap.xml submitted to GSC for opstapapp.nl — pages indexed
+
 ## 2026-06-24 (feat/qa-form-002-execution)
 - feat: WhatsApp referral share button + "Kopieer bericht" in ReferralSection.tsx — pre-composed Dutch invitation message, opens wa.me deeplink or copies to clipboard (Q20)
 - feat: CookieBanner.tsx (new) — GDPR/AVG cookie consent banner with PostHog opt-in/opt-out; consent stored in localStorage; required because PostHog uses cookies (Q7)
