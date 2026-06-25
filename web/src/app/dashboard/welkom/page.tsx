@@ -92,20 +92,23 @@ export default function WelkomPage() {
   return (
     <div className="max-w-md mx-auto pt-4">
 
-      {/* Progress dots */}
-      <div className="flex items-center justify-center gap-2 mb-8">
-        {([1, 2, 3] as Step[]).map(n => (
-          <div
-            key={n}
-            className="rounded-full transition-all"
-            style={{
-              width: step === n ? 24 : 8,
-              height: 8,
-              background: step === n ? 'var(--color-indigo-primary)' : step > n ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-              opacity: step > n ? 0.4 : 1,
-            }}
-          />
-        ))}
+      {/* Progress indicator */}
+      <div className="flex flex-col items-center gap-2 mb-8">
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Stap {step} van 3</p>
+        <div className="flex items-center gap-2">
+          {([1, 2, 3] as Step[]).map(n => (
+            <div
+              key={n}
+              className="rounded-full transition-all"
+              style={{
+                width: step === n ? 24 : 8,
+                height: 8,
+                background: step === n ? 'var(--color-indigo-primary)' : step > n ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                opacity: step > n ? 0.4 : 1,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Step 1 -Profile */}

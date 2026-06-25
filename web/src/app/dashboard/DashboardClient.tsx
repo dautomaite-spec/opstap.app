@@ -819,7 +819,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   <div className="flex items-start gap-2 flex-wrap">
                     <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
                     {profile && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: matchBg, color: matchColor }}>
+                      <span
+                        title="Hoe goed de vacature past bij jouw functietitel en woonplaats"
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
+                        style={{ background: matchBg, color: matchColor }}
+                      >
                         {pct}% match
                       </span>
                     )}
@@ -866,7 +870,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
                       style={{ background: 'var(--color-indigo-primary)' }}
                     >
-                      {generatingLetter ? 'Laden…' : 'Solliciteren'}
+                      {generatingLetter ? 'Laden…' : 'Solliciteren (1 credit)'}
                     </button>
                   )}
                   <div className="flex gap-1.5">

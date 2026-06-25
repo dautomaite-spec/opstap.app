@@ -1,5 +1,15 @@
 # Changelog — Opstap
 
+## 2026-06-25 (UX polish — blog, onboarding, job cards, settings)
+- fix: blog/layout.tsx changed to pass-through; per-post layouts at blog/[slug]/layout.tsx fix prose wrapping and "Terug naar blog" navigation loop
+- feat: onboarding step indicator "Stap X van 3" added to all wizard steps
+- feat: credit cost warning shown on "Solliciteren" button before user confirms apply action
+- feat: match % tooltip on job cards explains how the score is calculated
+- fix: application status now correctly transitions from "pending" to "sent" for the "site" send method (backend/app/api/v1/apply.py)
+- feat: profile completeness widget now lists specific missing fields instead of only a percentage
+- fix: duplicate profile form removed from Settings page; replaced with a link to /dashboard/profiel
+- ux: "Account verwijderen" danger zone in SettingsClient.tsx given red border and background for clearer visual warning
+
 ## 2026-06-25 (PR #121 — NL-only vacatures + dashboard keyword datalist)
 - fix: LinkedIn scraper passes geoId=105756473 (Netherlands) to guest jobs API — restricts results to NL-posted vacancies at source (backend/app/services/job_scraper.py)
 - fix: post-filter in jobs.py strips non-NL results after aggregation using location_country field — catches any international jobs that slip through from any scraper before DB upsert

@@ -279,8 +279,9 @@ async def approve_and_send(
         raise HTTPException(status_code=422, detail="Ongeldige briefinhoud. Regenereer de brief en probeer opnieuw.")
 
     now = datetime.now(timezone.utc)
-    status = "pending"
-    sent_at = None
+    # "site": user copied letter and opened the vacancy URL - treated as sent
+    status = "sent" if body.send_method == "site" else "pending"
+    sent_at = now.isoformat() if body.send_method == "site" else None
 
     if body.send_method == "email":
         contact_email = body.contact_email_override

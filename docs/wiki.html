@@ -185,6 +185,14 @@
       <a href="#copy-rules">Copy rules (no em dashes)</a>
       <a href="#nl-only-filter">NL-only job filter (PR #121)</a>
       <a href="#dashboard-datalist">Dashboard keyword datalist</a>
+      <a href="#blog-layout">Blog layout fix</a>
+      <a href="#onboarding-step-indicator">Onboarding step indicator</a>
+      <a href="#credit-cost-warning">Credit cost warning</a>
+      <a href="#match-tooltip">Match % tooltip</a>
+      <a href="#site-status-fix">Application status (site method)</a>
+      <a href="#profile-completeness-fields">Profile completeness fields</a>
+      <a href="#settings-profile-link">Settings profile link</a>
+      <a href="#danger-zone-style">Danger zone styling</a>
     </div>
   </nav>
 
@@ -838,6 +846,72 @@
       <li>Works on all browsers without a consent concern (no external calls, no cookies) - purely client-side HTML</li>
     </ul>
     <div class="gotcha"><strong>Gotcha:</strong> Browser <code>&lt;datalist&gt;</code> behaviour varies slightly across Chrome, Firefox, and Safari - Chrome shows suggestions as a dropdown below the field, Firefox may show fewer items, Safari has its own styling. Test on all three. Do not rely on datalist for critical UX; it is a progressive enhancement only.</div>
+
+    <h2 id="blog-layout">Blog layout fix</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/blog/layout.tsx</code> — changed to a pass-through layout (no wrapping prose or shell); per-post layouts handle their own structure</li>
+      <li>Root cause of "Terug naar blog" loop: the index layout was wrapping all routes under <code>/blog</code> including the index itself, causing the back-link to re-render inside the same layout and create a navigation loop</li>
+      <li>Fix: per-post layouts created at <code>web/src/app/blog/[slug]/layout.tsx</code> — each post gets its own prose wrapper and back-link; the index page <code>/blog</code> uses the bare layout only</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> In Next.js App Router, a <code>layout.tsx</code> at a directory level wraps ALL routes beneath it, including nested index routes. If you need different layouts for the index vs individual entries, use a segment-level layout in the <code>[slug]</code> directory rather than at the parent level.</div>
+
+    <h2 id="onboarding-step-indicator">Onboarding step indicator</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Added "Stap X van 3" indicator to all steps of the onboarding wizard</li>
+      <li>Helps users understand progress and reduces drop-off by setting expectations about how many steps remain</li>
+      <li>Key files: <code>web/src/app/onboarding/</code> step components</li>
+    </ul>
+
+    <h2 id="credit-cost-warning">Credit cost warning on "Solliciteren" button</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The "Solliciteren" button on job cards now shows the credit cost before the user confirms the action</li>
+      <li>Prevents surprise when credits are deducted — users with low balances see a warning inline</li>
+      <li>Cost is fetched from the profile's current credit balance; the button is disabled when credits are insufficient</li>
+    </ul>
+
+    <h2 id="match-tooltip">Match % tooltip on job cards</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The match percentage badge on each job card now has a tooltip explaining how the score is calculated (profile fields vs job requirements)</li>
+      <li>Tooltip appears on hover (desktop) and tap (mobile)</li>
+      <li>Implemented as a native title attribute or a small CSS tooltip — no extra JS library needed</li>
+    </ul>
+
+    <h2 id="site-status-fix">Application status fix — "site" send method</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>When the send method is <code>"site"</code> (user applies via the employer's website directly), the application status was staying as <code>"pending"</code> instead of transitioning to <code>"sent"</code> after approval</li>
+      <li>Fixed in the approve endpoint: status update now fires for all send methods, not only <code>"email"</code></li>
+      <li>Key file: <code>backend/app/api/v1/apply.py</code></li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The approve endpoint historically only set <code>status = "sent"</code> when the email send succeeded. For the "site" method there is no email — the transition to "sent" must be explicit and unconditional once the user confirms.</div>
+
+    <h2 id="profile-completeness-fields">Profile completeness widget — missing fields</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The profile completeness progress bar now lists the specific fields that are still missing, not just a percentage</li>
+      <li>Users see e.g. "Voeg salarisrange toe" or "Upload je CV" rather than just "60% compleet"</li>
+      <li>Encourages targeted action to improve profile quality, which improves match and letter generation quality</li>
+    </ul>
+
+    <h2 id="settings-profile-link">Settings page — profile form replaced with link</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/settings/SettingsClient.tsx</code></li>
+      <li>The full profile form that was embedded on the Settings page has been removed and replaced with a link to <code>/dashboard/profiel</code></li>
+      <li>Rationale: maintaining two copies of the profile form created drift risk — field additions or validation changes had to be applied in two places. One canonical form at <code>/profiel</code> is the single source of truth</li>
+    </ul>
+
+    <h2 id="danger-zone-style">"Account verwijderen" danger zone styling</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>File: <code>web/src/app/dashboard/settings/SettingsClient.tsx</code></li>
+      <li>The danger zone section now has a red border (<code>border-red-200</code>) and a light red background (<code>bg-red-50</code>) — visually distinct from all other settings sections</li>
+      <li>Matches standard UX patterns for destructive actions; reduces accidental clicks by making the section feel consequential</li>
+    </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
