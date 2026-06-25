@@ -21,6 +21,24 @@ _LOCATION_REPLACEMENTS = {
 
 _MAX_PER_COMPANY = 2
 
+# Location fragments that indicate a non-Dutch job.
+# LinkedIn and Indeed sometimes return remote/US jobs even when queried with NL params.
+_NON_NL_FRAGMENTS: frozenset[str] = frozenset({
+    "united states", "usa", "u.s.", "united kingdom", "uk", "germany", "deutschland",
+    "france", "belgium", "spain", "italy", "poland", "remote, ", "worldwide",
+    # US state abbreviations used in job locations like "Austin, TX"
+    ", tx", ", ca", ", ny", ", fl", ", wa", ", co", ", il", ", ga", ", az",
+    ", ma", ", nc", ", oh", ", mi", ", nj", ", va", ", pa", ", tn",
+})
+
+
+def _is_nl_location(location: str | None) -> bool:
+    """Return True if the location looks Dutch or is unset."""
+    if not location:
+        return True
+    lower = location.lower()
+    return not any(frag in lower for frag in _NON_NL_FRAGMENTS)
+
 
 def _dedup_by_company(jobs: list[dict]) -> list[dict]:
     """Limit results to _MAX_PER_COMPANY per company to ensure diversity."""
@@ -100,7 +118,8 @@ async def search_jobs(
         scrape_indeed_nl(keywords, location, indeed_limit),
         scrape_linkedin_nl(keywords, location, linkedin_limit),
     )
-    raw = jobbird_results + nvb_results + indeed_results + linkedin_results
+    raw = [j for j in jobbird_results + nvb_results + indeed_results + linkedin_results
+           if _is_nl_location(j.get("location"))]
 
     if not raw:
         # Scrapers returned nothing — fall back to DB with a 14-day staleness cap

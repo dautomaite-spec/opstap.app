@@ -452,7 +452,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
       {/* Search form */}
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-4">
+        <datalist id="search-job-titles">
+          {JOB_TITLES.map(t => <option key={t} value={t} />)}
+        </datalist>
         <input
+          list="search-job-titles"
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
           placeholder="Functie of trefwoord"

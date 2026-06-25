@@ -260,7 +260,8 @@ async def scrape_linkedin_nl(keywords: str, location: str = "", limit: int = 5) 
     params = urlencode({
         "keywords": keywords,
         "location": location or "Nederland",
-        "f_TPR": "r86400",  # posted in last 24h
+        "geoId": "102890719",  # LinkedIn geoId for Netherlands - hard-restricts to NL
+        "f_TPR": "r86400",     # posted in last 24h
         "start": "0",
     })
     url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?{params}"
