@@ -183,6 +183,8 @@
       <a href="#invite-landing">Invite landing page</a>
       <a href="#open-registration">Open registration CTA</a>
       <a href="#copy-rules">Copy rules (no em dashes)</a>
+      <a href="#nl-only-filter">NL-only job filter (PR #121)</a>
+      <a href="#dashboard-datalist">Dashboard keyword datalist</a>
     </div>
   </nav>
 
@@ -816,6 +818,26 @@
       <li>Enforcement: run a grep for <code>—</code> or the literal <code>—</code> character before merging any web copy change</li>
     </ul>
     <div class="gotcha"><strong>Pattern:</strong> When generating Dutch UI copy with Claude, instruct it explicitly: no em dashes, no "geen creditcard nodig". The model's default Dutch writing style tends to use em dashes as stylistic separators.</div>
+
+    <h2 id="nl-only-filter">NL-only job filter (PR #121)</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key files: <code>backend/app/services/job_scraper.py</code>, <code>backend/app/api/v1/jobs.py</code></li>
+      <li><strong>LinkedIn geoId:</strong> <code>scrape_linkedin_nl()</code> now passes <code>geoId=105756473</code> (LinkedIn's numeric ID for the Netherlands) in the guest jobs API query string - restricts results at source before they enter the pool</li>
+      <li><strong>Post-filter in jobs.py:</strong> after aggregating results from all scrapers, a filter removes any job whose <code>location_country</code> is not <code>"NL"</code> (or equivalent Dutch normalisation). Catches international results that slip through from Jobbird or NVB when a keyword matches a foreign employer</li>
+      <li>The filter runs before company dedup and before DB upsert - non-NL rows are discarded entirely and never stored in the shared jobs pool</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> <code>location_country</code> must be populated by each scraper for the filter to work. If a scraper returns a job without this field, the filter defaults to allowing it through (fail-open) to avoid false negatives. Monitor for unexpected non-NL results in production.</div>
+
+    <h2 id="dashboard-datalist">Dashboard keyword search - datalist suggestions</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key file: <code>web/src/app/dashboard/components/DashboardClient.tsx</code> (or the search input component)</li>
+      <li>A native HTML <code>&lt;datalist&gt;</code> element is linked to the keywords <code>&lt;input&gt;</code> via <code>list</code> attribute - provides browser-native autocomplete dropdown with no extra JS or library needed</li>
+      <li>Suggestions are a static list of common Dutch job titles, consistent with the 215-item list already used in the profile multi-functietitel datalist (#67)</li>
+      <li>Works on all browsers without a consent concern (no external calls, no cookies) - purely client-side HTML</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Browser <code>&lt;datalist&gt;</code> behaviour varies slightly across Chrome, Firefox, and Safari - Chrome shows suggestions as a dropdown below the field, Firefox may show fewer items, Safari has its own styling. Test on all three. Do not rely on datalist for critical UX; it is a progressive enhancement only.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

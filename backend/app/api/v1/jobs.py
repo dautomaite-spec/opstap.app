@@ -21,6 +21,27 @@ _LOCATION_REPLACEMENTS = {
 
 _MAX_PER_COMPANY = 2
 
+# Location fragments that indicate a non-Dutch job.
+# LinkedIn and Indeed sometimes return remote/US jobs even when queried with NL params.
+_NON_NL_FRAGMENTS: frozenset[str] = frozenset({
+    "united states", "usa", "u.s.", "united kingdom", "germany", "deutschland",
+    "france", "españa", "spain", "italy", "poland", "worldwide",
+    # US state/city patterns. Use longer forms to avoid false positives on Dutch names.
+    # "remote, " catches "Remote, US" / "Remote, CA" / etc.
+    "remote, us", "remote, ca", "remote, uk",
+    # Full US state names are unambiguous
+    "new york", "california", "texas", "florida", "illinois", "washington, d",
+    "san francisco", "los angeles", "chicago", "seattle", "austin",
+})
+
+
+def _is_nl_location(location: str | None) -> bool:
+    """Return True if the location looks Dutch or is unset."""
+    if not location:
+        return True
+    lower = location.lower()
+    return not any(frag in lower for frag in _NON_NL_FRAGMENTS)
+
 
 def _dedup_by_company(jobs: list[dict]) -> list[dict]:
     """Limit results to _MAX_PER_COMPANY per company to ensure diversity."""
@@ -62,7 +83,8 @@ async def search_jobs(
     supabase=Depends(get_supabase),
 ):
     keywords = (params.keywords or "").strip()
-    location = (params.location or "").strip()
+    # Strip LIKE wildcards from user input so ilike behaves as a substring search, not open wildcard
+    location = re.sub(r"[%_]", "", (params.location or "").strip())
 
     now = datetime.now(timezone.utc)
     fresh_cutoff = (now - timedelta(hours=_FRESH_HOURS)).isoformat()
@@ -100,7 +122,8 @@ async def search_jobs(
         scrape_indeed_nl(keywords, location, indeed_limit),
         scrape_linkedin_nl(keywords, location, linkedin_limit),
     )
-    raw = jobbird_results + nvb_results + indeed_results + linkedin_results
+    raw = [j for j in jobbird_results + nvb_results + indeed_results + linkedin_results
+           if _is_nl_location(j.get("location"))]
 
     if not raw:
         # Scrapers returned nothing — fall back to DB with a 14-day staleness cap
