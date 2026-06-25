@@ -1,5 +1,10 @@
 # Changelog — Opstap
 
+## 2026-06-25 (PR #121 — NL-only vacatures + dashboard keyword datalist)
+- fix: LinkedIn scraper passes geoId=105756473 (Netherlands) to guest jobs API — restricts results to NL-posted vacancies at source (backend/app/services/job_scraper.py)
+- fix: post-filter in jobs.py strips non-NL results after aggregation using location_country field — catches any international jobs that slip through from any scraper before DB upsert
+- feat: datalist suggestions added to keywords search input on dashboard — native HTML autocomplete for common Dutch job titles, no external calls or cookies (DashboardClient.tsx)
+
 ## 2026-06-24 (PR #120 — remove all em dashes)
 - fix: removed every em dash (U+2014) from 28 web source files — replaced with hyphens, colons, pipes, or restructured sentences; covers page titles, visible UI copy, and code comments
 
