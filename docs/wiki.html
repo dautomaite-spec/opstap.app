@@ -200,6 +200,7 @@
       <a href="#job-age-warning">Job age warning</a>
       <a href="#hours-dropdown">Hours dropdown</a>
       <a href="#dahl-ux-fixes">Dahl UX fixes</a>
+      <a href="#dutch-copy-dashboard">Dutch copy fixes (dashboard)</a>
     </div>
   </nav>
 
@@ -975,6 +976,19 @@
       <li>Dahl feedback document saved at <code>docs/dahl-feedback.html</code> for future reference</li>
     </ul>
     <div class="gotcha"><strong>Pattern:</strong> User test findings are filed in <code>docs/dahl-feedback.html</code>. Before marking any feedback item as done, cross-reference the original finding to confirm the specific behaviour was actually addressed.</div>
+
+    <h2 id="dutch-copy-dashboard">Dutch copy fixes — DashboardClient (2026-06-28)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Key file: <code>web/src/app/dashboard/components/DashboardClient.tsx</code></li>
+      <li><strong>Button labels</strong> — corrected inconsistent button text across the job search and apply flow to match the dutch-copy style guide</li>
+      <li><strong>Loading ellipsis</strong> — loading state copy standardised to use "..." (ellipsis) consistently; removed places where the label cut off mid-word</li>
+      <li><strong>Singular/plural</strong> — "1 sollicitaties" fixed to "1 sollicitatie"; pluralisation is now conditional on count</li>
+      <li><strong>Sidebar heading</strong> — the sidebar navigation heading was updated to match the canonical Dutch phrasing used elsewhere in the dashboard</li>
+      <li><strong>Curveball label consistency</strong> — the "verrassende kansen" / curveball label text was made consistent across all card variants where it appears</li>
+      <li><strong>Credit cost format</strong> — credit cost notation standardised (e.g. "1 credit" not "1 credits"); matches the convention already used in BuyCreditsModal and the credits page</li>
+    </ul>
+    <div class="gotcha"><strong>Pattern:</strong> Run the /dutch-copy agent after any batch of UI copy changes before merging. Small pluralisation and format inconsistencies accumulate quickly and erode trust with Dutch-speaking users.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
