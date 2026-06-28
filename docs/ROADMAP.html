@@ -70,6 +70,8 @@
   .badge-active { background: var(--blue); color: white; }
   .badge-soon { background: var(--amber); color: white; }
   .badge-deferred { background: var(--muted); color: white; }
+  .badge-strategy { background: #7c3aed; color: white; }
+  .phase-marketing .phase-header { background: #f5f3ff; color: #7c3aed; }
 
   .phase-body { background: var(--white); border: 1px solid var(--border); border-top: none; border-radius: 0 0 14px 14px; }
 
@@ -123,6 +125,7 @@
       <a href="#p3">Fase 3 — Launch</a>
       <a href="#p4">Fase 4 — Post-launch</a>
       <a href="#p5">Fase 5 — V2</a>
+      <a href="#marketing">Marketing &amp; Groei</a>
     </nav>
   </aside>
 
@@ -488,6 +491,43 @@
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Dashboard &amp; sollicitatieanalytics</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Plak vacature-URL → AI-motivatiebrief (verschoven naar v1, geleverd in session 12)</span></li>
         </ul>
+      </div>
+    </div>
+
+    <!-- Marketing & Groei -->
+    <div class="phase-block phase-marketing" id="marketing">
+      <div class="phase-header">
+        Marketing &amp; Groei
+        <span class="phase-badge badge-strategy">Strategie</span>
+      </div>
+      <div class="phase-body">
+
+        <div class="section-label">Geld verdienen — Monetisatie</div>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Mollie iDEAL activeren (post-beta)</strong> — /purchase en /webhook-eindpunten herbouwen; iDEAL en creditcard betaalflow inschakelen via Mollie dashboard. Creditbundles: 10 credits &euro;2,49 / 25 credits &euro;4,99 / 50 credits &euro;8,99.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Freemium-tiers</strong> — Gratis: 3 credits/dag (cap 15); Pro: &euro;4,99/maand onbeperkte credits + prioriteitszoekopdrachten. Mollie Subscriptions voor maandelijkse abonnementen.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>B2B/recruiter-tier (v2)</strong> — Bedrijven kunnen bulk-credits kopen om hun vacatures via Opstap te bereiken; contact via e-mail, geen selfservice-portal in v1.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>In-app upsell</strong> — Op het moment dat een gebruiker zijn gratis credits opraakt, verschijnt er een nette upsell-modal met creditbundles en het Pro-abonnement als keuze.</span></li>
+        </ul>
+
+        <div class="section-label">Meer gebruikers — Groei</div>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>SEO-content</strong> — Nederlandstalige blogartikelen op opstapapp.nl/blog: "Hoe schrijf je een motivatiebrief?", "Vacatures vinden als statushouder", "Sollicitatiehulp voor mensen met een taalachterstand". Zoekwoorden: sollicitatiehulp, vacature zoeken, motivatiebrief voorbeeld, werk vinden Nederland.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Referral-programma (al gebouwd)</strong> — Actief promoten: gebruikers actief aanmoedigen om hun uitnodigingslink te delen via de app. Beloning voor zowel uitnodiger als nieuwe gebruiker (+3 credits).</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>LinkedIn + Instagram organisch</strong> — Wekelijks 1 post: user stories (geanonimiseerd), tips voor solliciteren, transparantie over hoe de AI werkt. Geen betaalde ads in beta; focus op bereik via eigen netwerk.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Partnerkanalen</strong> — Uitvoeringsinstituten (UWV, ROC's, taalscholen) benaderen als distributiepartner: Opstap aanbevelen aan hun clienten. Aanpak: koude e-mail + korte demo op locatie.</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>App Store ASO</strong> — Na Play Store-submission: App Store-optimalisatie met Nederlandse zoekwoorden, screenshots in de taal van de doelgroep, sterke reviewstrategie (in-app reviewprompt na succesvolle sollicitatie).</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span><strong>Community opbouwen</strong> — WhatsApp- of Discord-groep voor vroege gebruikers: feedback ophalen, ambassador-programma (actieve gebruikers krijgen Pro-toegang in ruil voor testimonials en mond-tot-mondreclame).</span></li>
+        </ul>
+
+        <div class="section-label">KPIs</div>
+        <ul class="checklist">
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>500 MAU binnen 3 maanden na launch</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>5% conversie gratis naar betaald na activatie Mollie</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Referral-ratio: 1 op 4 gebruikers nodigt iemand uit</span></li>
+          <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Eerste &euro;500 MRR bij 100 Pro-abonnees</span></li>
+        </ul>
+
       </div>
     </div>
 

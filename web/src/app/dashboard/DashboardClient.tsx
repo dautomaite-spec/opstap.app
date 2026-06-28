@@ -508,7 +508,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         <div className="flex flex-col items-center gap-3 py-10">
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             {profile?.functietitel
-              ? `Zoeken voor: ${[profile.functietitel, profile.functietitel_2, profile.functietitel_3].filter(Boolean).join(', ')}${profile.woonplaats ? ` · ${profile.woonplaats}` : ''}`
+              ? `Zoekopdracht: ${[profile.functietitel, profile.functietitel_2, profile.functietitel_3].filter(Boolean).join(', ')}${profile.woonplaats ? ` · ${profile.woonplaats}` : ''}`
               : 'Vul eerst je profiel in om te zoeken.'}
           </p>
           <button
@@ -517,7 +517,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
             style={{ background: 'var(--color-indigo-primary)' }}
           >
-            Zoek naar nieuwe vacatures
+            Zoek vacatures
           </button>
         </div>
       )}
@@ -563,7 +563,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="self-start px-5 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                {urlLetterLoading ? 'Brief genereren…' : 'Genereer brief (1 credit)'}
+                {urlLetterLoading ? 'Brief genereren…' : 'Genereer brief - 1 credit'}
               </button>
               {urlLetterError && (
                 <p className="text-sm" style={{ color: 'var(--color-error)' }}>{urlLetterError}</p>
@@ -655,9 +655,9 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Type</p>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Soort vacature</p>
               <div className="flex flex-col gap-1">
-                {[{ label: 'Alles', val: null }, { label: 'Match', val: false }, { label: 'Andere richting', val: true }].map(opt => (
+                {[{ label: 'Alles', val: null }, { label: 'Match', val: false }, { label: 'Andere sector', val: true }].map(opt => (
                   <button
                     key={String(opt.val)}
                     onClick={() => setFilterCurveball(opt.val)}
@@ -698,7 +698,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                   </button>
                 </>
               ) : (
-                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length} vacatures</span>
+                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length} {filteredJobs.length === 1 ? 'vacature' : 'vacatures'}</span>
               )}
               <div className="ml-auto">
                 <button
@@ -904,7 +904,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             <path d="M20 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
           </svg>
           <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-            AI zoekt vacatures voor je...
+            AI zoekt vacatures voor je…
           </p>
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
             Dit duurt 30-60 seconden
@@ -943,7 +943,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                         className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
                         style={{ background: '#fff7ed', color: '#c2410c' }}
                       >
-                        Andere richting
+                        Andere sector
                       </span>
                     ) : profile && (
                       <span
@@ -1020,7 +1020,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
                       style={{ background: 'var(--color-indigo-primary)' }}
                     >
-                      {generatingLetter ? 'Laden…' : 'Solliciteren (1 credit)'}
+                      {generatingLetter ? 'Laden…' : 'Solliciteren - 1 credit'}
                     </button>
                   )}
                   <div className="flex gap-1.5">
