@@ -118,6 +118,19 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   }, [])
 
   const [jobsStale, setJobsStale] = useState(false)
+
+  // Search flow: button-triggered, minimum 5s spinner
+  const [minAnimDone, setMinAnimDone] = useState(false)
+  const minAnimTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const LAST_SEARCH_KEY = 'opstap_last_search'
+  const SEARCH_PERIOD_MS = 48 * 60 * 60 * 1000
+  const lastSearched = typeof window !== 'undefined' ? Number(localStorage.getItem(LAST_SEARCH_KEY) ?? '0') : 0
+  const searchPeriodExpired = Date.now() - lastSearched > SEARCH_PERIOD_MS
+
+  // Sidebar filters
+  const [filterContracts, setFilterContracts] = useState<string[]>([])
+  const [filterCurveball, setFilterCurveball] = useState<boolean | null>(null)
+
   const [applyState, setApplyState] = useState<ApplyState>(null)
   const [generatingLetter, setGeneratingLetter] = useState(false)
   const [applyError, setApplyError] = useState('')
@@ -151,11 +164,6 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         setProfile(p)
         if (p.functietitel) setKeywords(p.functietitel)
         if (p.woonplaats) setLocation(p.woonplaats)
-        // Auto-load matching jobs on every dashboard open -gives users immediate value
-        if (p.functietitel && !autoSearched.current) {
-          autoSearched.current = true
-          triggerSearch(p.functietitel, p.woonplaats ?? '')
-        }
         // Pending apply from saved-jobs page -pass p directly (state not yet updated)
         try {
           const raw = localStorage.getItem(PENDING_APPLY_KEY)
@@ -188,13 +196,21 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     if (sortBy === 'salary') {
       return withScore.sort((a, b) => parseSalary(b.job.salary_range) - parseSalary(a.job.salary_range)).map(x => x.job)
     }
-    // date: newest first
     return [...jobs].sort((a, b) => {
       const da = new Date(a.posted_at ?? a.scraped_at).getTime()
       const db = new Date(b.posted_at ?? b.scraped_at).getTime()
       return db - da
     })
   }, [jobs, sortBy, profile])
+
+  const filteredJobs = useMemo(() => {
+    return sortedJobs.filter(job => {
+      if (filterContracts.length > 0 && !filterContracts.includes(job.contract_type ?? '')) return false
+      if (filterCurveball === true && !job.is_curveball) return false
+      if (filterCurveball === false && job.is_curveball) return false
+      return true
+    })
+  }, [sortedJobs, filterContracts, filterCurveball])
 
   async function handleProfileSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -256,13 +272,15 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
   async function triggerSearch(kw: string, loc: string) {
     setSearching(true)
+    setMinAnimDone(false)
     setSearchError('')
     setJobs([])
     setJobsStale(false)
+    if (minAnimTimer.current) clearTimeout(minAnimTimer.current)
+    minAnimTimer.current = setTimeout(() => setMinAnimDone(true), 5000)
     try {
       const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 15 })
       if (results.length < 3 && loc) {
-        // Too few results -retry without location filter to widen the search
         const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 15 })
         setJobs(wider)
         setJobsStale(widerStale)
@@ -270,11 +288,20 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         setJobs(results)
         setJobsStale(stale)
       }
+      localStorage.setItem(LAST_SEARCH_KEY, String(Date.now()))
     } catch (err) {
       setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
+      setMinAnimDone(true)
     } finally {
       setSearching(false)
     }
+  }
+
+  function handleNewSearch() {
+    if (!profile) return
+    const kw = profile.functietitel ?? ''
+    const loc = profile.woonplaats ?? ''
+    triggerSearch(kw, loc)
   }
 
   async function handleSearch(e: React.FormEvent) {
@@ -476,35 +503,40 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     <div>
       <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>Vacatures</h1>
 
-      {/* Search form */}
-      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-4">
-        <datalist id="search-job-titles">
-          {JOB_TITLES.map(t => <option key={t} value={t} />)}
-        </datalist>
-        <input
-          list="search-job-titles"
-          value={keywords}
-          onChange={e => setKeywords(e.target.value)}
-          placeholder="Functie of trefwoord"
-          className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none"
-          style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-        />
-        <input
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-          placeholder="Stad of regio"
-          className="w-full sm:w-44 px-3 py-2 rounded-lg border text-sm outline-none"
-          style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-        />
-        <button
-          type="submit"
-          disabled={searching}
-          className="px-6 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-          style={{ background: 'var(--color-indigo-primary)' }}
-        >
-          {searching ? 'Zoeken…' : 'Zoeken'}
-        </button>
-      </form>
+      {/* Search trigger */}
+      {jobs.length === 0 && !searching && (
+        <div className="flex flex-col items-center gap-3 py-10">
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            {profile?.functietitel
+              ? `Zoeken voor: ${[profile.functietitel, profile.functietitel_2, profile.functietitel_3].filter(Boolean).join(', ')}${profile.woonplaats ? ` · ${profile.woonplaats}` : ''}`
+              : 'Vul eerst je profiel in om te zoeken.'}
+          </p>
+          <button
+            onClick={handleNewSearch}
+            disabled={!profile?.functietitel}
+            className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            style={{ background: 'var(--color-indigo-primary)' }}
+          >
+            Zoek naar nieuwe vacatures
+          </button>
+        </div>
+      )}
+
+      {/* Re-search button (shown above results) */}
+      {jobs.length > 0 && !searching && (
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {profile?.functietitel} {profile?.woonplaats ? `· ${profile.woonplaats}` : ''}
+          </span>
+          <button
+            onClick={handleNewSearch}
+            className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80"
+            style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+          >
+            Zoek opnieuw
+          </button>
+        </div>
+      )}
 
       {/* URL → letter shortcut */}
       <div className="mb-5">
@@ -577,57 +609,112 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         )}
       </div>
 
-      {/* Sort bar -only shown when there are results */}
-      {sortedJobs.length > 0 && (
-        <div className="flex items-center gap-3 mb-5 flex-wrap">
-          {!multiSelect && (
-            <>
-              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Sorteren:</span>
-              {(['match', 'salary', 'date'] as SortKey[]).map(key => (
-                <button
-                  key={key}
-                  onClick={() => setSortBy(key)}
-                  className="text-xs px-3 py-1 rounded-full transition"
-                  style={{
-                    background: sortBy === key ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-                    color: sortBy === key ? 'white' : 'var(--color-text-muted)',
-                  }}
-                >
-                  {{ match: 'Match %', salary: 'Salaris', date: 'Datum' }[key]}
-                </button>
-              ))}
-            </>
-          )}
-          {multiSelect && (
-            <>
-              <span className="text-xs font-medium" style={{ color: 'var(--color-indigo-primary)' }}>
-                {selectedIds.size}/5 geselecteerd
-              </span>
+      {/* Sidebar + results layout -only shown when results are ready */}
+      {(filteredJobs.length > 0 || (sortedJobs.length > 0 && filterContracts.length > 0)) && (
+        <div className="flex gap-5 items-start">
+          {/* Filter sidebar */}
+          <aside
+            className="shrink-0 rounded-xl p-4 flex flex-col gap-5 hidden sm:flex"
+            style={{ width: 180, background: 'var(--color-lavender-card)' }}
+          >
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Sorteren</p>
+              <div className="flex flex-col gap-1">
+                {(['match', 'salary', 'date'] as SortKey[]).map(key => (
+                  <button
+                    key={key}
+                    onClick={() => setSortBy(key)}
+                    className="text-xs text-left px-2 py-1.5 rounded-lg transition"
+                    style={{
+                      background: sortBy === key ? 'var(--color-indigo-primary)' : 'transparent',
+                      color: sortBy === key ? 'white' : 'var(--color-text-muted)',
+                      fontWeight: sortBy === key ? 600 : 400,
+                    }}
+                  >
+                    {{ match: 'Beste match', salary: 'Salaris', date: 'Nieuwste' }[key]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Dienstverband</p>
+              <div className="flex flex-col gap-1">
+                {['Fulltime', 'Parttime', 'Tijdelijk', 'Vast'].map(ct => (
+                  <label key={ct} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filterContracts.includes(ct)}
+                      onChange={e => setFilterContracts(prev =>
+                        e.target.checked ? [...prev, ct] : prev.filter(x => x !== ct)
+                      )}
+                      className="rounded"
+                    />
+                    <span className="text-xs" style={{ color: 'var(--color-text-primary)' }}>{ct}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Type</p>
+              <div className="flex flex-col gap-1">
+                {[{ label: 'Alles', val: null }, { label: 'Match', val: false }, { label: 'Andere richting', val: true }].map(opt => (
+                  <button
+                    key={String(opt.val)}
+                    onClick={() => setFilterCurveball(opt.val)}
+                    className="text-xs text-left px-2 py-1.5 rounded-lg transition"
+                    style={{
+                      background: filterCurveball === opt.val ? 'var(--color-indigo-primary)' : 'transparent',
+                      color: filterCurveball === opt.val ? 'white' : 'var(--color-text-muted)',
+                      fontWeight: filterCurveball === opt.val ? 600 : 400,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {(filterContracts.length > 0 || filterCurveball !== null) && (
               <button
-                onClick={exitMultiSelect}
-                className="text-xs underline"
+                onClick={() => { setFilterContracts([]); setFilterCurveball(null) }}
+                className="text-xs underline text-left mt-1"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                Annuleren
+                Filters wissen
               </button>
-            </>
-          )}
-          <div className="ml-auto flex items-center gap-2">
-            {!multiSelect && (
-              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{sortedJobs.length} vacatures</span>
             )}
-            <button
-              onClick={() => { setMultiSelect(m => !m); setSelectedIds(new Set()) }}
-              className="text-xs px-3 py-1 rounded-full transition"
-              style={{
-                background: multiSelect ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-                color: multiSelect ? 'white' : 'var(--color-text-muted)',
-              }}
-            >
-              Meerdere selecteren
-            </button>
-          </div>
-        </div>
+          </aside>
+
+          {/* Jobs column */}
+          <div className="flex-1 min-w-0">
+            {/* Multi-select bar */}
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
+              {multiSelect ? (
+                <>
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-indigo-primary)' }}>
+                    {selectedIds.size}/5 geselecteerd
+                  </span>
+                  <button onClick={exitMultiSelect} className="text-xs underline" style={{ color: 'var(--color-text-muted)' }}>
+                    Annuleren
+                  </button>
+                </>
+              ) : (
+                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length} vacatures</span>
+              )}
+              <div className="ml-auto">
+                <button
+                  onClick={() => { setMultiSelect(m => !m); setSelectedIds(new Set()) }}
+                  className="text-xs px-3 py-1 rounded-full transition"
+                  style={{
+                    background: multiSelect ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                    color: multiSelect ? 'white' : 'var(--color-text-muted)',
+                  }}
+                >
+                  Meerdere selecteren
+                </button>
+              </div>
+            </div>
+          </div>{/* end jobs column */}
+        </div>/* end sidebar+results flex */
       )}
 
       {/* Profile completeness nudge -shown when CV is missing */}
@@ -805,38 +892,39 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
-      {/* Loading skeleton -shown while auto-search fires on first dashboard visit */}
-      {searching && jobs.length === 0 && (
-        <div className="flex flex-col gap-3 mt-2">
-          <p className="text-xs text-center mb-1" style={{ color: 'var(--color-text-muted)' }}>
-            AI zoekt passende vacatures voor je... dit duurt 30-60 seconden
+      {/* Spinner -shown while searching or during 5s minimum animation */}
+      {(searching || (jobs.length > 0 && !minAnimDone)) && (
+        <div className="flex flex-col items-center gap-4 py-14">
+          <svg
+            className="animate-spin"
+            width="40" height="40" viewBox="0 0 40 40" fill="none"
+            style={{ color: 'var(--color-indigo-primary)' }}
+          >
+            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" strokeOpacity="0.2" />
+            <path d="M20 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            AI zoekt vacatures voor je...
           </p>
-          {[1, 2, 3].map(n => (
-            <div key={n} className="rounded-xl p-4 animate-pulse" style={{ background: 'var(--color-lavender-card)' }}>
-              <div className="h-4 rounded w-2/3 mb-2" style={{ background: 'var(--color-lavender-bg)' }} />
-              <div className="h-3 rounded w-1/2 mb-3" style={{ background: 'var(--color-lavender-bg)' }} />
-              <div className="h-3 rounded w-3/4" style={{ background: 'var(--color-lavender-bg)' }} />
-            </div>
-          ))}
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            Dit duurt 30-60 seconden
+          </p>
         </div>
       )}
 
-      {/* Empty states */}
-      {jobs.length === 0 && !searching && !searchError && keywords === '' && location === '' && (
-        <div className="text-center py-16">
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Welkom bij Opstap!</p>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Vul je functietitel in en klik op Zoeken om direct passende vacatures te zien.</p>
-        </div>
+      {/* Empty state after search returned nothing */}
+      {jobs.length === 0 && !searching && searchError && (
+        <p className="text-sm text-center py-8" style={{ color: 'var(--color-error)' }}>{searchError}</p>
       )}
-      {jobs.length === 0 && !searching && !searchError && (keywords !== '' || location !== '') && (
-        <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>
-          Geen vacatures gevonden. Probeer een ander trefwoord of een bredere locatie.
+      {jobs.length === 0 && !searching && !searchError && sortedJobs.length === 0 && (
+        <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
+          Geen vacatures gevonden. Probeer opnieuw te zoeken.
         </p>
       )}
 
       {/* Job cards */}
       <div className="flex flex-col gap-3">
-        {sortedJobs.map(job => {
+        {filteredJobs.map(job => {
           const pct = matchScore(job, profile)
           const matchColor = pct >= 70 ? '#16a34a' : pct >= 40 ? '#d97706' : '#6b7280'
           const matchBg = pct >= 70 ? '#f0fdf4' : pct >= 40 ? '#fffbeb' : '#f9fafb'
@@ -966,6 +1054,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           )
         })}
       </div>
+
     </div>
   )
 }
