@@ -26,56 +26,16 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  let naam: string | null = null
+  let functietitel: string | null = null
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('naam, functietitel')
       .eq('user_id', user.id)
       .single()
-    const naam = profile?.naam?.split(' ')[0] ?? null
-
-    return (
-      <PublicShell>
-        <section className="flex-1 flex flex-col items-center justify-center text-center px-8 py-24">
-          <div className="max-w-md w-full flex flex-col items-center gap-6">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shrink-0"
-              style={{ background: 'var(--color-indigo-primary)' }}
-            >
-              {(naam ?? user.email ?? 'G')[0].toUpperCase()}
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold" style={{ color: 'var(--color-indigo-primary)' }}>
-                Welkom terug{naam ? `, ${naam}` : ''}.
-              </h1>
-              <p className="mt-2 text-base" style={{ color: 'var(--color-text-muted)' }}>
-                {profile?.functietitel
-                  ? `Klaar om nieuwe ${profile.functietitel}-vacatures te vinden?`
-                  : 'Klaar voor je volgende sollicitatie?'}
-              </p>
-            </div>
-            <Link
-              href="/dashboard"
-              className="w-full px-8 py-3.5 rounded-xl text-base font-semibold text-white text-center transition hover:opacity-90"
-              style={{ background: 'var(--color-indigo-primary)' }}
-            >
-              Naar mijn dashboard
-            </Link>
-            <div className="flex gap-4 text-sm flex-wrap justify-center">
-              <Link href="/dashboard/profiel" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
-                Mijn profiel
-              </Link>
-              <Link href="/dashboard/sollicitaties" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
-                Mijn sollicitaties
-              </Link>
-              <Link href="/dashboard/settings" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
-                Instellingen
-              </Link>
-            </div>
-          </div>
-        </section>
-      </PublicShell>
-    )
+    naam = profile?.naam?.split(' ')[0] ?? null
+    functietitel = profile?.functietitel ?? null
   }
 
   return (
@@ -86,6 +46,35 @@ export default async function Home() {
       <section className="flex-1 flex flex-col items-center justify-center text-center px-8 py-20 md:py-28">
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {user ? (
+          <>
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white mb-5 shrink-0"
+              style={{ background: 'var(--color-indigo-primary)' }}
+            >
+              {(naam ?? user.email ?? 'G')[0].toUpperCase()}
+            </div>
+            <h1 className="text-4xl font-bold leading-tight max-w-2xl" style={{ color: 'var(--color-indigo-primary)' }}>
+              Welkom terug{naam ? `, ${naam}` : ''}.
+            </h1>
+            <p className="mt-4 text-lg max-w-xl" style={{ color: 'var(--color-text-muted)' }}>
+              {functietitel
+                ? `Klaar om nieuwe ${functietitel}-vacatures te vinden?`
+                : 'Klaar voor je volgende sollicitatie?'}
+            </p>
+            <div className="mt-8 flex gap-4 flex-wrap justify-center">
+              <Link href="/dashboard" className="px-8 py-3 text-base font-semibold rounded-xl text-white shadow-md transition hover:opacity-90" style={{ background: 'var(--color-indigo-primary)' }}>
+                Naar mijn dashboard
+              </Link>
+            </div>
+            <div className="mt-5 flex gap-5 text-sm flex-wrap justify-center">
+              <Link href="/dashboard/profiel" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>Mijn profiel</Link>
+              <Link href="/dashboard/sollicitaties" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>Mijn sollicitaties</Link>
+              <Link href="/dashboard/settings" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>Instellingen</Link>
+            </div>
+          </>
+        ) : (
+          <>
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
           style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
@@ -117,6 +106,8 @@ export default async function Home() {
             </span>
           ))}
         </div>
+          </>
+        )}
         </div>
       </section>
 
@@ -266,19 +257,39 @@ export default async function Home() {
           className="max-w-2xl mx-auto rounded-2xl p-10 text-center"
           style={{ background: 'var(--color-indigo-primary)' }}
         >
-          <h2 className="text-2xl font-bold text-white mb-3">
-            Klaar om te beginnen?
-          </h2>
-          <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Maak een account aan en verstuur je eerste sollicitaties binnen enkele minuten.
-          </p>
-          <Link
-            href="/register"
-            className="inline-block px-8 py-3 rounded-xl font-semibold text-sm"
-            style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
-          >
-            Account aanmaken
-          </Link>
+          {user ? (
+            <>
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Ga aan de slag
+              </h2>
+              <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                Zoek vacatures, keur je brief goed en solliciteer in een paar klikken.
+              </p>
+              <Link
+                href="/dashboard"
+                className="inline-block px-8 py-3 rounded-xl font-semibold text-sm"
+                style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
+              >
+                Naar mijn dashboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Klaar om te beginnen?
+              </h2>
+              <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                Maak een account aan en verstuur je eerste sollicitaties binnen enkele minuten.
+              </p>
+              <Link
+                href="/register"
+                className="inline-block px-8 py-3 rounded-xl font-semibold text-sm"
+                style={{ background: 'var(--color-white)', color: 'var(--color-indigo-primary)' }}
+              >
+                Account aanmaken
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
