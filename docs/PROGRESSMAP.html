@@ -336,7 +336,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Voortgangskaart</h1>
-      <p>Bijgewerkt op 2026-06-25 (post-PR #121)</p>
+      <p>Bijgewerkt op 2026-06-28 (Dahl UX-fixes + LLM jobzoekdienst)</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -750,6 +750,12 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profielvolledigheidswidget toont ontbrekende velden: gebruikers zien nu exact welke profielvelden nog ontbreken in de profielvolledigheidsvoortgangsbalk.</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dubbel profielformulier verwijderd uit Instellingen: het profielformulier op de instellingenpagina is vervangen door een link naar /profiel — één bron van waarheid voor profielbewerking.</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>"Account verwijderen" gevarenzone visuele verbetering: rode rand en rode achtergrond toegevoegd aan de danger zone sectie in Instellingen — duidelijkere visuele waarschuwing voor destructieve actie.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LLM-jobzoekdienst (Tavily + Claude): backend/app/services/llm_job_search.py — Claude + Tavily web search API als primaire zoekmethode; scrapers zijn fallback wanneer LLM &lt; 5 resultaten retourneert.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>match_reason veld op vacaturekaarten: italisch blauwe tekst toont waarom een vacature matcht met het profiel (transient veld, niet opgeslagen in DB).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Uitklapbare vacatureomschrijving op vacaturekaarten: "Meer/Minder" knop ontvouwt de volledige functiebeschrijving per kaart.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Leeftijdswaarschuwing op vacaturekaarten: vacatures ouder dan 21 dagen tonen een oranje waarschuwingslabel.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Uren per week gewijzigd van vrij numeriek invoerveld naar vaste dropdown: Max 16u, 16-24u, 24-32u, 32-36u, 40u fulltime.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dahl-gebruikerstest UX-fixes (alle HOOG/MIDDEL): zoekveld directe focus, annuleerknop sollicitatiemodal, laadspinner tekst verbeterd, dashboard lege state CTA, en meer.</span></li>
         </ul>
       </div>
 

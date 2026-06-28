@@ -129,7 +129,7 @@
   <main class="content">
     <div class="page-header">
       <h1>🗺 Roadmap</h1>
-      <p>Opstap — fasen & voortgang · Bijgewerkt 2026-06-25</p>
+      <p>Opstap — fasen & voortgang · Bijgewerkt 2026-06-28</p>
     </div>
 
     <!-- Phase 1 -->
@@ -431,6 +431,16 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profile completeness widget shows missing fields — users see exactly which fields to fill in</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Removed duplicate profile form from Settings page — replaced with a link to /profiel (single source of truth)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>"Account verwijderen" danger zone: red border + red background added to SettingsClient.tsx — clear visual warning for destructive action</span></li>
+        </ul>
+
+        <div class="section-label">LLM job search &amp; Dahl UX-fixes — 2026-06-28</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LLM-jobzoekdienst: backend/app/services/llm_job_search.py — Claude + Tavily als primaire zoekmethode; HTML-scrapers zijn fallback bij &lt; 5 resultaten. tavily-python==0.5.0 toegevoegd aan requirements.txt. TAVILY_API_KEY vereist in environment.</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>match_reason veld (transient, niet in DB): italisch blauwe tekst op vacaturekaarten toont waarom een vacature matcht</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Uitklapbare functiebeschrijving op vacaturekaarten via "Meer/Minder" toggle</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Leeftijdswaarschuwing: vacatures ouder dan 21 dagen krijgen een oranje waarschuwingslabel</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Uren per week: vrij invoerveld vervangen door vaste dropdown (Max 16u / 16-24u / 24-32u / 32-36u / 40u fulltime)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dahl-gebruikerstest HOOG/MIDDEL UX-fixes: alle prioritaire bevindingen uit de usertest verwerkt</span></li>
         </ul>
 
         <div class="section-label">Nog te doen</div>

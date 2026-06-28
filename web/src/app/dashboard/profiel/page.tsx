@@ -198,7 +198,14 @@ export default function ProfielPage() {
                 <input list="job-titles-list" name="functietitel_3" placeholder="Derde functietitel (optioneel)" defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
               <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
-              <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" defaultValue={profile.uren_per_week?.toString()} />
+              <SelectField label="Uren per week" name="uren_per_week" defaultValue={profile.uren_per_week?.toString() ?? ''}>
+                <option value="">Geen voorkeur</option>
+                <option value="16">Max 16 uur</option>
+                <option value="24">16-24 uur</option>
+                <option value="32">24-32 uur</option>
+                <option value="36">32-36 uur</option>
+                <option value="40">40 uur (fulltime)</option>
+              </SelectField>
               <SelectField label="Beschikbaarheid" name="beschikbaarheid" defaultValue={profile.beschikbaarheid ?? ''}>
                 <option value="">Niet opgegeven</option>
                 <option value="fulltime">Fulltime</option>

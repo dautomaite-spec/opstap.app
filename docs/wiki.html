@@ -193,6 +193,13 @@
       <a href="#profile-completeness-fields">Profile completeness fields</a>
       <a href="#settings-profile-link">Settings profile link</a>
       <a href="#danger-zone-style">Danger zone styling</a>
+      <span class="section-label">LLM Search</span>
+      <a href="#llm-job-search">LLM job search (Tavily)</a>
+      <a href="#match-reason">match_reason field</a>
+      <a href="#job-card-description-fold">Fold-out description</a>
+      <a href="#job-age-warning">Job age warning</a>
+      <a href="#hours-dropdown">Hours dropdown</a>
+      <a href="#dahl-ux-fixes">Dahl UX fixes</a>
     </div>
   </nav>
 
@@ -912,6 +919,62 @@
       <li>The danger zone section now has a red border (<code>border-red-200</code>) and a light red background (<code>bg-red-50</code>) — visually distinct from all other settings sections</li>
       <li>Matches standard UX patterns for destructive actions; reduces accidental clicks by making the section feel consequential</li>
     </ul>
+
+    <h2 id="llm-job-search">LLM job search (Tavily + Claude)</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key file: <code>backend/app/services/llm_job_search.py</code> (new)</li>
+      <li>LLM search is now the primary search path. Claude + Tavily web search API are called first; the existing HTML scrapers (Jobbird, NVB, LinkedIn, Indeed) run as fallback only when the LLM returns fewer than 5 results.</li>
+      <li>Tavily provides real-time web search results. Claude interprets the query, builds a Tavily search, and returns structured job matches with a <code>match_reason</code> explanation per job.</li>
+      <li>Dependency: <code>tavily-python==0.5.0</code> added to <code>requirements.txt</code></li>
+      <li>Config: <code>TAVILY_API_KEY</code> added to <code>backend/app/config.py</code> (empty string default — must be set as Railway env var before search works)</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> If <code>TAVILY_API_KEY</code> is not set, the LLM search call will fail silently and fall back to scrapers. Check Railway env vars after deploy. The fallback threshold is &lt; 5 results — if Tavily returns 5+ jobs the scrapers are not called at all.</div>
+
+    <h2 id="match-reason">match_reason field on job cards</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The <code>JobOut</code> schema now includes a <code>match_reason</code> field — a short natural-language explanation of why this job matches the user's profile</li>
+      <li>The field is transient: populated by the LLM search service at query time but not stored in the jobs DB table</li>
+      <li>Frontend: displayed as italic blue text below the job title on each card in the search results</li>
+      <li>Only present when the LLM search path produced the result — scraper-only results will have <code>match_reason: null</code> and the field is not rendered</li>
+    </ul>
+
+    <h2 id="job-card-description-fold">Fold-out job description on job cards</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Each job card now has a "Meer" / "Minder" toggle button that expands and collapses the full job description inline</li>
+      <li>Description is not rendered in the DOM until expanded — keeps the initial card compact and fast to render</li>
+      <li>Works alongside the existing match_reason display and the apply button without layout shift</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Some scrapers return minimal or no description. If <code>description</code> is empty or null, the toggle button is hidden — do not render an empty expandable block.</div>
+
+    <h2 id="job-age-warning">Job age warning (21+ days)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Job cards with a <code>date_posted</code> older than 21 days show an orange warning label ("Vacature is mogelijk verlopen")</li>
+      <li>Threshold is 21 days — most Dutch employers close applications within 3 weeks</li>
+      <li>Calculation is done client-side from the <code>date_posted</code> field on the job object; no backend change needed</li>
+    </ul>
+
+    <h2 id="hours-dropdown">Hours per week — dropdown replaces free-text</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>The "uren per week" input on the job search form was previously a free-text number field — now a <code>&lt;select&gt;</code> dropdown</li>
+      <li>Options: <code>Max 16u</code>, <code>16-24u</code>, <code>24-32u</code>, <code>32-36u</code>, <code>40u fulltime</code></li>
+      <li>Rationale: free-text caused inconsistent values being passed to scrapers and the LLM; fixed ranges map cleanly to Dutch job board filters</li>
+      <li>The selected range is passed to the LLM search prompt and to scraper query params where applicable</li>
+    </ul>
+
+    <h2 id="dahl-ux-fixes">Dahl user test — UX fixes (HOOG/MIDDEL)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Source: Dahl user test session. All HOOG and MIDDEL priority findings addressed in commit <code>2d1fb4b</code></li>
+      <li>Fixes included (non-exhaustive): direct focus on search input on dashboard load; cancel button on the application letter modal; improved loading spinner copy; empty state CTA on dashboard when no results; various micro-copy corrections based on observed confusion points</li>
+      <li>Key files touched: <code>web/src/app/dashboard/components/DashboardClient.tsx</code> and related modal/card components</li>
+      <li>Dahl feedback document saved at <code>docs/dahl-feedback.html</code> for future reference</li>
+    </ul>
+    <div class="gotcha"><strong>Pattern:</strong> User test findings are filed in <code>docs/dahl-feedback.html</code>. Before marking any feedback item as done, cross-reference the original finding to confirm the specific behaviour was actually addressed.</div>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>

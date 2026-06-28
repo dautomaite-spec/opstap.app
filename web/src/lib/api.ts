@@ -197,6 +197,7 @@ export interface Job {
   contract_type?: string
   posted_at?: string
   scraped_at: string
+  match_reason?: string
 }
 
 export interface JobSearchParams {

@@ -1,5 +1,15 @@
 # Changelog — Opstap
 
+## 2026-06-28 (LLM job search + Dahl UX fixes)
+- feat: backend/app/services/llm_job_search.py (new) — Claude + Tavily web search API as primary job search path; HTML scrapers (Jobbird, NVB, LinkedIn, Indeed) promoted to fallback when LLM returns < 5 results
+- feat: match_reason field added to JobOut schema (transient, not stored in DB) — populated by LLM search, shown as italic blue text on job cards
+- feat: fold-out job description on job cards — "Meer/Minder" toggle expands/collapses full description inline
+- feat: job age warning on cards older than 21 days — orange label warns user vacancy may be expired
+- feat: hours per week changed from free-text number to range dropdown (Max 16u, 16-24u, 24-32u, 32-36u, 40u fulltime)
+- fix: apply all HOOG/MIDDEL UX findings from Dahl user test — search input focus, cancel button on letter modal, loading copy, empty state CTA, micro-copy corrections
+- deps: tavily-python==0.5.0 added to requirements.txt
+- config: TAVILY_API_KEY added to backend/app/config.py (empty string default; must be set in Railway env)
+
 ## 2026-06-25 (UX polish — blog, onboarding, job cards, settings)
 - fix: blog/layout.tsx changed to pass-through; per-post layouts at blog/[slug]/layout.tsx fix prose wrapping and "Terug naar blog" navigation loop
 - feat: onboarding step indicator "Stap X van 3" added to all wizard steps
