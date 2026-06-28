@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import PublicShell from '@/app/components/PublicShell'
+import { createClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   alternates: { canonical: 'https://opstapapp.nl' },
@@ -19,7 +22,62 @@ const jsonLd = {
   audience: { '@type': 'Audience', geographicArea: { '@type': 'Country', name: 'Netherlands' } },
 }
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('naam, functietitel')
+      .eq('user_id', user.id)
+      .single()
+    const naam = profile?.naam?.split(' ')[0] ?? null
+
+    return (
+      <PublicShell>
+        <section className="flex-1 flex flex-col items-center justify-center text-center px-8 py-24">
+          <div className="max-w-md w-full flex flex-col items-center gap-6">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shrink-0"
+              style={{ background: 'var(--color-indigo-primary)' }}
+            >
+              {(naam ?? user.email ?? 'G')[0].toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold" style={{ color: 'var(--color-indigo-primary)' }}>
+                Welkom terug{naam ? `, ${naam}` : ''}.
+              </h1>
+              <p className="mt-2 text-base" style={{ color: 'var(--color-text-muted)' }}>
+                {profile?.functietitel
+                  ? `Klaar om nieuwe ${profile.functietitel}-vacatures te vinden?`
+                  : 'Klaar voor je volgende sollicitatie?'}
+              </p>
+            </div>
+            <Link
+              href="/dashboard"
+              className="w-full px-8 py-3.5 rounded-xl text-base font-semibold text-white text-center transition hover:opacity-90"
+              style={{ background: 'var(--color-indigo-primary)' }}
+            >
+              Naar mijn dashboard
+            </Link>
+            <div className="flex gap-4 text-sm flex-wrap justify-center">
+              <Link href="/dashboard/profiel" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
+                Mijn profiel
+              </Link>
+              <Link href="/dashboard/sollicitaties" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
+                Mijn sollicitaties
+              </Link>
+              <Link href="/dashboard/settings" className="underline hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
+                Instellingen
+              </Link>
+            </div>
+          </div>
+        </section>
+      </PublicShell>
+    )
+  }
+
   return (
     <PublicShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
