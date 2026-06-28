@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donny & Roemer — Memorable Quotes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #ffffff;
+    color: #1a1a1a;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 40px 20px 28px;
+    border-bottom: 3px solid #1a1a1a;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .header .sub {
+    color: #555;
+    font-size: 0.78rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .header .meta {
+    margin-top: 16px;
+    font-size: 0.78rem;
+    color: #888;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    border-top: 1px solid #ddd;
+    padding-top: 14px;
+    display: inline-block;
+  }
+
+  /* ── Page ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 24px 24px; }
+
+  /* ── Section headers ── */
+  .section-title {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #1a1a1a;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 6px;
+    margin: 28px 0 16px;
+  }
+
+  /* ── Quote card ── */
+  .quote-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .quote-grid.single { grid-template-columns: 1fr; }
+
+  .quote-card {
+    border: 1.5px solid #1a1a1a;
+    padding: 16px 18px;
+  }
+  .quote-card .speaker {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin-bottom: 8px;
+  }
+  .speaker.donny { color: #005f73; }
+  .speaker.roemer { color: #ae2012; }
+
+  .quote-card blockquote {
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.55;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    border-left: 3px solid #ddd;
+    padding-left: 12px;
+  }
+  .quote-card .date {
+    font-size: 0.68rem;
+    color: #999;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .quote-card .context {
+    font-size: 0.78rem;
+    color: #555;
+    margin-top: 6px;
+    font-style: normal;
+  }
+
+  /* ── Exchange card (voor gesprekjes) ── */
+  .exchange-card {
+    border: 1.5px solid #1a1a1a;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .exchange-card .exchange-title {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin-bottom: 12px;
+  }
+  .exchange-line {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .exchange-line:last-child { margin-bottom: 0; }
+  .ex-name {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-width: 52px;
+    padding-top: 2px;
+  }
+  .ex-name.d { color: #005f73; }
+  .ex-name.r { color: #ae2012; }
+  .ex-text {
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .ex-date {
+    font-size: 0.68rem;
+    color: #bbb;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin-top: 10px;
+    text-align: right;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 24px 20px;
+    border-top: 1px solid #ddd;
+    color: #888;
+    font-size: 0.72rem;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.5px;
+    margin-top: 16px;
+  }
+
+  @media print {
+    @page { margin: 15mm 12mm; size: A4; }
+    body { font-size: 11px; background: white; }
+    .header { padding: 24px 20px 20px; }
+    .page { padding: 12px 0; max-width: 100%; }
+    .quote-card, .exchange-card { break-inside: avoid; }
+    .quote-grid { break-inside: avoid; gap: 10px; }
+    .section-title { margin: 18px 0 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Donny &amp; Roemer</h1>
+  <p class="sub">Memorable quotes &nbsp;·&nbsp; WhatsApp 2019 – 2026</p>
+  <span class="meta">Geselecteerd uit 9.451 berichten &nbsp;·&nbsp; 7 jaar chat-data &nbsp;·&nbsp; Gemaakt voor de bruiloft van Roemer &amp; Fleur</span>
+</div>
+
+<div class="page">
+
+  <!-- ── ABSURDITEIT ── -->
+  <div class="section-title">Absurditeit op zijn best</div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">De militaire inlichtingendienst</div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Zie nu dat ie niet gerubriceerd is, dus niet doorsturen graag :p"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Geen probleem :) ik hou het bij mij, zal de militaire inlichtingendienst inlichten van het breuk in de beveiliging"</span>
+    </div>
+    <div class="ex-date">10-12-2019</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Donny's verjaardag — ontdekt via agenda</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Gefeliciteerd man! Ik krijg in me agenda in eens een pop up dat vandaag je echte verjaardag is en zie het ook in de TvS groep 🙄"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Dank je fleur"</span>
+    </div>
+    <div class="ex-date">10-07-2022</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Bivak &amp; scope — defensie logica</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Hebben ze bij defensie niet echt super goeie? Die raken wel eens kwijt hoorde ik"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Hè das kut, geen bivak waar die toevallig van je wapen valt? 🙄"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Aan de andere kant, als ik midden in de nacht met Dave langs de bivak kom en we kunnen iets uit iemands tent jatten vind ik dat we het verdient hebben"</span>
+    </div>
+    <div class="ex-date">30-09-2019</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Runescape op werk</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Ik heb zo weinig te doen op me werk dat ik bijna weer Runescape zou gaan spelen..."</span>
+    </div>
+    <div class="ex-date">28-10-2019</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Sander's vrijgezellenfeest — ideeën</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Het allertofste zou zijn als we ergens bij de grens in een helicopter stappen (blindoeken we hem) en dan dropt die ons ergens in een bos :P"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Een soort groot laatste avontuur tot dat hij ze ziel verkoopt aan het oostblok"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Oh en Sander moet een opblaas wapen ten alle tijden bij zich dragen"</span>
+    </div>
+    <div class="ex-date">02-08-2020 / 13-08-2020</div>
+  </div>
+
+  <!-- ── HONDEN ── -->
+  <div class="section-title">Ollie &amp; Bowser</div>
+
+  <div class="quote-grid">
+    <div class="quote-card">
+      <div class="speaker donny">Donny</div>
+      <blockquote>"Als Ollie een loopse teef ruikt wordt ie hitsiger dan een puber op een pornoset"</blockquote>
+      <div class="date">27-04-2020</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Ik denk dat Nala/Bowser besloten heeft dat Ollie haar enige vriend is 🤣"</blockquote>
+      <div class="date">07-06-2020</div>
+    </div>
+  </div>
+
+  <div class="quote-grid" style="margin-top: 14px;">
+    <div class="quote-card">
+      <div class="speaker donny">Donny</div>
+      <blockquote>"Als ik thuiskom van werk kwispeld Ollie vaak zo hard dat hij bijna omflikkerr"</blockquote>
+      <div class="date">28-08-2020</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Zo'n dag met Ollie lopen doet echt wonderen voor Bowser. Ze is daarna zo veel relaxter wanneer er andere honden in de buurt zijn"</blockquote>
+      <div class="date">30-08-2021</div>
+    </div>
+  </div>
+
+  <div class="quote-grid" style="margin-top: 14px;">
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"O God, als Ollie weet hoe de deur werkt dan is hij niet meer te stoppen!"</blockquote>
+      <div class="date">28-12-2019</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Bowser zegt nee"</blockquote>
+      <div class="date">30-12-2022</div>
+      <div class="context">Als antwoord op een wandelvoorstel. Geen verdere toelichting nodig.</div>
+    </div>
+  </div>
+
+  <!-- ── KOREA / AMARILLO ── -->
+  <div class="section-title">Korea &amp; Amarillo</div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">De traditie in werking — Korea, 02:43</div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Want er was een Koreaanse dude op het strand allemaal bangers aan het zingen"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Hoewel Fleur je had vermoord 😂"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Zelfs Dahl vindt het awesome!!"</span>
+    </div>
+    <div class="ex-date">04-10-2025 &nbsp;·&nbsp; 02:43 lokale tijd</div>
+  </div>
+
+  <!-- ── EERLIJK & DIRECT ── -->
+  <div class="section-title">Eerlijk &amp; direct</div>
+
+  <div class="quote-grid">
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Praise brodin king of the bro's, lord of the gainz."</blockquote>
+      <div class="date">17-01-2020</div>
+      <div class="context">Gestuurd na 10 uur slaap. Prioriteiten.</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker donny">Donny</div>
+      <blockquote>"Hoi, ik ben Donny. Ik meld me. Ik zit verder in de hoek Zelda te spelen. Ok doei"</blockquote>
+      <div class="date">17-01-2020</div>
+      <div class="context">Roemer's samenvatting van hoe Donny zijn dag bij Defensie zou doorkomens.</div>
+    </div>
+  </div>
+
+  <div class="quote-grid" style="margin-top: 14px;">
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Nee, hij staat als een soort doorn in t oog wel permanent open op me desktop maar ik ben er nog niet aan toe gekomen."</blockquote>
+      <div class="date">14-04-2026</div>
+      <div class="context">Roemer over de speech-vragenlijst die Donny hem had gestuurd. Het zat er dus al aan te komen.</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker donny">Donny</div>
+      <blockquote>"Yakuza chique"</blockquote>
+      <div class="date">12-06-2026</div>
+      <div class="context">Donny's zelfgekozen dresscode voor de bruiloft. Goedgekeurd door Fleur.</div>
+    </div>
+  </div>
+
+  <!-- ── FLEUR ── -->
+  <div class="section-title">Fleur</div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Hoe Roemer over Fleur praat</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Ik ben heel blij voor jou en Mel! Weet niet of het er net helemaal goed uit kwam maar vind het echt super tof!! Gefeliciteerd nog eens! Ook van Fleur ;)"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Fleur sliep en daarna was F1, belangrijke dingen 😂"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Deze is goedgekeurd door Fleur 😂"</span>
+    </div>
+    <div class="ex-date">25-06-2024 / 30-11-2025 / 12-06-2026</div>
+  </div>
+
+  <!-- ── DEFENSIE & WERK ── -->
+  <div class="section-title">Defensie, werk &amp; grote beslissingen</div>
+
+  <div class="quote-grid">
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Net het aanbod gehad om voor Flikken Maastricht de leiding op me te nemen... Wat zou betekenen dat, ivm leeftijd, iets bij defensie dan onmogelijk is"</blockquote>
+      <div class="date">23-05-2019</div>
+      <div class="context">Eén van de grote keuzes. Hij koos Flikken.</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Vanochtend bij de uitleg dag van de reservisten geweest. Super interessant. Ga mezelf opgeven."</blockquote>
+      <div class="date">07-03-2026</div>
+      <div class="context">2019 wilde hij erbij. 2026 oriënteert hij zich opnieuw. Misschien ooit.</div>
+    </div>
+  </div>
+
+  <div class="quote-grid" style="margin-top: 14px;">
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Maar nee, mensen kwamen bij mij soliciteren… blijft altijd gek"</blockquote>
+      <div class="date">15-04-2025</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker donny">Donny</div>
+      <blockquote>"Tis echt iets voor jou. Maar tis wel een beslissing waar je echt achter moet staan."</blockquote>
+      <div class="date">13-05-2019</div>
+      <div class="context">Over defensie. Donny's mening. Direct zoals altijd.</div>
+    </div>
+  </div>
+
+  <!-- ── DAHL ── -->
+  <div class="section-title">Dahl</div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Aankondiging</div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Dahl Juliet Grimminck geboren op 29-12-2024 om 19:55 🌙🩷"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Fleur is nu ook heel blij voor jullie!!"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"We vonden het heel leuk om Dahl te ontmoeten! Wat is ze lief zeg!!!"</span>
+    </div>
+    <div class="ex-date">30-12-2024 / 30-01-2025</div>
+  </div>
+
+  <!-- ── BOWSER'S BITCHES ── -->
+  <div class="section-title">Bowser's Bitches — groepschat (Donny, Roemer, Sander)</div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Democratie</div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Ze hebben een Epstein list menu"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"Kunnen ook bij de ikea eten"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name d">Donny</span>
+      <span class="ex-text">"In pak"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Sterk. Maar komt er doen dat niet"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name" style="color:#5c4033;">Sander</span>
+      <span class="ex-text">"Ik stem voor"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Shit… Democratie"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name" style="color:#5c4033;">Sander</span>
+      <span class="ex-text">"Gelukkig is dit geen democratie. Don is admin 🤣"</span>
+    </div>
+    <div class="ex-date">16-02-2026</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Roemer vs. het restaurant reserveren</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Maar wacht. Volgens het bovenstaande gaan we naar de IKEA. Mijn protest wat democratisch weggestemd."</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Ik wil daar best reserveren, dan wel een plekje tussen de bankenstellen en de bureaustoelen"</span>
+    </div>
+    <div class="ex-date">02-03-2026</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Sander's kapsel</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Wat houdt je tegen om dit kapsel te nemen Sander?"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name" style="color:#5c4033;">Sander</span>
+      <span class="ex-text">"Monica"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Ik wil je hoofd wel scheren. Dan kan Monica even boos zijn op mij. Dat offer maak ik voor jou."</span>
+    </div>
+    <div class="ex-date">12-06-2026</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">AI foto van Sander</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Als of jij, Gerard Joling en Gordon een kind hebben gehad."</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Dit ben ik volgende zomer gewoon joh"</span>
+    </div>
+    <div class="ex-date">12-06-2026</div>
+  </div>
+
+  <div class="exchange-card">
+    <div class="exchange-title">Roemer over motorrijden</div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Nee joh, zie het als karakter bouwen 🤣"</span>
+    </div>
+    <div class="exchange-line">
+      <span class="ex-name r">Roemer</span>
+      <span class="ex-text">"Sowieso houden we dit niet een hele dag vol joh 😂"</span>
+    </div>
+    <div class="ex-date">03-09-2025 / 29-01-2026</div>
+  </div>
+
+  <!-- ── SUPERMIST ── -->
+  <div class="section-title">Supermist — de theorie</div>
+
+  <div class="quote-grid single">
+    <div class="quote-card" style="padding: 22px 24px;">
+      <div class="speaker roemer">Roemer — theorie (mondeling)</div>
+      <blockquote style="font-size: 1.0rem;">"Na 12 uur 's middags kan het niet meer mistig zijn. Als het tóch mistig is na 12 uur, is er sprake van iets anders. Iets groters. Supermist."</blockquote>
+      <div class="context" style="margin-top: 10px;">Deze theorie bestaat al jaren. Elke keer als het om 12:00 mistig is, roept iemand: <em>"Het is wel echt super mistig vandaag."</em> Roemer weet precies wat er bedoeld wordt. Hij gelooft er nog steeds in.</div>
+    </div>
+  </div>
+
+  <!-- ── EINDE ── -->
+  <div class="section-title">Tot slot</div>
+
+  <div class="quote-grid single">
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Wat een stank"</blockquote>
+      <div class="date">25-06-2024</div>
+      <div class="context">Context onbekend. Blijkbaar heel relevant op dat moment.</div>
+    </div>
+  </div>
+
+  <div class="quote-grid" style="margin-top: 14px;">
+    <div class="quote-card">
+      <div class="speaker donny">Donny</div>
+      <blockquote>"Klootviool ben je thuis"</blockquote>
+      <div class="date">18-02-2022</div>
+    </div>
+    <div class="quote-card">
+      <div class="speaker roemer">Roemer</div>
+      <blockquote>"Maastricht"</blockquote>
+      <div class="date">18-02-2022 &nbsp;·&nbsp; Direct erna</div>
+      <div class="context">Één woord. Zegt alles.</div>
+    </div>
+  </div>
+
+  <div class="quote-grid single" style="margin-top: 14px;">
+    <div class="quote-card" style="text-align: center; padding: 28px;">
+      <div class="speaker roemer" style="text-align:center; margin-bottom: 14px;">Roemer</div>
+      <blockquote style="font-size: 1.3rem; border-left: none; padding-left: 0; text-align: center;">"Soms denk ik nog wel eens: RuneScape spelen"</blockquote>
+      <div class="date" style="text-align:center; margin-top:10px;">31-07-2024</div>
+      <div class="context" style="text-align:center; margin-top: 8px;">23 jaar later. De drang is er nog.</div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div class="footer">
+  Geselecteerd uit 9.451 berichten &nbsp;·&nbsp; WhatsApp 2019–2026 &nbsp;·&nbsp; 23 jaar vriendschap &nbsp;·&nbsp; Gemaakt voor de bruiloft van Roemer &amp; Fleur &nbsp;·&nbsp; 2026
+</div>
+
+</body>
+</html>
