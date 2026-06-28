@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dahl's Gebruikerstest — Opstap</title>
+  <style>
+    :root {
+      --blauw: #2563eb;
+      --lichtblauw: #eff6ff;
+      --groen: #16a34a;
+      --rood: #dc2626;
+      --oranje: #d97706;
+      --grijs: #6b7280;
+      --rand: #e5e7eb;
+      --tekst: #111827;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--tekst);
+      line-height: 1.6;
+    }
+    header {
+      background: var(--blauw);
+      color: white;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.4rem; }
+    header p { opacity: 0.85; font-size: 1rem; }
+    .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .intro-card {
+      background: white;
+      border: 1px solid var(--rand);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .intro-card h2 { color: var(--blauw); margin-bottom: 0.75rem; font-size: 1.1rem; }
+    .intro-card p { color: var(--grijs); font-size: 0.95rem; }
+
+    .page-section {
+      background: white;
+      border: 1px solid var(--rand);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .page-section h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--blauw);
+      border-bottom: 1px solid var(--rand);
+      padding-bottom: 0.5rem;
+    }
+    .page-section .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--lichtblauw);
+      color: var(--blauw);
+      border-radius: 4px;
+      padding: 0.1rem 0.5rem;
+    }
+    .observation { margin-bottom: 0.75rem; font-size: 0.95rem; }
+    .observation strong { display: block; color: #374151; margin-bottom: 0.2rem; }
+
+    .positief { color: var(--groen); }
+    .negatief { color: var(--rood); }
+    .neutraal { color: var(--grijs); }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      margin-right: 0.3rem;
+    }
+    .tag-goed { background: #dcfce7; color: var(--groen); }
+    .tag-punt { background: #fee2e2; color: var(--rood); }
+    .tag-vraag { background: #fef3c7; color: var(--oranje); }
+
+    .samenvatting {
+      background: white;
+      border: 1px solid var(--rand);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .samenvatting h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--tekst);
+    }
+    .samenvatting ul { list-style: none; }
+    .samenvatting ul li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--rand);
+      font-size: 0.95rem;
+      display: flex;
+      gap: 0.6rem;
+    }
+    .samenvatting ul li:last-child { border-bottom: none; }
+    .icon { font-size: 1rem; flex-shrink: 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th {
+      text-align: left;
+      background: #f3f4f6;
+      padding: 0.6rem 0.75rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--grijs);
+    }
+    td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--rand);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    .prio-hoog { color: var(--rood); font-weight: 700; }
+    .prio-middel { color: var(--oranje); font-weight: 700; }
+    .prio-laag { color: var(--groen); font-weight: 700; }
+
+    .score-box {
+      text-align: center;
+      background: var(--blauw);
+      color: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .score-box .cijfer { font-size: 4rem; font-weight: 800; line-height: 1; }
+    .score-box .label { font-size: 1.1rem; opacity: 0.85; margin-top: 0.4rem; }
+    .score-box .toelichting { font-size: 0.9rem; opacity: 0.75; margin-top: 0.75rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+    footer {
+      text-align: center;
+      color: var(--grijs);
+      font-size: 0.8rem;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Dahl's Gebruikerstest &mdash; Opstap</h1>
+  <p>Uitgevoerd op 25 juni 2026 &bull; Persona: Dahl van der Molen, 24, Almere &bull; Eerste gebruik</p>
+</header>
+
+<div class="container">
+
+  <!-- Intro -->
+  <div class="intro-card">
+    <h2>Over mij</h2>
+    <p>Ik ben Dahl, 24 jaar, net afgestudeerd met HBO Communicatie. Ik zoek een baan als Communicatie Medewerker of Social Media Manager. Ik heb stage gelopen bij een marketingbureau en bijbaantjes bij H&amp;M en als barista. Ik ben niet heel ervaren in solliciteren en ben Opstap voor het eerst aan het uitproberen. Ik heb dit rapport geschreven na het volledig doorlopen van de app &mdash; van registratie tot en met alle pagina's.</p>
+  </div>
+
+  <!-- Pagina 1: Welkom / Onboarding -->
+  <div class="page-section">
+    <h2><span class="badge">01</span> Welkom &amp; Onboarding &mdash; /dashboard/welkom</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Meteen duidelijk wat ik moet doen</strong>
+      De pagina begint direct met het invulformulier. Geen lange uitleg, geen rondleiding die ik moet wegklikken. Dat vond ik prettig &mdash; ik wil gewoon beginnen.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Drie functietitels tegelijk</strong>
+      Ik kon zowel "Communicatie Medewerker" als "Social Media Manager" invullen. Dat is slim, want ik ben op zoek naar allebei. Wist niet dat dat kon, maar het staat er duidelijk bij.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Combobox geeft geen suggesties</strong>
+      Bij het functietitelveld verwachtte ik een dropdown met suggesties terwijl ik typ, zoals bij LinkedIn of Indeed. Die kwamen niet. Ik wist niet of mijn invoer "geldig" was. Beetje onzeker gevoel.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen voortgangsindicator</strong>
+      Ik wist niet dat er meerdere stappen waren totdat ik op "Verder" klikte en er een nieuw scherm kwam. Een stappenindicator bovenaan ("Stap 1 van 3") had me geholpen om te weten hoeveel er nog komt.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> AVG-toestemming voor CV was duidelijk</strong>
+      Voor het uploaden van mijn CV verscheen een duidelijk uitleg over wat er met mijn gegevens gebeurt: versleuteld, EU-servers, niet gedeeld. Dat gaf me een veilig gevoel. De bewaartermijn van 30 dagen (aanpasbaar) is ook fijn.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Upload werkte soepel</strong>
+      CV geupload in een klik. Daarna direct bevestiging dat het is verwerkt. Geen foutmelding, geen wachttijd.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-vraag">Vraag</span> "Je hebt 5 gratis credits" &mdash; wat zijn credits?</strong>
+      Na de upload zag ik "Je hebt 5 gratis credits om mee te starten." Maar ik wist nog niet wat een credit is. Ik klikte maar op "Vacatures zoeken" en hoopte dat het duidelijk werd.
+    </div>
+  </div>
+
+  <!-- Pagina 2: Dashboard / Vacatures -->
+  <div class="page-section">
+    <h2><span class="badge">02</span> Dashboard / Vacatures &mdash; /dashboard</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Auto-zoeken werkt direct</strong>
+      Zodra ik op de vacaturepagina landde, waren er al resultaten geladen op basis van mijn profiel. Dat voelt als magie. Ik hoefde zelf niks te doen.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Maar 2 resultaten &mdash; voelt mager</strong>
+      De eerste zoekactie (Communicatie Medewerker, Almere) gaf slechts 2 resultaten. Dat voelt weinig. Ik begon te twijfelen of de app wel goed werkte. Geen uitleg waarom er zo weinig zijn, of een optie om de zoekradius te vergroten.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Match-percentage 20% &mdash; demotiverend</strong>
+      Bij de Social Media-zoekresultaten zag ik "20% match" bij beide vacatures. Als nieuwe gebruiker dacht ik: pas ik dan helemaal niet? Er is geen uitleg wat dat percentage betekent of hoe ik het kan verbeteren.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-vraag">Vraag</span> "Vacature-URL plakken" &mdash; handig maar verborgen</strong>
+      Er is een knop "Heb je een vacature-URL? Plak hem hier". Goede functie, maar ik zou die nooit hebben gevonden als ik er niet actief naar zocht. Die verdient meer aandacht.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Motivatiebrief is indrukwekkend</strong>
+      Ik klikte op "Solliciteren" en kreeg binnen een paar seconden een lange, gepersonaliseerde motivatiebrief. Mijn stagebedrijf (Burst Media), de tools die ik gebruik (Hootsuite, Canva), mijn H&amp;M-ervaring &mdash; alles stond er in. Dat is echt heel gaaf. Dit alleen al maakt de app de moeite waard.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Brief aanpasbaar en opnieuw genereerbaar</strong>
+      Ik kon de toon kiezen (Formeel, Informeel, Enthousiast, Luchtig) en de brief direct bewerken in het tekstvak. Dat geeft controle. Ook "Opnieuw genereren" is handig.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Credit-gebruik niet zichtbaar tijdens solliciteren</strong>
+      Ik zag pas op de profielpagina dat ik van 5 naar 4 credits was gegaan. Tijdens het aanmaken van de brief werd niet gezegd "dit kost 1 credit". Dat was verrassend. Ik wil dat van tevoren weten.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> "Kopieer &amp; solliciteer via site" opent externe vacaturesite</strong>
+      De knop opende Jobbird in een nieuw tabblad. Dat is logisch, maar het voel alsof ik Opstap verlaat en op m'n eigen de rest moet doen. Had verwacht dat Opstap me hier iets meer bij helpt.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-vraag">Vraag</span> Wat is "Stuur per e-mail naar recruiter"?</strong>
+      Er was ook een knop om de brief per e-mail te sturen, maar de vacature had geen bekend e-mailadres. Onzeker of dat werkte of niet. Ik heb het niet geprobeerd.
+    </div>
+  </div>
+
+  <!-- Pagina 3: Profiel -->
+  <div class="page-section">
+    <h2><span class="badge">03</span> Mijn Profiel &mdash; /dashboard/profiel</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Profiel al grotendeels ingevuld</strong>
+      Mijn naam, woonplaats, functietitels en de tekst over mezelf waren al overgenomen uit de onboarding. Dat scheelt dubbel werk.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> CV-status zichtbaar</strong>
+      Ik zag dat mijn CV geupload was en wanneer het vervalt (25 juli 2026). Dat geeft overzicht.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> "Profiel volledigheid: 3/6" zonder uitleg wat ontbreekt</strong>
+      De voortgangsbalk zegt 3 van 6, maar ik zie niet welke 3 velden nog niet zijn ingevuld. Een lijstje "Vul nog in: leeftijd, uren per week, beschikbaarheid" zou helpen.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Leeftijdsveld is een spinbutton</strong>
+      Voor leeftijd is een spinbutton (pijltjes omhoog/omlaag). Ik vind het makkelijker om gewoon "24" te typen. Op mobiel zou dit een frustratie zijn.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-vraag">Vraag</span> "Prestaties" tab is leeg / onduidelijk</strong>
+      Er is een tabblad "Prestaties" naast "Mijn gegevens". Ik heb erop geklikt maar begreep niet goed wat ik er mee kan doen in deze vroege fase.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Taal motivatiebrief instelbaar</strong>
+      Ik kon kiezen voor Nederlands of Engels. Handig als ik later ook internationale vacatures wil proberen.
+    </div>
+  </div>
+
+  <!-- Pagina 4: Opgeslagen -->
+  <div class="page-section">
+    <h2><span class="badge">04</span> Opgeslagen vacatures &mdash; /dashboard/opgeslagen</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Opgeslagen vacature zichtbaar</strong>
+      De vacature die ik had opgeslagen verscheen correct op deze pagina.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen datum van opslaan</strong>
+      Ik zie niet wanneer ik de vacature heb opgeslagen. Als je er tien hebt, wil je weten welke je recent hebt bekeken.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen notitieveld per vacature</strong>
+      Ik zou graag een aantekening kunnen toevoegen, zoals "goede match" of "al gemaild". Nu is het alleen een lijst.
+    </div>
+  </div>
+
+  <!-- Pagina 5: Sollicitaties -->
+  <div class="page-section">
+    <h2><span class="badge">05</span> Jouw Sollicitaties &mdash; /dashboard/sollicitaties</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Overzicht met statussen</strong>
+      De tellers "Verstuurd / Beantwoord / Gesprek" geven direct een overzicht. Leuk om bij te houden.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Status handmatig aanpasbaar</strong>
+      Ik kon de status van mijn sollicitatie aanpassen via een dropdown (Verstuurd, In behandeling, Beantwoord, etc.). Dat is handig om bij te houden waar ik sta.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Brief terugkijken via "Bekijk brief"</strong>
+      Ik kon de gegenereerde brief opnieuw bekijken. Fijn als ik me later wil herinneren wat ik had geschreven.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-vraag">Vraag</span> Standaardstatus is "In behandeling" maar ik koos "Kopieer & solliciteer via site"</strong>
+      Opstap registreerde mijn sollicitatie als "In behandeling" &mdash; maar ik had de brief zelf gekopieerd en nog niet echt gesolliciteerd. Ik zou verwachten dat dit "Concept" of "Niet verstuurd" heet totdat ik bevestig dat ik echt heb gesolliciteerd.
+    </div>
+  </div>
+
+  <!-- Pagina 6: Credits -->
+  <div class="page-section">
+    <h2><span class="badge">06</span> Credits &mdash; /dashboard/credits</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Eerlijk over bèta-status</strong>
+      De pagina zegt duidelijk dat betaalde credits "binnenkort" komen. Dat is transparant. Ik waardeer dat ze niet doen alsof alles al klaar is.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Gratis credits per dag</strong>
+      Elke dag automatisch +2 credits klinkt goed. Ik hoef niet meteen te betalen.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen creditgeschiedenis op deze pagina</strong>
+      Ik wil zien wanneer ik welke credits heb gebruikt. Nu staat die info bij Instellingen ("Toon geschiedenis"), maar dat voelt op de verkeerde plek. Ik verwacht het hier.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-vraag">Vraag</span> Hoeveel kost een credit later?</strong>
+      Er staat dat betaalde credits "binnenkort" komen, maar geen indicatie van de prijs. Als nieuwe gebruiker wil ik weten wat dit gaat kosten zodat ik kan inschatten of ik bereid ben te betalen.
+    </div>
+  </div>
+
+  <!-- Pagina 7: Instellingen -->
+  <div class="page-section">
+    <h2><span class="badge">07</span> Instellingen &mdash; /dashboard/settings</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Referral-systeem is goed uitgelegd</strong>
+      Mijn persoonlijke uitnodigingslink staat er duidelijk bij, inclusief de voordelen (+3 credits voor mij, +8 startcredits voor de vriend). Ik zou dit snel delen via WhatsApp.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> E-mailmeldingen aanpasbaar</strong>
+      Wekelijkse digest, herinneringen, CV-vervaldatum &mdash; alles staat aan maar is uitzet- en aanzetzettbaar. Dat geeft controle.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> "Download mijn gegevens" aanwezig</strong>
+      Dit is AVG-conform en ik vind het fijn dat het er gewoon staat. Veel apps verstoppen dit.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Instellingen-pagina heeft een simpeler profielvorm dan Profiel-pagina</strong>
+      Op /dashboard/profiel kan ik veel meer invullen (beschikbaarheid, salaris, opleidingsniveau, leeftijd, etc.) dan op de instellingenpagina. Dat zijn twee formulieren voor hetzelfde profiel. Verwarrend: waarom staan ze op twee plekken?
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> "Account verwijderen" staat onderaan zonder visuele afscheiding</strong>
+      De knop "Account verwijderen" staat direct na "Download mijn gegevens" zonder een aparte waarschuwingssectie. Dat is een gevaarlijke knop die een rode kleur en duidelijke scheiding verdient.
+    </div>
+  </div>
+
+  <!-- Pagina 8: Over ons -->
+  <div class="page-section">
+    <h2><span class="badge">08</span> Over Opstap &mdash; /over-ons</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-neutraal">Neutraal</span> Pagina geladen maar geen navigatie zichtbaar</strong>
+      De "Over ons" pagina laadde, maar de snapshot toonde een vereenvoudigde lay-out zonder zijbalk of navigatie. De content was er wel. Geen grote problemen.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen "Terug naar dashboard" link voor ingelogde gebruikers</strong>
+      Als ik al ingelogd ben en naar "Over ons" ga, wil ik makkelijk terug. Er was geen duidelijke terugknop naar het dashboard vanuit de publieke pagina.
+    </div>
+  </div>
+
+  <!-- Pagina 9: FAQ -->
+  <div class="page-section">
+    <h2><span class="badge">09</span> Help &amp; FAQ &mdash; /faq</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Duidelijke categorieën</strong>
+      Aan de slag / Motivatiebrieven / Privacy / Kosten. Precies de vragen die ik had. Goed georganiseerd.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Accordeons werken soepel</strong>
+      Ik klikte op "Wat is Opstap?" en "Zijn de brieven echt gepersonaliseerd?" &mdash; beide openden direct. Geen vertraging.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen zoekfunctie in de FAQ</strong>
+      Als er straks meer vragen bijkomen, wil ik kunnen zoeken. Nu moet ik alle categorieën doorlopen.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Link naar contact bij "vraag staat er niet bij"</strong>
+      Bovenaan staat meteen: "Staat je vraag er niet bij? Stuur ons een bericht." Fijn dat ze dat niet verstoppen.
+    </div>
+  </div>
+
+  <!-- Pagina 10: Contact -->
+  <div class="page-section">
+    <h2><span class="badge">10</span> Contact &mdash; /contact</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-neutraal">Neutraal</span> Contactformulier aanwezig</strong>
+      Er is een contactformulier. Ik heb het niet ingevuld, maar het zag er netjes uit. Goed dat er een optie is naast e-mail.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Console-fout op de contactpagina</strong>
+      Tijdens het laden van de contactpagina registreerde de browser 1 console-fout. Niet zichtbaar voor de gewone gebruiker, maar een indicatie dat er iets technisch fout is.
+    </div>
+  </div>
+
+  <!-- Pagina 11: Privacy -->
+  <div class="page-section">
+    <h2><span class="badge">11</span> Privacybeleid &mdash; /privacy</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Aanwezig en bereikbaar</strong>
+      De privacypagina is aanwezig en leesbaar. Goed dat dit ook vanuit de AVG-toestemming linkbaar is.
+    </div>
+  </div>
+
+  <!-- Pagina 12: Voorwaarden -->
+  <div class="page-section">
+    <h2><span class="badge">12</span> Algemene Voorwaarden &mdash; /voorwaarden</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-neutraal">Neutraal</span> Standaard maar aanwezig</strong>
+      Pagina geladen. Geen opvallende problemen.
+    </div>
+  </div>
+
+  <!-- Pagina 13: Blog -->
+  <div class="page-section">
+    <h2><span class="badge">13</span> Blog &mdash; /blog</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen bloglijst &mdash; direct in een artikel</strong>
+      De URL /blog toonde direct een artikel zonder een overzichtspagina met meerdere posts. Er was een "Terug naar blog" link, maar die stuurde me terug naar /blog wat hetzelfde scherm laadde. Het lijkt alsof er maar 1 artikel is, of de blogindex werkt niet correct.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-neutraal">Neutraal</span> Inhoud leek nuttig</strong>
+      Het artikel dat zichtbaar was leek relevante inhoud te hebben over solliciteren. Maar de navigatie van de blog is verwarrend.
+    </div>
+  </div>
+
+  <!-- Pagina 14: Misbruik -->
+  <div class="page-section">
+    <h2><span class="badge">14</span> Misbruik melden &mdash; /misbruik</h2>
+
+    <div class="observation">
+      <strong><span class="tag tag-goed">Goed</span> Duidelijk en simpel</strong>
+      E-mailadres misbruik@opstapapp.nl staat er direct. Belofte van reactie binnen 2 werkdagen. Dat is genoeg.
+    </div>
+
+    <div class="observation">
+      <strong><span class="tag tag-punt">Punt</span> Geen navigatie rondom de pagina</strong>
+      De misbruikpagina heeft geen zijbalk of topnavigatie. Alleen een "Terug naar Opstap" link. Voor een ingelogde gebruiker voelt dit alsof je uit de app bent gevallen.
+    </div>
+  </div>
+
+  <!-- Samenvatting: Positieven -->
+  <div class="samenvatting">
+    <h2>Wat ik goed vond (als Dahl)</h2>
+    <ul>
+      <li><span class="icon">+</span> <span>De motivatiebrief is echt indrukwekkend. Hij gebruikte mijn stagebedrijf, mijn tools en mijn H&amp;M-achtergrond zonder dat ik extra dingen moest invullen. Dit is het sterkste punt van de app.</span></li>
+      <li><span class="icon">+</span> <span>Onboarding gaat snel. Naam, functie, woonplaats, kort stukje over mezelf &mdash; klaar. Geen eindeloos formulier.</span></li>
+      <li><span class="icon">+</span> <span>Privacy is goed geregeld. AVG-toestemming voor CV-upload was helder, bewaartermijn is zichtbaar, ik kan mijn CV zelf verwijderen. Dat voelt veilig.</span></li>
+      <li><span class="icon">+</span> <span>De sollicitatiestatus-tracker is handig. Ik kan bijhouden in welke fase elke sollicitatie zit. Dat heb ik bij andere tools niet gezien.</span></li>
+      <li><span class="icon">+</span> <span>Referral-systeem is duidelijk en eerlijk uitgelegd. Ik zou mijn link zo doorsturen naar vriendinnen die ook zoeken.</span></li>
+      <li><span class="icon">+</span> <span>Credits verlopen nooit &mdash; dat staat er letterlijk. Dat neem ik je niet kwalijk, dat is juist een pluspunt tegenover apps die je pushen om snel te gebruiken.</span></li>
+    </ul>
+  </div>
+
+  <!-- Samenvatting: Pijnpunten -->
+  <div class="samenvatting">
+    <h2>Wat me frustreerde of verwaarde (als Dahl)</h2>
+    <ul>
+      <li><span class="icon">-</span> <span>Slechts 2 vacatureresultaten per zoekopdracht. Als ik dit vergelijk met Indeed of LinkedIn, voelt dat weinig. Ik snapte niet of het aan mij lag (te specifiek zoeken?) of aan de database.</span></li>
+      <li><span class="icon">-</span> <span>Het credit-systeem werd niet uitgelegd voordat ik een brief genereerde. Ik klikte op "Solliciteren" en pas daarna bleek ik 1 credit te hebben gebruikt. Dat verrast me negatief.</span></li>
+      <li><span class="icon">-</span> <span>20% match-percentage is demotiverend zonder uitleg. Betekent dit dat ik een slechte kandidaat ben? Dat de vacature niet bij me past? Of gewoon dat de tekst niet perfect matchte? Ik weet het niet.</span></li>
+      <li><span class="icon">-</span> <span>Geen voortgangsindicator tijdens onboarding. Ik wist niet hoeveel stappen er waren. Even een "Stap 1 van 3" had dit opgelost.</span></li>
+      <li><span class="icon">-</span> <span>Profiel staat op twee plekken: /dashboard/profiel heeft uitgebreide velden, /dashboard/settings heeft een simpelere versie. Dat is verwarrend &mdash; welke is de "echte"?</span></li>
+      <li><span class="icon">-</span> <span>De blog-overzichtspagina werkt niet goed &mdash; /blog toont direct een artikel, niet een lijst van posts. "Terug naar blog" werkte niet zoals verwacht.</span></li>
+      <li><span class="icon">-</span> <span>Sommige publieke pagina's (misbruik, over-ons) hebben geen navigatie voor ingelogde gebruikers. Ik voelde me "buiten de app" gegooid.</span></li>
+    </ul>
+  </div>
+
+  <!-- UX Suggesties -->
+  <div class="samenvatting">
+    <h2>Concrete verbeterpunten met prioriteit</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Prioriteit</th>
+          <th>Pagina</th>
+          <th>Suggestie</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="prio-hoog">HOOG</span></td>
+          <td>Dashboard / Solliciteren</td>
+          <td>Toon "Dit kost 1 credit" met bevestigingsstap voordat de brief wordt gegenereerd. Nu wordt een credit gebruikt zonder waarschuwing vooraf.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-hoog">HOOG</span></td>
+          <td>Dashboard / Vacatures</td>
+          <td>Leg het match-percentage uit met een tooltip of uitklapbaar blokje: "20% match betekent dat de vacaturetekst weinig overeenkomst heeft met jouw profiel. Vul meer profielvelden in voor betere matches."</td>
+        </tr>
+        <tr>
+          <td><span class="prio-hoog">HOOG</span></td>
+          <td>Onboarding</td>
+          <td>Voeg een stappenindicator toe (bijv. "Stap 1 van 3: Jouw gegevens") zodat de gebruiker weet hoeveel er nog komt.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-hoog">HOOG</span></td>
+          <td>Blog (/blog)</td>
+          <td>Herstel de blogindex-pagina zodat /blog een lijst van artikelen toont in plaats van direct een artikel. "Terug naar blog" moet naar die lijst verwijzen.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-middel">MIDDEL</span></td>
+          <td>Dashboard / Vacatures</td>
+          <td>Voeg een "Breid zoekgebied uit" optie toe (heel Nederland) als er minder dan 5 resultaten zijn. En toon hoeveel resultaten er zijn in heel NL als alternatief.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-middel">MIDDEL</span></td>
+          <td>Profiel / Instellingen</td>
+          <td>Samenvoeging of duidelijke koppeling van de twee profielsecties op /profiel en /settings. Nu is het onduidelijk welke versie "wint".</td>
+        </tr>
+        <tr>
+          <td><span class="prio-middel">MIDDEL</span></td>
+          <td>Profiel</td>
+          <td>"Profiel volledigheid: 3/6" &mdash; toon welke 3 velden nog missen, bijv. "Vul nog in: Leeftijd, Uren per week, Beschikbaarheid" voor de +1 gratis credit bonus.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-middel">MIDDEL</span></td>
+          <td>Sollicitaties</td>
+          <td>Wijzig de standaardstatus na "Kopieer &amp; solliciteer via site" naar "Concept" of "Nog te versturen" &mdash; niet "In behandeling". De gebruiker heeft de brief nog niet daadwerkelijk verstuurd.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-middel">MIDDEL</span></td>
+          <td>Instellingen</td>
+          <td>Markeer de "Account verwijderen" knop visueel als gevaarlijke actie: rode kleur, duidelijke scheiding van de rest van de pagina, bevestigingsdialoog.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-laag">LAAG</span></td>
+          <td>Onboarding / Functietitel</td>
+          <td>Voeg autocomplete-suggesties toe aan het functietitelveld. Gebruikers weten niet of hun invoer "geldig" is en twijfelen.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-laag">LAAG</span></td>
+          <td>Credits-pagina</td>
+          <td>Verplaats de creditgeschiedenis naar /dashboard/credits in plaats van weggestopt onder Instellingen. En voeg een indicatieve toekomstige prijs toe ("vanaf circa X euro per credit").</td>
+        </tr>
+        <tr>
+          <td><span class="prio-laag">LAAG</span></td>
+          <td>Opgeslagen vacatures</td>
+          <td>Voeg een datum toe ("Opgeslagen op: 25 jun") en een notitieveld per vacature voor persoonlijke aantekeningen.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-laag">LAAG</span></td>
+          <td>Publieke pagina's (misbruik, over-ons)</td>
+          <td>Voeg consistente navigatie toe voor ingelogde gebruikers op alle publieke pagina's, of minimaal een "Terug naar dashboard" link.</td>
+        </tr>
+        <tr>
+          <td><span class="prio-laag">LAAG</span></td>
+          <td>FAQ</td>
+          <td>Voeg een zoekbalk toe bovenaan de FAQ-pagina zodat gebruikers direct kunnen zoeken op trefwoord.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Score -->
+  <div class="score-box">
+    <div class="cijfer">7.1</div>
+    <div class="label">Gebruiksvriendelijkheidsscore &mdash; uit 10</div>
+    <div class="toelichting">De motivatiebrief alleen al is een 9. De onboarding is snel en de privacy-aanpak is solide. Maar het lage aantal vacatureresultaten, het gebrek aan uitleg over credits en match-percentages, en een paar kapotte pagina's (blog, navigatie op publieke pagina's) halen de score omlaag. Met een paar gerichte fixes kom ik snel op een 8+.</div>
+  </div>
+
+  <!-- Slotwoord -->
+  <div class="samenvatting">
+    <h2>Mijn slotindruk als Dahl</h2>
+    <ul>
+      <li><span class="icon">&rarr;</span> <span>Ik zou Opstap zeker opnieuw gebruiken. De motivatiebrief-functie is echt bijzonder goed &mdash; die heeft me 20 minuten schrijfwerk bespaard en het resultaat was beter dan ik zelf had gemaakt.</span></li>
+      <li><span class="icon">&rarr;</span> <span>Ik zou hem aanraden aan vriendinnen, maar met de kanttekening: "Verwacht niet te veel vacatures, het is puur voor de brieven."</span></li>
+      <li><span class="icon">&rarr;</span> <span>Zodra er meer vacatures zijn en het credit-systeem transparanter is, is dit voor mij een go-to tool voor mijn zoektocht.</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  Dahl's Gebruikerstest &mdash; Opstap &bull; 25 juni 2026 &bull; Gegenereerd via geautomatiseerde walkthrough
+</footer>
+
+</body>
+</html>
