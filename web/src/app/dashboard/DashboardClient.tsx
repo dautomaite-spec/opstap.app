@@ -260,10 +260,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setJobs([])
     setJobsStale(false)
     try {
-      const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
+      const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 15 })
       if (results.length < 3 && loc) {
         // Too few results -retry without location filter to widen the search
-        const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 20 })
+        const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 15 })
         setJobs(wider)
         setJobsStale(widerStale)
       } else {
@@ -846,7 +846,15 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-2 flex-wrap">
                     <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
-                    {profile && (
+                    {job.is_curveball ? (
+                      <span
+                        title="Andere sector, maar jouw vaardigheden passen hier goed bij"
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
+                        style={{ background: '#fff7ed', color: '#c2410c' }}
+                      >
+                        Andere richting
+                      </span>
+                    ) : profile && (
                       <span
                         title="Hoe goed de vacature past bij jouw functietitel en woonplaats"
                         className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
@@ -874,7 +882,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                     )}
                   </div>
                   {job.match_reason && (
-                    <p className="text-xs mt-1.5 italic" style={{ color: 'var(--color-indigo-primary)', opacity: 0.85 }}>{job.match_reason}</p>
+                    <p
+                      className="text-xs mt-1.5 italic"
+                      style={{ color: job.is_curveball ? '#c2410c' : 'var(--color-indigo-primary)', opacity: 0.9 }}
+                    >
+                      {job.match_reason}
+                    </p>
                   )}
                   {job.description_snippet && (
                     <div className="mt-2">

@@ -75,7 +75,7 @@ def _normalize_location(loc: str | None) -> str:
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
-_FRESH_HOURS = 6   # DB results younger than this are served without re-scraping
+_FRESH_HOURS = 24  # DB results younger than this are served without re-scraping
 _STALE_DAYS = 14   # Fallback cap — never return results older than this
 
 # In-process rate limit: (count, window_start) per user_id
@@ -236,10 +236,10 @@ async def search_jobs(
     ]
     supabase.table("jobs").upsert(db_rows, on_conflict="url").execute()
 
-    # Attach match_reason for this session's response (transient, not in DB)
-    match_reasons = {j["url"]: j.get("match_reason") for j in unique}
+    # Attach transient fields for this session's response (not stored in DB)
+    transient = {j["url"]: {"match_reason": j.get("match_reason"), "is_curveball": j.get("is_curveball", False)} for j in unique}
     response_rows = [
-        {**row, "match_reason": match_reasons.get(row["url"])}
+        {**row, "match_reason": transient.get(row["url"], {}).get("match_reason"), "is_curveball": transient.get(row["url"], {}).get("is_curveball")}
         for row in db_rows
     ]
 

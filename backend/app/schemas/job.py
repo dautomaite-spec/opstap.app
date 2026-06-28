@@ -20,6 +20,7 @@ class JobOut(BaseModel):
     posted_at: Optional[datetime] = None
     scraped_at: datetime
     match_reason: Optional[str] = None  # LLM-generated, not stored in DB
+    is_curveball: Optional[bool] = None  # LLM-generated, not stored in DB
 
     model_config = {"from_attributes": True}
 
