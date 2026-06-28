@@ -22,7 +22,7 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_MAX_TOOL_CALLS = 8
+_MAX_TOOL_CALLS = 5
 _SEARCH_MODEL = "claude-sonnet-4-6"
 
 # NL job board domains — Tavily will also hit these naturally, but listing them

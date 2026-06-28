@@ -808,6 +808,9 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       {/* Loading skeleton -shown while auto-search fires on first dashboard visit */}
       {searching && jobs.length === 0 && (
         <div className="flex flex-col gap-3 mt-2">
+          <p className="text-xs text-center mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            AI zoekt passende vacatures voor je... dit duurt 30-60 seconden
+          </p>
           {[1, 2, 3].map(n => (
             <div key={n} className="rounded-xl p-4 animate-pulse" style={{ background: 'var(--color-lavender-card)' }}>
               <div className="h-4 rounded w-2/3 mb-2" style={{ background: 'var(--color-lavender-bg)' }} />
