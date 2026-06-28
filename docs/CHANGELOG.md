@@ -1,5 +1,9 @@
 # Changelog — Opstap
 
+## 2026-06-28 (Dutch copy fixes + marketing roadmap)
+- fix: DashboardClient.tsx — 7 Dutch copy corrections: button labels, loading ellipsis, singular/plural (sollicitatie vs sollicitaties), sidebar heading, curveball label consistency, credit cost format
+- docs: ROADMAP.html — expanded Marketing & Groei section with monetisation strategy (Mollie iDEAL post-beta, freemium tiers, B2B), user growth strategy (SEO, referrals, social, UWV/ROC partners, ASO, community), and KPIs (500 MAU / 5% conversion / first €500 MRR)
+
 ## 2026-06-28 (LLM job search + Dahl UX fixes)
 - feat: backend/app/services/llm_job_search.py (new) — Claude + Tavily web search API as primary job search path; HTML scrapers (Jobbird, NVB, LinkedIn, Indeed) promoted to fallback when LLM returns < 5 results
 - feat: match_reason field added to JobOut schema (transient, not stored in DB) — populated by LLM search, shown as italic blue text on job cards
