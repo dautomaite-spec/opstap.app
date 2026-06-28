@@ -111,7 +111,7 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                       child: CircularProgressIndicator(
                           color: OpstapColors.primary),
                     )),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                     data: (history) => _HistoryList(history: history),
                   ),
 

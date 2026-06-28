@@ -135,10 +135,18 @@ export default function ProfielPage() {
       {tab === 'gegevens' && (
         <>
           {profile && (() => {
-            const fields = [profile.naam, profile.functietitel, profile.woonplaats, profile.uren_per_week, profile.werklocatie, profile.opleidingsniveau]
-            const filled = fields.filter(Boolean).length
-            const pct = Math.round((filled / 6) * 100)
-            const complete = filled === 6
+            const fieldDefs: [unknown, string][] = [
+              [profile.naam, 'Naam'],
+              [profile.functietitel, 'Functietitel'],
+              [profile.woonplaats, 'Woonplaats'],
+              [profile.uren_per_week, 'Uren per week'],
+              [profile.werklocatie, 'Werklocatie'],
+              [profile.opleidingsniveau, 'Opleidingsniveau'],
+            ]
+            const filled = fieldDefs.filter(([v]) => !!v).length
+            const missing = fieldDefs.filter(([v]) => !v).map(([, label]) => label)
+            const pct = Math.round((filled / fieldDefs.length) * 100)
+            const complete = filled === fieldDefs.length
             return (
               <div className="mb-5 p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
                 <div className="flex items-center justify-between mb-2">
@@ -153,9 +161,12 @@ export default function ProfielPage() {
                     style={{ width: `${pct}%`, background: complete ? '#16a34a' : 'var(--color-indigo-primary)' }}
                   />
                 </div>
-                {!complete && !profile.profile_bonus_given && (
+                {!complete && (
                   <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
-                    Vul alle 6 velden in voor <strong style={{ color: 'var(--color-indigo-primary)' }}>+1 gratis credit</strong>.
+                    Ontbreekt: {missing.join(', ')}.
+                    {!profile.profile_bonus_given && (
+                      <>{' '}<strong style={{ color: 'var(--color-indigo-primary)' }}>Vul alles in voor +1 gratis credit.</strong></>
+                    )}
                   </p>
                 )}
               </div>
@@ -187,7 +198,14 @@ export default function ProfielPage() {
                 <input list="job-titles-list" name="functietitel_3" placeholder="Derde functietitel (optioneel)" defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
               <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
-              <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" defaultValue={profile.uren_per_week?.toString()} />
+              <SelectField label="Uren per week" name="uren_per_week" defaultValue={profile.uren_per_week?.toString() ?? ''}>
+                <option value="">Geen voorkeur</option>
+                <option value="16">Max 16 uur</option>
+                <option value="24">16-24 uur</option>
+                <option value="32">24-32 uur</option>
+                <option value="36">32-36 uur</option>
+                <option value="40">40 uur (fulltime)</option>
+              </SelectField>
               <SelectField label="Beschikbaarheid" name="beschikbaarheid" defaultValue={profile.beschikbaarheid ?? ''}>
                 <option value="">Niet opgegeven</option>
                 <option value="fulltime">Fulltime</option>

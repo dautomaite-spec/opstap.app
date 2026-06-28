@@ -12,11 +12,6 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Profile edit state
-  const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  const [saveError, setSaveError] = useState('')
-
   // CV state
   const [uploadingCV, setUploadingCV] = useState(false)
   const [cvUploadSuccess, setCvUploadSuccess] = useState('')
@@ -84,30 +79,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
     }
   }
 
-  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setSaving(true)
-    setSaveError('')
-    setSaveSuccess(false)
-    const fd = new FormData(e.currentTarget)
-    try {
-      const updated = await api.profile.update({
-        naam: fd.get('naam') as string,
-        functietitel: (fd.get('functietitel') as string) || undefined,
-        woonplaats: (fd.get('woonplaats') as string) || undefined,
-        uren_per_week: fd.get('uren_per_week') ? Number(fd.get('uren_per_week')) : undefined,
-        werklocatie: (fd.get('werklocatie') as string) || undefined,
-        opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
-      })
-      setProfile(updated)
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : 'Opslaan mislukt. Probeer het opnieuw.')
-    } finally {
-      setSaving(false)
-    }
-  }
+
 
   function handleCVButtonClick() {
     setShowAvgConsent(true)
@@ -191,65 +163,25 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
 
         {/* Profile section */}
         <section className="mb-10">
-          <h2 className="text-base font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</h2>
-          {saveSuccess && (
-            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
-              Wijzigingen opgeslagen
-            </p>
-          )}
-          {saveError && (
-            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>
-              {saveError}
-            </p>
-          )}
+          <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Profiel</h2>
           {profile ? (
-            <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <Field label="Volledige naam *" name="naam" required defaultValue={profile.naam} />
-              <Field label="Functietitel" name="functietitel" placeholder="bijv. Verpleegkundige" defaultValue={profile.functietitel} />
-              <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
-              <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" defaultValue={profile.uren_per_week?.toString()} />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Werklocatie</label>
-                <select
-                  name="werklocatie"
-                  defaultValue={profile.werklocatie ?? ''}
-                  className="px-3 py-2 rounded-lg border text-sm"
-                  style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-                >
-                  <option value="">Geen voorkeur</option>
-                  <option value="op locatie">Op locatie</option>
-                  <option value="hybride">Hybride</option>
-                  <option value="remote">Thuis werken</option>
-                </select>
+            <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{profile.naam}</p>
+                {profile.functietitel && (
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{profile.functietitel}</p>
+                )}
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Opleidingsniveau</label>
-                <select
-                  name="opleidingsniveau"
-                  defaultValue={profile.opleidingsniveau ?? ''}
-                  className="px-3 py-2 rounded-lg border text-sm"
-                  style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-                >
-                  <option value="">Niet opgegeven</option>
-                  <option value="vmbo">VMBO / Basis</option>
-                  <option value="mbo">MBO</option>
-                  <option value="hbo">HBO</option>
-                  <option value="wo_bachelor">WO Bachelor</option>
-                  <option value="wo_master">WO Master</option>
-                  <option value="phd">PhD / Promotie</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                disabled={saving}
-                className="py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'var(--color-indigo-primary)' }}
+              <a
+                href="/dashboard/profiel"
+                className="text-xs px-3 py-1.5 rounded-lg font-medium transition hover:opacity-90"
+                style={{ background: 'var(--color-indigo-primary)', color: 'white' }}
               >
-                {saving ? 'Opslaan…' : 'Opslaan'}
-              </button>
-            </form>
+                Bewerken
+              </a>
+            </div>
           ) : (
-            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen profiel gevonden. Ga naar het dashboard om een profiel aan te maken.</p>
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen profiel gevonden.</p>
           )}
         </section>
 
@@ -453,9 +385,9 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
         </section>
 
         {/* Danger zone */}
-        <section className="pt-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+        <section className="pt-6 border-t rounded-xl p-4 mt-2" style={{ borderColor: '#fca5a5', border: '1px solid #fca5a5', background: '#fff5f5' }}>
           <h2 className="text-base font-bold mb-2" style={{ color: '#ef4444' }}>Account verwijderen</h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-sm mb-4" style={{ color: '#7f1d1d' }}>
             Je account, profiel, CV en alle sollicitaties worden permanent verwijderd. Dit kan niet ongedaan worden gemaakt.
           </p>
           {deleteError && <p className="text-sm mb-3" style={{ color: 'var(--color-error)' }}>{deleteError}</p>}
@@ -496,24 +428,7 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
   )
 }
 
-function Field({ label, name, type = 'text', placeholder, required, defaultValue }: {
-  label: string; name: string; type?: string; placeholder?: string; required?: boolean; defaultValue?: string
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</label>
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        required={required}
-        defaultValue={defaultValue}
-        className="px-3 py-2 rounded-lg border text-sm outline-none"
-        style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-      />
-    </div>
-  )
-}
+
 
 function Toggle({ label, description, checked, disabled, onChange }: {
   label: string; description: string; checked: boolean; disabled?: boolean; onChange: (v: boolean) => void

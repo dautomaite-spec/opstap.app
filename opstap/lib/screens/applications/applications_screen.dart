@@ -43,7 +43,7 @@ class ApplicationsScreen extends ConsumerWidget {
                 loading: () => const Center(
                   child: CircularProgressIndicator(color: OpstapColors.primary),
                 ),
-                error: (_, __) => _EmptyState(
+                error: (_, _) => _EmptyState(
                   icon: Icons.wifi_off_rounded,
                   title: 'Kan niet laden',
                   subtitle: 'Controleer je verbinding en probeer opnieuw.',
@@ -60,7 +60,7 @@ class ApplicationsScreen extends ConsumerWidget {
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                     itemCount: apps.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (_, i) => _ApplicationCard(app: apps[i]),
                   );
                 },

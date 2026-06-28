@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
 
+    # Tavily web search (LLM job search)
+    tavily_api_key: str = ""
+
     # CV storage
     cv_max_size_mb: int = 10
     cv_default_retention_days: int = 30

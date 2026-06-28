@@ -1,15 +1,20 @@
 import re
 import asyncio
+import logging
+import threading
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import uuid4
 
+logger = logging.getLogger(__name__)
+
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.job import JobOut, JobSearchParams
 from app.services.job_scraper import scrape_jobbird, scrape_nationale_vacaturebank, scrape_indeed_nl, scrape_linkedin_nl
+from app.services.llm_job_search import llm_search_jobs
 
 _LOCATION_REPLACEMENTS = {
     "netherlands": "Nederland",
@@ -70,8 +75,35 @@ def _normalize_location(loc: str | None) -> str:
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
-_FRESH_HOURS = 6   # DB results younger than this are served without re-scraping
+_FRESH_HOURS = 24  # DB results younger than this are served without re-scraping
 _STALE_DAYS = 14   # Fallback cap — never return results older than this
+
+# In-process rate limit: (count, window_start) per user_id
+_llm_rate_state: dict[str, tuple[int, datetime]] = {}
+_llm_rate_lock = threading.Lock()
+_LLM_HOURLY_LIMIT = 10
+
+
+def _check_llm_rate_limit(user_id: str, now: datetime) -> bool:
+    """Return True if the user is within their hourly LLM search quota. Thread-safe."""
+    with _llm_rate_lock:
+        entry = _llm_rate_state.get(user_id)
+        if entry:
+            count, window_start = entry
+            if (now - window_start).total_seconds() < 3600:
+                if count >= _LLM_HOURLY_LIMIT:
+                    return False
+                _llm_rate_state[user_id] = (count + 1, window_start)
+            else:
+                _llm_rate_state[user_id] = (1, now)
+        else:
+            _llm_rate_state[user_id] = (1, now)
+        # Evict expired windows to prevent unbounded growth
+        expired = [uid for uid, (_, ws) in _llm_rate_state.items()
+                   if (now - ws).total_seconds() >= 3600 and uid != user_id]
+        for uid in expired:
+            del _llm_rate_state[uid]
+    return True
 
 
 
@@ -95,7 +127,7 @@ async def search_jobs(
     db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff)
     if location:
         db_query = db_query.ilike("location", f"%{location}%")
-    cached_raw = (db_query.order("scraped_at", desc=True).limit(params.limit * 4).execute().data or [])
+    cached_raw = (db_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
 
     if keywords:
         kw_tokens = [t.lower() for t in re.sub(r"[^\w\s]", " ", keywords).split() if t]
@@ -112,18 +144,47 @@ async def search_jobs(
     if len(cached) >= 10:
         return _dedup_by_company(cached)[:params.limit]
 
-    # ── Not enough fresh results — hit the scrapers ───────────────────────────
-    primary_limit = params.limit
-    indeed_limit = min(params.limit // 2, 10)
-    linkedin_limit = min(params.limit // 3, 5)
-    jobbird_results, nvb_results, indeed_results, linkedin_results = await asyncio.gather(
-        scrape_jobbird(keywords, location, primary_limit),
-        scrape_nationale_vacaturebank(keywords, location, primary_limit),
-        scrape_indeed_nl(keywords, location, indeed_limit),
-        scrape_linkedin_nl(keywords, location, linkedin_limit),
-    )
-    raw = [j for j in jobbird_results + nvb_results + indeed_results + linkedin_results
-           if _is_nl_location(j.get("location"))]
+    # ── Not enough fresh results — try LLM search first, fall back to scrapers ─
+    # Per-user LLM search rate limit: 10 per hour, tracked in-process.
+    # Single-worker deployment (Railway beta) — dict survives per process lifetime.
+    if not _check_llm_rate_limit(user_id, now):
+        response.headers["X-Jobs-Source"] = "cache"
+        return _dedup_by_company(cached)[:params.limit] if cached else []
+
+    # Fetch user profile for richer LLM context
+    profile: dict = {}
+    try:
+        p_result = supabase.table("profiles").select(
+            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info"
+        ).eq("user_id", user_id).maybe_single().execute()
+        if p_result.data:
+            profile = p_result.data
+    except Exception as exc:
+        logger.warning("Profile fetch failed for user %s: %s", user_id, exc)
+
+    raw = await llm_search_jobs(profile, keywords, location, params.limit)
+
+    if len(raw) < 5:
+        # LLM search returned too few — supplement with scrapers
+        primary_limit = params.limit
+        indeed_limit = min(params.limit // 2, 10)
+        linkedin_limit = min(params.limit // 3, 5)
+        jobbird_results, nvb_results, indeed_results, linkedin_results = await asyncio.gather(
+            scrape_jobbird(keywords, location, primary_limit),
+            scrape_nationale_vacaturebank(keywords, location, primary_limit),
+            scrape_indeed_nl(keywords, location, indeed_limit),
+            scrape_linkedin_nl(keywords, location, linkedin_limit),
+        )
+        scraper_raw = [j for j in jobbird_results + nvb_results + indeed_results + linkedin_results
+                       if _is_nl_location(j.get("location"))]
+        # Merge: keep LLM results first (richer), append scraper results
+        existing_urls = {j["url"] for j in raw}
+        for j in scraper_raw:
+            if j["url"] not in existing_urls:
+                existing_urls.add(j["url"])
+                raw.append(j)
+
+    raw = [j for j in raw if _is_nl_location(j.get("location"))]
 
     if not raw:
         # Scrapers returned nothing — fall back to DB with a 14-day staleness cap
@@ -131,7 +192,7 @@ async def search_jobs(
         fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff)
         if location:
             fb_query = fb_query.ilike("location", f"%{location}%")
-        fb_raw = fb_query.order("scraped_at", desc=True).limit(params.limit * 4).execute().data or []
+        fb_raw = fb_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or []
         if keywords:
             kw_tokens = [t.lower() for t in re.sub(r"[^\w\s]", " ", keywords).split() if t]
             stale_results = [
@@ -154,7 +215,8 @@ async def search_jobs(
             seen.add(job["url"])
             unique.append(job)
 
-    rows = [
+    # Build DB rows (no match_reason — it's user-specific, not stored in shared pool)
+    db_rows = [
         {
             "id": str(uuid4()),
             "title": j["title"],
@@ -172,9 +234,16 @@ async def search_jobs(
         }
         for j in unique
     ]
-    supabase.table("jobs").upsert(rows, on_conflict="url").execute()
+    supabase.table("jobs").upsert(db_rows, on_conflict="url").execute()
 
-    return _dedup_by_company(rows)[:params.limit]
+    # Attach transient fields for this session's response (not stored in DB)
+    transient = {j["url"]: {"match_reason": j.get("match_reason"), "is_curveball": j.get("is_curveball", False)} for j in unique}
+    response_rows = [
+        {**row, "match_reason": transient.get(row["url"], {}).get("match_reason"), "is_curveball": transient.get(row["url"], {}).get("is_curveball")}
+        for row in db_rows
+    ]
+
+    return _dedup_by_company(response_rows)[:params.limit]
 
 
 # ── Saved jobs (declared BEFORE /{job_id} to prevent route shadowing) ───────

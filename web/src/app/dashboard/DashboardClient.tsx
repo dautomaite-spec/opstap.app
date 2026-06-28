@@ -136,6 +136,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [multiSelect, setMultiSelect] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showMultiApply, setShowMultiApply] = useState(false)
+  const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set())
 
   // URL → letter state
   const [urlLetterOpen, setUrlLetterOpen] = useState(false)
@@ -259,10 +260,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setJobs([])
     setJobsStale(false)
     try {
-      const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 20 })
+      const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 15 })
       if (results.length < 3 && loc) {
         // Too few results -retry without location filter to widen the search
-        const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 20 })
+        const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 15 })
         setJobs(wider)
         setJobsStale(widerStale)
       } else {
@@ -358,6 +359,21 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     setSelectedIds(new Set())
   }
 
+  function toggleExpand(jobId: string) {
+    setExpandedJobs(prev => {
+      const next = new Set(prev)
+      if (next.has(jobId)) next.delete(jobId)
+      else next.add(jobId)
+      return next
+    })
+  }
+
+  function jobAgeDays(job: Job): number {
+    const ref = job.posted_at || job.scraped_at
+    const ms = Date.now() - new Date(ref).getTime()
+    return Math.floor(ms / 86_400_000)
+  }
+
   if (profileLoading) {
     return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
   }
@@ -391,7 +407,17 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" />
 
           <div className="flex gap-3">
-            <Field label="Uren per week" name="uren_per_week" type="number" placeholder="40" />
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Uren per week</label>
+              <select name="uren_per_week" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
+                <option value="">Geen voorkeur</option>
+                <option value="16">Max 16 uur</option>
+                <option value="24">16-24 uur</option>
+                <option value="32">24-32 uur</option>
+                <option value="36">32-36 uur</option>
+                <option value="40">40 uur (fulltime)</option>
+              </select>
+            </div>
             <div className="flex flex-col gap-1 flex-1">
               <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Beschikbaarheid</label>
               <select name="beschikbaarheid" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
@@ -812,14 +838,28 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           const matchColor = pct >= 70 ? '#16a34a' : pct >= 40 ? '#d97706' : '#6b7280'
           const matchBg = pct >= 70 ? '#f0fdf4' : pct >= 40 ? '#fffbeb' : '#f9fafb'
           const postedDate = formatDate(job.posted_at)
+          const ageDays = jobAgeDays(job)
+          const isExpanded = expandedJobs.has(job.id)
           return (
             <div key={job.id} className="rounded-xl p-4" style={{ background: 'var(--color-lavender-card)' }}>
               <div className="flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-2 flex-wrap">
                     <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
-                    {profile && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: matchBg, color: matchColor }}>
+                    {job.is_curveball ? (
+                      <span
+                        title="Andere sector, maar jouw vaardigheden passen hier goed bij"
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
+                        style={{ background: '#fff7ed', color: '#c2410c' }}
+                      >
+                        Andere richting
+                      </span>
+                    ) : profile && (
+                      <span
+                        title="Hoe goed de vacature past bij jouw functietitel en woonplaats"
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
+                        style={{ background: matchBg, color: matchColor }}
+                      >
                         {pct}% match
                       </span>
                     )}
@@ -836,11 +876,34 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{job.contract_type}</span>
                     )}
                     {postedDate && (
-                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Geplaatst {postedDate}</span>
+                      <span className="text-xs" style={{ color: ageDays > 21 ? '#d97706' : 'var(--color-text-muted)' }}>
+                        {ageDays > 21 ? `Geplaatst ${postedDate} (mogelijk verlopen)` : `Geplaatst ${postedDate}`}
+                      </span>
                     )}
                   </div>
+                  {job.match_reason && (
+                    <p
+                      className="text-xs mt-1.5 italic"
+                      style={{ color: job.is_curveball ? '#c2410c' : 'var(--color-indigo-primary)', opacity: 0.9 }}
+                    >
+                      {job.match_reason}
+                    </p>
+                  )}
                   {job.description_snippet && (
-                    <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--color-text-muted)' }}>{job.description_snippet}</p>
+                    <div className="mt-2">
+                      <p className={`text-xs ${isExpanded ? '' : 'line-clamp-2'}`} style={{ color: 'var(--color-text-muted)' }}>
+                        {job.description_snippet}
+                      </p>
+                      {job.description_snippet.length > 120 && (
+                        <button
+                          onClick={() => toggleExpand(job.id)}
+                          className="text-xs mt-0.5 underline"
+                          style={{ color: 'var(--color-indigo-primary)' }}
+                        >
+                          {isExpanded ? 'Minder' : 'Meer'}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-2 shrink-0">
@@ -866,7 +929,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
                       style={{ background: 'var(--color-indigo-primary)' }}
                     >
-                      {generatingLetter ? 'Laden…' : 'Solliciteren'}
+                      {generatingLetter ? 'Laden…' : 'Solliciteren (1 credit)'}
                     </button>
                   )}
                   <div className="flex gap-1.5">
