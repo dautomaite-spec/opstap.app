@@ -114,9 +114,21 @@ async def search_jobs(
     user_id: str = Depends(get_current_user_id),
     supabase=Depends(get_supabase),
 ):
-    keywords = (params.keywords or "").strip()
+    # ── Fetch profile first — used for both cache and LLM search ─────────────
+    profile: dict = {}
+    try:
+        p_result = supabase.table("profiles").select(
+            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info"
+        ).eq("user_id", user_id).maybe_single().execute()
+        if p_result.data:
+            profile = p_result.data
+    except Exception as exc:
+        logger.warning("Profile fetch failed for user %s: %s", user_id, exc)
+
+    # Resolve keywords and location from params, falling back to profile
+    keywords = (params.keywords or "").strip() or (profile.get("functietitel") or "")
     # Strip LIKE wildcards from user input so ilike behaves as a substring search, not open wildcard
-    location = re.sub(r"[%_]", "", (params.location or "").strip())
+    location = re.sub(r"[%_]", "", (params.location or "").strip()) or (profile.get("woonplaats") or "")
 
     now = datetime.now(timezone.utc)
     fresh_cutoff = (now - timedelta(hours=_FRESH_HOURS)).isoformat()
@@ -130,7 +142,18 @@ async def search_jobs(
     cached_raw = (db_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
 
     if keywords:
-        kw_tokens = [t.lower() for t in re.sub(r"[^\w\s]", " ", keywords).split() if t]
+        # Use all three profile titles for broader cache matching
+        all_titles = [t for t in [
+            keywords,
+            profile.get("functietitel_2"),
+            profile.get("functietitel_3"),
+        ] if t]
+        kw_tokens = list({
+            t.lower()
+            for title in all_titles
+            for t in re.sub(r"[^\w\s]", " ", title).split()
+            if len(t) > 2
+        })
         cached = [
             j for j in cached_raw
             if not kw_tokens or any(
@@ -150,17 +173,6 @@ async def search_jobs(
     if not _check_llm_rate_limit(user_id, now):
         response.headers["X-Jobs-Source"] = "cache"
         return _dedup_by_company(cached)[:params.limit] if cached else []
-
-    # Fetch user profile for richer LLM context
-    profile: dict = {}
-    try:
-        p_result = supabase.table("profiles").select(
-            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info"
-        ).eq("user_id", user_id).maybe_single().execute()
-        if p_result.data:
-            profile = p_result.data
-    except Exception as exc:
-        logger.warning("Profile fetch failed for user %s: %s", user_id, exc)
 
     raw = await llm_search_jobs(profile, keywords, location, params.limit)
 

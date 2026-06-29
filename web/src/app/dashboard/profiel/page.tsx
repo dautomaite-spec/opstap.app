@@ -24,6 +24,8 @@ export default function ProfielPage() {
   const [cvError, setCvError] = useState('')
   const [cvSuccess, setCvSuccess] = useState('')
   const [cvDeleting, setCvDeleting] = useState(false)
+  const [cvApplying, setCvApplying] = useState(false)
+  const [cvApplySuccess, setCvApplySuccess] = useState('')
   const [cvConsentOpen, setCvConsentOpen] = useState(false)
   const [cvRetentionDays, setCvRetentionDays] = useState(30)
   const cvInputRef = useRef<HTMLInputElement>(null)
@@ -69,6 +71,21 @@ export default function ProfielPage() {
       setCvError(err instanceof ApiError ? err.message : 'Verwijderen mislukt.')
     } finally {
       setCvDeleting(false)
+    }
+  }
+
+  async function handleApplyCv() {
+    setCvApplying(true)
+    setCvError('')
+    setCvApplySuccess('')
+    try {
+      const updated = await api.profile.applyCV()
+      setProfile(updated)
+      setCvApplySuccess('Profiel ingevuld vanuit je CV.')
+    } catch (err) {
+      setCvError(err instanceof ApiError ? err.message : 'Invullen mislukt. Probeer het opnieuw.')
+    } finally {
+      setCvApplying(false)
     }
   }
 
@@ -296,30 +313,49 @@ export default function ProfielPage() {
                 {cvSuccess && (
                   <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{cvSuccess}</p>
                 )}
+                {cvApplySuccess && (
+                  <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{cvApplySuccess}</p>
+                )}
                 {profile?.cv_url ? (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)', flexShrink: 0 }}>
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
-                    </svg>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
-                        CV geüpload{profile.cv_parsed ? ' - gegevens verwerkt ✓' : ''}
-                      </p>
-                      {profile.cv_expires_at && (
-                        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          Vervalt {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)', flexShrink: 0 }}>
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                      </svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                          CV geüpload{profile.cv_parsed ? ' - gegevens verwerkt ✓' : ' - wordt verwerkt…'}
                         </p>
-                      )}
+                        {profile.cv_expires_at && (
+                          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                            Vervalt {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCvDelete}
+                        disabled={cvDeleting}
+                        className="text-xs px-3 py-1.5 rounded-lg border transition hover:opacity-80 disabled:opacity-50"
+                        style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+                      >
+                        {cvDeleting ? 'Verwijderen…' : 'Verwijder CV'}
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleCvDelete}
-                      disabled={cvDeleting}
-                      className="text-xs px-3 py-1.5 rounded-lg border transition hover:opacity-80 disabled:opacity-50"
-                      style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
-                    >
-                      {cvDeleting ? 'Verwijderen…' : 'Verwijder CV'}
-                    </button>
+                    {profile.cv_parsed && (
+                      <button
+                        type="button"
+                        onClick={handleApplyCv}
+                        disabled={cvApplying}
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                        style={{ background: 'var(--color-indigo-primary)' }}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                        </svg>
+                        {cvApplying ? 'Profiel invullen…' : 'Profiel invullen vanuit CV'}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div>

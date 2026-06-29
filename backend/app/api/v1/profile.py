@@ -259,6 +259,64 @@ async def upload_cv(
     return {"message": "CV uploaded", "expires_at": expires_at}
 
 
+@router.post("/apply-cv", response_model=ProfileOut)
+async def apply_cv_to_profile(
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    """Map cv_structured fields into profile fields. Overwrites existing values."""
+    result = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Profiel niet gevonden")
+
+    cv = result.data.get("cv_structured")
+    if not cv:
+        raise HTTPException(status_code=404, detail="Nog geen CV geanalyseerd. Upload eerst een CV en wacht een moment.")
+
+    updates: dict = {}
+
+    # Job titles from most-recent work experience
+    werkervaring = cv.get("werkervaring") or []
+    titles = [w.get("functie", "").strip()[:120] for w in werkervaring if w.get("functie", "").strip()]
+    if len(titles) > 0:
+        updates["functietitel"] = titles[0]
+    if len(titles) > 1:
+        updates["functietitel_2"] = titles[1]
+    if len(titles) > 2:
+        updates["functietitel_3"] = titles[2]
+
+    # Summary -> extra_info
+    samenvatting = (cv.get("samenvatting") or "").strip()
+    if samenvatting:
+        updates["extra_info"] = samenvatting[:500]
+
+    # Education -> opleidingsniveau (map common Dutch/English degree names)
+    opleiding = cv.get("opleiding") or []
+    if opleiding:
+        graad = ((opleiding[0].get("graad") or "") + " " + (opleiding[0].get("studierichting") or "")).lower()
+        if any(k in graad for k in ("phd", "doctor", "promot")):
+            updates["opleidingsniveau"] = "phd"
+        elif any(k in graad for k in ("master", "msc", "m.sc", " ma ", "wo master")):
+            updates["opleidingsniveau"] = "wo_master"
+        elif any(k in graad for k in ("bachelor", "bsc", "b.sc", " ba ", "wo bachelor", " wo ")):
+            updates["opleidingsniveau"] = "wo_bachelor"
+        elif any(k in graad for k in ("hbo", "hogeschool", "propedeuse", "associate")):
+            updates["opleidingsniveau"] = "hbo"
+        elif "mbo" in graad:
+            updates["opleidingsniveau"] = "mbo"
+        elif any(k in graad for k in ("vmbo", "mavo", "basis")):
+            updates["opleidingsniveau"] = "vmbo"
+
+    if not updates:
+        raise HTTPException(status_code=422, detail="CV bevat geen bruikbare profielgegevens.")
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    updates["updated_at"] = now_iso
+    supabase.table("profiles").update(updates).eq("user_id", user_id).execute()
+    refreshed = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
+    return _attach_cv_url(refreshed.data, supabase)
+
+
 @router.delete("/cv", status_code=200)
 async def delete_cv(
     user_id: str = Depends(get_current_user_id),
