@@ -275,15 +275,23 @@ async def apply_cv_to_profile(
 
     updates: dict = {}
 
-    # Job titles from most-recent work experience
+    # Job titles from 2-3 most recent work experiences (deduplicated, most recent first)
     werkervaring = cv.get("werkervaring") or []
-    titles = [w.get("functie", "").strip()[:120] for w in werkervaring if w.get("functie", "").strip()]
-    if len(titles) > 0:
-        updates["functietitel"] = titles[0]
-    if len(titles) > 1:
-        updates["functietitel_2"] = titles[1]
-    if len(titles) > 2:
-        updates["functietitel_3"] = titles[2]
+    seen_titles: set[str] = set()
+    unique_titles: list[str] = []
+    for w in werkervaring:
+        t = w.get("functie", "").strip()[:120]
+        if t and t.lower() not in seen_titles:
+            seen_titles.add(t.lower())
+            unique_titles.append(t)
+        if len(unique_titles) == 3:
+            break
+    if len(unique_titles) > 0:
+        updates["functietitel"] = unique_titles[0]
+    if len(unique_titles) > 1:
+        updates["functietitel_2"] = unique_titles[1]
+    if len(unique_titles) > 2:
+        updates["functietitel_3"] = unique_titles[2]
 
     # Summary -> extra_info
     samenvatting = (cv.get("samenvatting") or "").strip()

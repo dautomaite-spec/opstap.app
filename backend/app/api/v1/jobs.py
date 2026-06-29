@@ -177,17 +177,28 @@ async def search_jobs(
     raw = await llm_search_jobs(profile, keywords, location, params.limit)
 
     if len(raw) < 5:
-        # LLM search returned too few — supplement with scrapers
-        primary_limit = params.limit
+        # LLM search returned too few — supplement with scrapers.
+        # Run Jobbird + NVB for each of the up-to-3 profile job titles so all
+        # recent experience types are covered; Indeed + LinkedIn only for the primary.
+        profile_titles = [t for t in [
+            keywords,
+            profile.get("functietitel_2"),
+            profile.get("functietitel_3"),
+        ] if t][:3]
+        per_title_limit = max(params.limit // max(len(profile_titles), 1), 3)
         indeed_limit = min(params.limit // 2, 10)
         linkedin_limit = min(params.limit // 3, 5)
-        jobbird_results, nvb_results, indeed_results, linkedin_results = await asyncio.gather(
-            scrape_jobbird(keywords, location, primary_limit),
-            scrape_nationale_vacaturebank(keywords, location, primary_limit),
+
+        jb_coros = [scrape_jobbird(kw, location, per_title_limit) for kw in profile_titles]
+        nvb_coros = [scrape_nationale_vacaturebank(kw, location, per_title_limit) for kw in profile_titles]
+        jb_groups, nvb_groups, indeed_results, linkedin_results = await asyncio.gather(
+            asyncio.gather(*jb_coros),
+            asyncio.gather(*nvb_coros),
             scrape_indeed_nl(keywords, location, indeed_limit),
             scrape_linkedin_nl(keywords, location, linkedin_limit),
         )
-        scraper_raw = [j for j in jobbird_results + nvb_results + indeed_results + linkedin_results
+        flat = [j for group in (*jb_groups, *nvb_groups) for j in group]
+        scraper_raw = [j for j in flat + indeed_results + linkedin_results
                        if _is_nl_location(j.get("location"))]
         # Merge: keep LLM results first (richer), append scraper results
         existing_urls = {j["url"] for j in raw}
