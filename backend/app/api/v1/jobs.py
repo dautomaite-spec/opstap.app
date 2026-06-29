@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.job import JobOut, JobSearchParams
-from app.services.job_scraper import scrape_jobbird, scrape_nationale_vacaturebank, scrape_indeed_nl, scrape_linkedin_nl
+from app.services.job_scraper import scrape_jobbird, scrape_nationale_vacaturebank, scrape_indeed_nl
 from app.services.llm_job_search import llm_search_jobs
 
 _LOCATION_REPLACEMENTS = {
@@ -162,7 +162,8 @@ async def search_jobs(
     db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff)
     if location:
         db_query = db_query.ilike("location", f"%{location}%")
-    cached_raw = (db_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
+    cached_raw = [j for j in (db_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
+                  if 'linkedin.com' not in (j.get('url') or '')]
 
     if keywords:
         # Use all three profile titles for broader cache matching
@@ -210,18 +211,16 @@ async def search_jobs(
         ] if t][:3]
         per_title_limit = max(params.limit // max(len(profile_titles), 1), 3)
         indeed_limit = min(params.limit // 2, 10)
-        linkedin_limit = min(params.limit // 3, 5)
 
         jb_coros = [scrape_jobbird(kw, location, per_title_limit) for kw in profile_titles]
         nvb_coros = [scrape_nationale_vacaturebank(kw, location, per_title_limit) for kw in profile_titles]
-        jb_groups, nvb_groups, indeed_results, linkedin_results = await asyncio.gather(
+        jb_groups, nvb_groups, indeed_results = await asyncio.gather(
             asyncio.gather(*jb_coros),
             asyncio.gather(*nvb_coros),
             scrape_indeed_nl(keywords, location, indeed_limit),
-            scrape_linkedin_nl(keywords, location, linkedin_limit),
         )
         flat = [j for group in (*jb_groups, *nvb_groups) for j in group]
-        scraper_raw = [j for j in flat + indeed_results + linkedin_results
+        scraper_raw = [j for j in flat + indeed_results
                        if _is_nl_location(j.get("location"))]
         # Merge: keep LLM results first (richer), append scraper results
         existing_urls = {j["url"] for j in raw}
@@ -238,7 +237,8 @@ async def search_jobs(
         fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff)
         if location:
             fb_query = fb_query.ilike("location", f"%{location}%")
-        fb_raw = fb_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or []
+        fb_raw = [j for j in (fb_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
+                  if 'linkedin.com' not in (j.get('url') or '')]
         if keywords:
             kw_tokens = [t.lower() for t in re.sub(r"[^\w\s]", " ", keywords).split() if t]
             stale_results = [
