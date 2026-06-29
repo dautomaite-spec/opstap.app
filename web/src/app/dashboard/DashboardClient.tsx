@@ -10,12 +10,23 @@ import { JOB_TITLES } from '@/lib/jobTitles'
 
 // localStorage is kept as a fast local cache; Supabase is the source of truth
 const SAVED_JOBS_KEY = 'opstap_saved_jobs'
+const CACHED_JOBS_KEY = 'opstap_cached_jobs'
 
 function loadSavedJobsLocal(): Record<string, Job> {
   try { return JSON.parse(localStorage.getItem(SAVED_JOBS_KEY) ?? '{}') } catch { return {} }
 }
 function writeSavedJobsLocal(map: Record<string, Job>) {
   localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(map))
+}
+function loadCachedJobs(): { jobs: Job[]; stale: boolean } {
+  try {
+    const raw = localStorage.getItem(CACHED_JOBS_KEY)
+    if (!raw) return { jobs: [], stale: false }
+    return JSON.parse(raw) as { jobs: Job[]; stale: boolean }
+  } catch { return { jobs: [], stale: false } }
+}
+function writeCachedJobs(jobs: Job[], stale: boolean) {
+  try { localStorage.setItem(CACHED_JOBS_KEY, JSON.stringify({ jobs, stale })) } catch {}
 }
 
 type SortKey = 'match' | 'salary' | 'date'
@@ -98,6 +109,15 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         writeSavedJobsLocal(map)
       })
       .catch(() => { /* offline or not authed -local cache is fine */ })
+  }, [])
+
+  useEffect(() => {
+    const { jobs: cached, stale } = loadCachedJobs()
+    if (cached.length > 0) {
+      setJobs(cached)
+      setJobsStale(stale)
+      setMinAnimDone(true)
+    }
   }, [])
 
   const toggleSave = useCallback((job: Job) => {
@@ -276,6 +296,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       const { jobs: results, stale } = await api.jobs.searchWithStale({ limit: 15 })
       setJobs(results)
       setJobsStale(stale)
+      writeCachedJobs(results, stale)
       localStorage.setItem(LAST_SEARCH_KEY, String(Date.now()))
     } catch (err) {
       setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
