@@ -41,6 +41,21 @@ function trackEvent(name: string) {
   }
 }
 
+function inferIsCurveball(job: Job, profile: Profile | null): boolean {
+  if (job.is_curveball === true) return true
+  if (job.is_curveball === false) return false
+  // null/undefined = came from DB cache without LLM classification; infer from title
+  if (!profile) return false
+  const titles = [profile.functietitel, profile.functietitel_2, profile.functietitel_3]
+    .filter(Boolean) as string[]
+  if (!titles.length) return false
+  const jobTitle = (job.title || '').toLowerCase()
+  const profileWords = new Set(
+    titles.flatMap(t => t.toLowerCase().split(/\s+/).filter(w => w.length > 2))
+  )
+  return ![...profileWords].some(w => jobTitle.includes(w))
+}
+
 function matchScore(job: Job, profile: Profile | null): number {
   if (!profile) return 0
   let score = 0
@@ -222,11 +237,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const filteredJobs = useMemo(() => {
     return sortedJobs.filter(job => {
       if (filterContracts.length > 0 && !filterContracts.includes(job.contract_type ?? '')) return false
-      if (filterCurveball === true && !job.is_curveball) return false
-      if (filterCurveball === false && job.is_curveball) return false
+      const curveball = inferIsCurveball(job, profile)
+      if (filterCurveball === true && !curveball) return false
+      if (filterCurveball === false && curveball) return false
       return true
     })
-  }, [sortedJobs, filterContracts, filterCurveball])
+  }, [sortedJobs, filterContracts, filterCurveball, profile])
 
   async function handleProfileSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -528,7 +544,8 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       {jobs.length > 0 && !searching && (
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {profile?.functietitel} {profile?.woonplaats ? `· ${profile.woonplaats}` : ''}
+            {[profile?.functietitel, profile?.functietitel_2, profile?.functietitel_3].filter(Boolean).join(', ')}
+            {profile?.woonplaats ? ` · ${profile.woonplaats}` : ''}
           </span>
           <button
             onClick={handleNewSearch}
@@ -859,13 +876,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 const postedDate = formatDate(job.posted_at)
                 const ageDays = jobAgeDays(job)
                 const isExpanded = expandedJobs.has(job.id)
+                const isCurveball = inferIsCurveball(job, profile)
                 return (
                   <div key={job.id} className="rounded-xl p-4" style={{ background: 'var(--color-lavender-card)' }}>
                     <div className="flex items-start gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start gap-2 flex-wrap">
                           <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
-                          {job.is_curveball ? (
+                          {isCurveball ? (
                             <span
                               title="Andere sector, maar jouw vaardigheden passen hier goed bij"
                               className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
@@ -903,7 +921,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                         {job.match_reason && (
                           <p
                             className="text-xs mt-1.5 italic"
-                            style={{ color: job.is_curveball ? '#c2410c' : 'var(--color-indigo-primary)', opacity: 0.9 }}
+                            style={{ color: isCurveball ? '#c2410c' : 'var(--color-indigo-primary)', opacity: 0.9 }}
                           >
                             {job.match_reason}
                           </p>
