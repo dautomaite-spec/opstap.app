@@ -68,6 +68,7 @@ export const api = {
       return res.json() as Promise<{ message: string; expires_at: string }>
     },
     deleteCV: () => request<void>('DELETE', '/api/v1/profile/cv'),
+    applyCV: () => request<Profile>('POST', '/api/v1/profile/apply-cv'),
     deleteAccount: () => request<void>('DELETE', '/api/v1/profile/me'),
     exportData: async () => {
       const token = await getToken()

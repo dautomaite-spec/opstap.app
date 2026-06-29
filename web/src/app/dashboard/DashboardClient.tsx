@@ -80,8 +80,6 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [profileError, setProfileError] = useState('')
   const autoSearched = useRef(false)
 
-  const [keywords, setKeywords] = useState('')
-  const [location, setLocation] = useState('')
   const [jobs, setJobs] = useState<Job[]>([])
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
@@ -162,8 +160,6 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     api.profile.get()
       .then(p => {
         setProfile(p)
-        if (p.functietitel) setKeywords(p.functietitel)
-        if (p.woonplaats) setLocation(p.woonplaats)
         // Pending apply from saved-jobs page -pass p directly (state not yet updated)
         try {
           const raw = localStorage.getItem(PENDING_APPLY_KEY)
@@ -234,9 +230,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       setShowProfileForm(false)
       // Auto-search immediately after first profile creation so the user lands on results
       if (saved.functietitel) {
-        setKeywords(saved.functietitel)
-        if (saved.woonplaats) setLocation(saved.woonplaats)
-        triggerSearch(saved.functietitel, saved.woonplaats ?? '')
+        triggerSearch()
       }
     } catch (err) {
       // Profile may already exist -fall back to update
@@ -270,7 +264,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     }
   }
 
-  async function triggerSearch(kw: string, loc: string) {
+  async function triggerSearch() {
     setSearching(true)
     setMinAnimDone(false)
     setSearchError('')
@@ -279,15 +273,9 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     if (minAnimTimer.current) clearTimeout(minAnimTimer.current)
     minAnimTimer.current = setTimeout(() => setMinAnimDone(true), 5000)
     try {
-      const { jobs: results, stale } = await api.jobs.searchWithStale({ keywords: kw || undefined, location: loc || undefined, limit: 15 })
-      if (results.length < 3 && loc) {
-        const { jobs: wider, stale: widerStale } = await api.jobs.searchWithStale({ keywords: kw || undefined, limit: 15 })
-        setJobs(wider)
-        setJobsStale(widerStale)
-      } else {
-        setJobs(results)
-        setJobsStale(stale)
-      }
+      const { jobs: results, stale } = await api.jobs.searchWithStale({ limit: 15 })
+      setJobs(results)
+      setJobsStale(stale)
       localStorage.setItem(LAST_SEARCH_KEY, String(Date.now()))
     } catch (err) {
       setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
@@ -299,14 +287,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
   function handleNewSearch() {
     if (!profile) return
-    const kw = profile.functietitel ?? ''
-    const loc = profile.woonplaats ?? ''
-    triggerSearch(kw, loc)
-  }
-
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    await triggerSearch(keywords, location)
+    triggerSearch()
   }
 
   async function handleGenerateLetter(job: Job, profileOverride?: Profile) {
