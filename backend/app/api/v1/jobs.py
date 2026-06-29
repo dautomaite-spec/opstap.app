@@ -118,10 +118,33 @@ async def search_jobs(
     profile: dict = {}
     try:
         p_result = supabase.table("profiles").select(
-            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info"
+            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info,cv_structured"
         ).eq("user_id", user_id).maybe_single().execute()
         if p_result.data:
             profile = p_result.data
+            # Supplement empty title slots from cv_structured.werkervaring
+            cv_data = profile.pop("cv_structured", None) or {}
+            werkervaring = cv_data.get("werkervaring") or []
+            seen: set[str] = {
+                t.lower() for t in [
+                    profile.get("functietitel"),
+                    profile.get("functietitel_2"),
+                    profile.get("functietitel_3"),
+                ] if t
+            }
+            for w in werkervaring:
+                t = (w.get("functie") or "").strip()[:120]
+                if not t or t.lower() in seen:
+                    continue
+                seen.add(t.lower())
+                if not profile.get("functietitel"):
+                    profile["functietitel"] = t
+                elif not profile.get("functietitel_2"):
+                    profile["functietitel_2"] = t
+                elif not profile.get("functietitel_3"):
+                    profile["functietitel_3"] = t
+                else:
+                    break
     except Exception as exc:
         logger.warning("Profile fetch failed for user %s: %s", user_id, exc)
 
