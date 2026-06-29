@@ -590,152 +590,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         )}
       </div>
 
-      {/* Sidebar + results layout -only shown when results are ready */}
-      {(filteredJobs.length > 0 || (sortedJobs.length > 0 && filterContracts.length > 0)) && (
-        <div className="flex gap-5 items-start">
-          {/* Filter sidebar */}
-          <aside
-            className="shrink-0 rounded-xl p-4 flex flex-col gap-5 hidden sm:flex"
-            style={{ width: 180, background: 'var(--color-lavender-card)' }}
-          >
-            <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Sorteren</p>
-              <div className="flex flex-col gap-1">
-                {(['match', 'salary', 'date'] as SortKey[]).map(key => (
-                  <button
-                    key={key}
-                    onClick={() => setSortBy(key)}
-                    className="text-xs text-left px-2 py-1.5 rounded-lg transition"
-                    style={{
-                      background: sortBy === key ? 'var(--color-indigo-primary)' : 'transparent',
-                      color: sortBy === key ? 'white' : 'var(--color-text-muted)',
-                      fontWeight: sortBy === key ? 600 : 400,
-                    }}
-                  >
-                    {{ match: 'Beste match', salary: 'Salaris', date: 'Nieuwste' }[key]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Dienstverband</p>
-              <div className="flex flex-col gap-1">
-                {['Fulltime', 'Parttime', 'Tijdelijk', 'Vast'].map(ct => (
-                  <label key={ct} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filterContracts.includes(ct)}
-                      onChange={e => setFilterContracts(prev =>
-                        e.target.checked ? [...prev, ct] : prev.filter(x => x !== ct)
-                      )}
-                      className="rounded"
-                    />
-                    <span className="text-xs" style={{ color: 'var(--color-text-primary)' }}>{ct}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Soort vacature</p>
-              <div className="flex flex-col gap-1">
-                {[{ label: 'Alles', val: null }, { label: 'Match', val: false }, { label: 'Andere sector', val: true }].map(opt => (
-                  <button
-                    key={String(opt.val)}
-                    onClick={() => setFilterCurveball(opt.val)}
-                    className="text-xs text-left px-2 py-1.5 rounded-lg transition"
-                    style={{
-                      background: filterCurveball === opt.val ? 'var(--color-indigo-primary)' : 'transparent',
-                      color: filterCurveball === opt.val ? 'white' : 'var(--color-text-muted)',
-                      fontWeight: filterCurveball === opt.val ? 600 : 400,
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {(filterContracts.length > 0 || filterCurveball !== null) && (
-              <button
-                onClick={() => { setFilterContracts([]); setFilterCurveball(null) }}
-                className="text-xs underline text-left mt-1"
-                style={{ color: 'var(--color-text-muted)' }}
-              >
-                Filters wissen
-              </button>
-            )}
-          </aside>
-
-          {/* Jobs column */}
-          <div className="flex-1 min-w-0">
-            {/* Multi-select bar */}
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
-              {multiSelect ? (
-                <>
-                  <span className="text-xs font-medium" style={{ color: 'var(--color-indigo-primary)' }}>
-                    {selectedIds.size}/5 geselecteerd
-                  </span>
-                  <button onClick={exitMultiSelect} className="text-xs underline" style={{ color: 'var(--color-text-muted)' }}>
-                    Annuleren
-                  </button>
-                </>
-              ) : (
-                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length} {filteredJobs.length === 1 ? 'vacature' : 'vacatures'}</span>
-              )}
-              <div className="ml-auto">
-                <button
-                  onClick={() => { setMultiSelect(m => !m); setSelectedIds(new Set()) }}
-                  className="text-xs px-3 py-1 rounded-full transition"
-                  style={{
-                    background: multiSelect ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-                    color: multiSelect ? 'white' : 'var(--color-text-muted)',
-                  }}
-                >
-                  Meerdere selecteren
-                </button>
-              </div>
-            </div>
-          </div>{/* end jobs column */}
-        </div>/* end sidebar+results flex */
-      )}
-
-      {/* Profile completeness nudge -shown when CV is missing */}
-      {profile && !profile.cv_url && !profile.cv_expires_at && (
-        <a
-          href="/dashboard/profiel"
-          className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-xs transition hover:opacity-90"
-          style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span><strong>Voeg je CV toe</strong> voor sterkere, persoonlijkere brieven →</span>
-        </a>
-      )}
-      {jobsStale && (
-        <div className="mb-4 px-3 py-2 rounded-lg text-xs" style={{ background: '#fef3c7', color: '#92400e' }}>
-          Vacatures worden vernieuwd op de achtergrond. Je ziet nu resultaten uit onze cache.
-        </div>
-      )}
-      {searchError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{searchError}</p>}
-      {applySuccess && (
-        <div className="mb-4 flex flex-col gap-2">
-          <p className="text-sm px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{applySuccess}</p>
-          {profile?.referral_code && (
-            <div className="px-3 py-2.5 rounded-lg text-xs flex items-center justify-between gap-3" style={{ background: 'var(--color-lavender-card)' }}>
-              <span style={{ color: 'var(--color-text-muted)' }}>
-                Ken je iemand die ook op zoek is? Deel Opstap en jullie krijgen allebei <strong style={{ color: 'var(--color-text-primary)' }}>+3 credits</strong>.
-              </span>
-              <button
-                onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/register?ref=${profile.referral_code}`).catch(() => {})}
-                className="shrink-0 text-xs px-3 py-1 rounded-lg font-medium transition hover:opacity-90"
-                style={{ background: 'var(--color-indigo-primary)', color: 'white' }}
-              >
-                Kopieer link
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-      {applyError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{applyError}</p>}
-
+      {/* Fixed-position overlays */}
       {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}
 
       {/* Multi-apply modal */}
@@ -873,7 +728,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </div>
       )}
 
-      {/* Spinner -shown while searching or during 5s minimum animation */}
+      {/* Spinner - shown while searching or during 5s minimum animation */}
       {(searching || (jobs.length > 0 && !minAnimDone)) && (
         <div className="flex flex-col items-center gap-4 py-14">
           <svg
@@ -903,138 +758,284 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         </p>
       )}
 
-      {/* Job cards */}
-      <div className="flex flex-col gap-3">
-        {filteredJobs.map(job => {
-          const pct = matchScore(job, profile)
-          const matchColor = pct >= 70 ? '#16a34a' : pct >= 40 ? '#d97706' : '#6b7280'
-          const matchBg = pct >= 70 ? '#f0fdf4' : pct >= 40 ? '#fffbeb' : '#f9fafb'
-          const postedDate = formatDate(job.posted_at)
-          const ageDays = jobAgeDays(job)
-          const isExpanded = expandedJobs.has(job.id)
-          return (
-            <div key={job.id} className="rounded-xl p-4" style={{ background: 'var(--color-lavender-card)' }}>
-              <div className="flex items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 flex-wrap">
-                    <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
-                    {job.is_curveball ? (
-                      <span
-                        title="Andere sector, maar jouw vaardigheden passen hier goed bij"
-                        className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
-                        style={{ background: '#fff7ed', color: '#c2410c' }}
-                      >
-                        Andere sector
-                      </span>
-                    ) : profile && (
-                      <span
-                        title="Hoe goed de vacature past bij jouw functietitel en woonplaats"
-                        className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
-                        style={{ background: matchBg, color: matchColor }}
-                      >
-                        {pct}% match
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{job.company} · {job.location}</p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
-                    {job.salary_range && (
-                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                        {job.salary_range}
-                        {job.salary_hourly && <span style={{ color: 'var(--color-text-muted)', opacity: 0.75 }}> · {job.salary_hourly}</span>}
-                      </span>
-                    )}
-                    {job.contract_type && (
-                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{job.contract_type}</span>
-                    )}
-                    {postedDate && (
-                      <span className="text-xs" style={{ color: ageDays > 21 ? '#d97706' : 'var(--color-text-muted)' }}>
-                        {ageDays > 21 ? `Geplaatst ${postedDate} (mogelijk verlopen)` : `Geplaatst ${postedDate}`}
-                      </span>
-                    )}
-                  </div>
-                  {job.match_reason && (
-                    <p
-                      className="text-xs mt-1.5 italic"
-                      style={{ color: job.is_curveball ? '#c2410c' : 'var(--color-indigo-primary)', opacity: 0.9 }}
-                    >
-                      {job.match_reason}
-                    </p>
-                  )}
-                  {job.description_snippet && (
-                    <div className="mt-2">
-                      <p className={`text-xs ${isExpanded ? '' : 'line-clamp-2'}`} style={{ color: 'var(--color-text-muted)' }}>
-                        {job.description_snippet}
-                      </p>
-                      {job.description_snippet.length > 120 && (
-                        <button
-                          onClick={() => toggleExpand(job.id)}
-                          className="text-xs mt-0.5 underline"
-                          style={{ color: 'var(--color-indigo-primary)' }}
-                        >
-                          {isExpanded ? 'Minder' : 'Meer'}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2 shrink-0">
-                  {multiSelect ? (
-                    <button
-                      onClick={() => toggleJobSelect(job.id)}
-                      className="w-8 h-8 rounded-lg border-2 flex items-center justify-center transition"
-                      style={{
-                        borderColor: selectedIds.has(job.id) ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-                        background: selectedIds.has(job.id) ? 'var(--color-indigo-primary)' : 'transparent',
-                      }}
-                    >
-                      {selectedIds.has(job.id) && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleGenerateLetter(job)}
-                      disabled={generatingLetter || !profile}
-                      className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
-                      style={{ background: 'var(--color-indigo-primary)' }}
-                    >
-                      {generatingLetter ? 'Laden…' : 'Solliciteren - 1 credit'}
-                    </button>
-                  )}
-                  <div className="flex gap-1.5">
-                    <a
-                      href={job.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
-                      style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
-                    >
-                      Bekijken
-                    </a>
-                    <button
-                      onClick={() => toggleSave(job)}
-                      title={savedJobs[job.id] ? 'Verwijder uit opgeslagen' : 'Opslaan'}
-                      className="px-2 py-1.5 rounded-lg border transition hover:opacity-80"
-                      style={{
-                        borderColor: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
-                        background: savedJobs[job.id] ? 'var(--color-lavender-bg)' : 'transparent',
-                        color: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-text-muted)',
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill={savedJobs[job.id] ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+      {/* Results: jobs column (left) + filter sidebar (right) */}
+      {(filteredJobs.length > 0 || (sortedJobs.length > 0 && filterContracts.length > 0)) && (
+        <div className="flex gap-5 items-start">
+          {/* Jobs column */}
+          <div className="flex-1 min-w-0">
+            {/* Multi-select bar */}
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
+              {multiSelect ? (
+                <>
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-indigo-primary)' }}>
+                    {selectedIds.size}/5 geselecteerd
+                  </span>
+                  <button onClick={exitMultiSelect} className="text-xs underline" style={{ color: 'var(--color-text-muted)' }}>
+                    Annuleren
+                  </button>
+                </>
+              ) : (
+                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length} {filteredJobs.length === 1 ? 'vacature' : 'vacatures'}</span>
+              )}
+              <div className="ml-auto">
+                <button
+                  onClick={() => { setMultiSelect(m => !m); setSelectedIds(new Set()) }}
+                  className="text-xs px-3 py-1 rounded-full transition"
+                  style={{
+                    background: multiSelect ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                    color: multiSelect ? 'white' : 'var(--color-text-muted)',
+                  }}
+                >
+                  Meerdere selecteren
+                </button>
               </div>
             </div>
-          )
-        })}
-      </div>
+
+            {/* Profile completeness nudge */}
+            {profile && !profile.cv_url && !profile.cv_expires_at && (
+              <a
+                href="/dashboard/profiel"
+                className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-xs transition hover:opacity-90"
+                style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span><strong>Voeg je CV toe</strong> voor sterkere, persoonlijkere brieven →</span>
+              </a>
+            )}
+            {jobsStale && (
+              <div className="mb-4 px-3 py-2 rounded-lg text-xs" style={{ background: '#fef3c7', color: '#92400e' }}>
+                Vacatures worden vernieuwd op de achtergrond. Je ziet nu resultaten uit onze cache.
+              </div>
+            )}
+            {searchError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{searchError}</p>}
+            {applySuccess && (
+              <div className="mb-4 flex flex-col gap-2">
+                <p className="text-sm px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>{applySuccess}</p>
+                {profile?.referral_code && (
+                  <div className="px-3 py-2.5 rounded-lg text-xs flex items-center justify-between gap-3" style={{ background: 'var(--color-lavender-card)' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>
+                      Ken je iemand die ook op zoek is? Deel Opstap en jullie krijgen allebei <strong style={{ color: 'var(--color-text-primary)' }}>+3 credits</strong>.
+                    </span>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/register?ref=${profile.referral_code}`).catch(() => {})}
+                      className="shrink-0 text-xs px-3 py-1 rounded-lg font-medium transition hover:opacity-90"
+                      style={{ background: 'var(--color-indigo-primary)', color: 'white' }}
+                    >
+                      Kopieer link
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {applyError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{applyError}</p>}
+
+            {/* Job cards */}
+            <div className="flex flex-col gap-3">
+              {filteredJobs.map(job => {
+                const pct = matchScore(job, profile)
+                const matchColor = pct >= 70 ? '#16a34a' : pct >= 40 ? '#d97706' : '#6b7280'
+                const matchBg = pct >= 70 ? '#f0fdf4' : pct >= 40 ? '#fffbeb' : '#f9fafb'
+                const postedDate = formatDate(job.posted_at)
+                const ageDays = jobAgeDays(job)
+                const isExpanded = expandedJobs.has(job.id)
+                return (
+                  <div key={job.id} className="rounded-xl p-4" style={{ background: 'var(--color-lavender-card)' }}>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2 flex-wrap">
+                          <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
+                          {job.is_curveball ? (
+                            <span
+                              title="Andere sector, maar jouw vaardigheden passen hier goed bij"
+                              className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
+                              style={{ background: '#fff7ed', color: '#c2410c' }}
+                            >
+                              Andere sector
+                            </span>
+                          ) : profile && (
+                            <span
+                              title="Hoe goed de vacature past bij jouw functietitel en woonplaats"
+                              className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
+                              style={{ background: matchBg, color: matchColor }}
+                            >
+                              {pct}% match
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{job.company} · {job.location}</p>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
+                          {job.salary_range && (
+                            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                              {job.salary_range}
+                              {job.salary_hourly && <span style={{ color: 'var(--color-text-muted)', opacity: 0.75 }}> · {job.salary_hourly}</span>}
+                            </span>
+                          )}
+                          {job.contract_type && (
+                            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{job.contract_type}</span>
+                          )}
+                          {postedDate && (
+                            <span className="text-xs" style={{ color: ageDays > 21 ? '#d97706' : 'var(--color-text-muted)' }}>
+                              {ageDays > 21 ? `Geplaatst ${postedDate} (mogelijk verlopen)` : `Geplaatst ${postedDate}`}
+                            </span>
+                          )}
+                        </div>
+                        {job.match_reason && (
+                          <p
+                            className="text-xs mt-1.5 italic"
+                            style={{ color: job.is_curveball ? '#c2410c' : 'var(--color-indigo-primary)', opacity: 0.9 }}
+                          >
+                            {job.match_reason}
+                          </p>
+                        )}
+                        {job.description_snippet && (
+                          <div className="mt-2">
+                            <p className={`text-xs ${isExpanded ? '' : 'line-clamp-2'}`} style={{ color: 'var(--color-text-muted)' }}>
+                              {job.description_snippet}
+                            </p>
+                            {job.description_snippet.length > 120 && (
+                              <button
+                                onClick={() => toggleExpand(job.id)}
+                                className="text-xs mt-0.5 underline"
+                                style={{ color: 'var(--color-indigo-primary)' }}
+                              >
+                                {isExpanded ? 'Minder' : 'Meer'}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 shrink-0">
+                        {multiSelect ? (
+                          <button
+                            onClick={() => toggleJobSelect(job.id)}
+                            className="w-8 h-8 rounded-lg border-2 flex items-center justify-center transition"
+                            style={{
+                              borderColor: selectedIds.has(job.id) ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                              background: selectedIds.has(job.id) ? 'var(--color-indigo-primary)' : 'transparent',
+                            }}
+                          >
+                            {selectedIds.has(job.id) && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleGenerateLetter(job)}
+                            disabled={generatingLetter || !profile}
+                            className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
+                            style={{ background: 'var(--color-indigo-primary)' }}
+                          >
+                            {generatingLetter ? 'Laden…' : 'Solliciteren - 1 credit'}
+                          </button>
+                        )}
+                        <div className="flex gap-1.5">
+                          <a
+                            href={job.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
+                            style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
+                          >
+                            Bekijken
+                          </a>
+                          <button
+                            onClick={() => toggleSave(job)}
+                            title={savedJobs[job.id] ? 'Verwijder uit opgeslagen' : 'Opslaan'}
+                            className="px-2 py-1.5 rounded-lg border transition hover:opacity-80"
+                            style={{
+                              borderColor: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
+                              background: savedJobs[job.id] ? 'var(--color-lavender-bg)' : 'transparent',
+                              color: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-text-muted)',
+                            }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill={savedJobs[job.id] ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Filter sidebar - right */}
+          <aside
+            className="shrink-0 rounded-xl p-4 flex flex-col gap-5 hidden sm:flex"
+            style={{ width: 180, background: 'var(--color-lavender-card)' }}
+          >
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Sorteren</p>
+              <div className="flex flex-col gap-1">
+                {(['match', 'salary', 'date'] as SortKey[]).map(key => (
+                  <button
+                    key={key}
+                    onClick={() => setSortBy(key)}
+                    className="text-xs text-left px-2 py-1.5 rounded-lg transition"
+                    style={{
+                      background: sortBy === key ? 'var(--color-indigo-primary)' : 'transparent',
+                      color: sortBy === key ? 'white' : 'var(--color-text-muted)',
+                      fontWeight: sortBy === key ? 600 : 400,
+                    }}
+                  >
+                    {{ match: 'Beste match', salary: 'Salaris', date: 'Nieuwste' }[key]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Dienstverband</p>
+              <div className="flex flex-col gap-1">
+                {['Fulltime', 'Parttime', 'Tijdelijk', 'Vast'].map(ct => (
+                  <label key={ct} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filterContracts.includes(ct)}
+                      onChange={e => setFilterContracts(prev =>
+                        e.target.checked ? [...prev, ct] : prev.filter(x => x !== ct)
+                      )}
+                      className="rounded"
+                    />
+                    <span className="text-xs" style={{ color: 'var(--color-text-primary)' }}>{ct}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Soort vacature</p>
+              <div className="flex flex-col gap-1">
+                {[{ label: 'Alles', val: null }, { label: 'Match', val: false }, { label: 'Andere sector', val: true }].map(opt => (
+                  <button
+                    key={String(opt.val)}
+                    onClick={() => setFilterCurveball(opt.val)}
+                    className="text-xs text-left px-2 py-1.5 rounded-lg transition"
+                    style={{
+                      background: filterCurveball === opt.val ? 'var(--color-indigo-primary)' : 'transparent',
+                      color: filterCurveball === opt.val ? 'white' : 'var(--color-text-muted)',
+                      fontWeight: filterCurveball === opt.val ? 600 : 400,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {(filterContracts.length > 0 || filterCurveball !== null) && (
+              <button
+                onClick={() => { setFilterContracts([]); setFilterCurveball(null) }}
+                className="text-xs underline text-left mt-1"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Filters wissen
+              </button>
+            )}
+          </aside>
+        </div>
+      )}
 
     </div>
   )
