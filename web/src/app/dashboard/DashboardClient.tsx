@@ -688,7 +688,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="px-3 py-1.5 text-xs rounded-lg border transition disabled:opacity-50"
                 style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)', background: 'var(--color-hover-surface)' }}
               >
-                {generatingLetter ? 'Genereren…' : 'Opnieuw genereren'}
+                {generatingLetter ? (
+                  <span className="flex items-center gap-1.5">
+                    <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
+                    Genereren…
+                  </span>
+                ) : 'Opnieuw genereren'}
               </button>
               {applyState.regenRemaining !== null && (
                 <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -703,6 +708,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               className="w-full px-3 py-2 rounded-lg border text-sm resize-none outline-none"
               style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
             />
+            {/* LinkedIn warning */}
+            {applyState.job.url.includes('linkedin.com') && (
+              <div className="mt-3 rounded-lg px-3 py-2.5 text-xs" style={{ background: '#FFF7ED', color: '#92400E', border: '1px solid #FED7AA' }}>
+                <strong>LinkedIn-vacature:</strong> om via LinkedIn te solliciteren heb je een account nodig. Zoek ook op de website van {applyState.job.company} - daar staat vaak een directe sollicitatielink of een e-mailadres
+              </div>
+            )}
             {/* Email send section */}
             <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--color-lavender-card)' }}>
               <button
@@ -759,7 +770,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="px-5 py-2 text-sm font-semibold rounded-lg text-white transition hover:opacity-90 disabled:opacity-50"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                {applyState.sending ? 'Bezig…' : 'Kopieer & solliciteer via site'}
+                {applyState.sending ? (
+                  <span className="flex items-center gap-1.5">
+                    <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
+                    Bezig…
+                  </span>
+                ) : 'Kopieer & solliciteer via site'}
               </button>
             </div>
           </div>
@@ -966,7 +982,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                             className="px-3 py-1.5 text-xs rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-50"
                             style={{ background: 'var(--color-indigo-primary)' }}
                           >
-                            {generatingLetter ? 'Laden…' : 'Solliciteren - 1 credit'}
+                            {generatingLetter ? (
+                              <span className="flex items-center gap-1.5">
+                                <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
+                                Laden…
+                              </span>
+                            ) : 'Solliciteren - 1 credit'}
                           </button>
                         )}
                         <div className="flex gap-1.5">
