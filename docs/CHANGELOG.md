@@ -1,5 +1,31 @@
 # Changelog — Opstap
 
+## 2026-06-29 (PR #135 — LinkedIn warning + loading spinners)
+- feat: orange LinkedIn warning banner shown in the letter modal when the job URL contains linkedin.com — warns user that manual submission is required
+- feat: loading spinners added to Solliciteren, Opnieuw genereren, and Kopieer & solliciteer buttons — prevents double-clicks and shows progress state during API calls
+
+## 2026-06-29 (PR #134 — language switcher trim)
+- fix: language switcher trimmed to NL / EN / TR / UK / PL / RO — removed languages with no immediate roadmap (AR, DE, FR) to reduce visual noise (#134)
+
+## 2026-06-29 (PR #133 — sector display + search header titles)
+- fix: "andere sector" label now displays correctly in search filter sidebar — was showing raw enum value (#133)
+- fix: all profile job titles shown in the search results page header instead of only the first title (#133)
+
+## 2026-06-29 (PR #132 — cv_structured job title supplement)
+- feat: profile job titles supplemented from cv_structured during search when profile functietitel fields are empty — improves auto-search quality for users who uploaded a CV but did not fill in job titles manually (#132)
+
+## 2026-06-29 (PR #131 — filter sidebar right side)
+- feat: job search filter sidebar moved to the right side of the job listings panel — matches conventional job board layout and frees left side for the job cards (#131)
+
+## 2026-06-29 (PR #130 — last 2-3 job titles scraper fallback)
+- fix: scraper fallback and CV import now use the last 2-3 job titles from cv_structured (most recent roles) instead of the full list — improves relevance of fallback searches (#130)
+
+## 2026-06-28 (PRs #128-#129 — profile-driven search + homepage personalisation)
+- feat: profile-driven search — job search now uses all three profile job titles as query terms, not just the first; search header shows which titles are active (#129)
+- feat: CV import to profile — cv_structured data can be imported into profile fields from the profile page (#129)
+- feat: homepage shows full marketing content when logged in, swapping only the hero section for a personalised welcome (#128)
+- feat: personalised welcome screen on homepage when logged in — shows user's name and direct CTA to dashboard (#127)
+
 ## 2026-06-28 (Dutch copy fixes + marketing roadmap)
 - fix: DashboardClient.tsx — 7 Dutch copy corrections: button labels, loading ellipsis, singular/plural (sollicitatie vs sollicitaties), sidebar heading, curveball label consistency, credit cost format
 - docs: ROADMAP.html — expanded Marketing & Groei section with monetisation strategy (Mollie iDEAL post-beta, freemium tiers, B2B), user growth strategy (SEO, referrals, social, UWV/ROC partners, ASO, community), and KPIs (500 MAU / 5% conversion / first €500 MRR)

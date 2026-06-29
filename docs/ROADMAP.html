@@ -132,7 +132,7 @@
   <main class="content">
     <div class="page-header">
       <h1>🗺 Roadmap</h1>
-      <p>Opstap — fasen & voortgang · Bijgewerkt 2026-06-28</p>
+      <p>Opstap — fasen &amp; voortgang · Bijgewerkt 2026-06-29</p>
     </div>
 
     <!-- Phase 1 -->
@@ -434,6 +434,17 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profile completeness widget shows missing fields — users see exactly which fields to fill in</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Removed duplicate profile form from Settings page — replaced with a link to /profiel (single source of truth)</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>"Account verwijderen" danger zone: red border + red background added to SettingsClient.tsx — clear visual warning for destructive action</span></li>
+        </ul>
+
+        <div class="section-label">UX &amp; apply polish — 2026-06-29 (PRs #127-#135)</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Homepagina personalisation: ingelogde gebruikers zien welkomstscherm met naam en directe dashboard-CTA; volledige marketingcontent blijft zichtbaar (#127, #128)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profile-driven search: alle drie profiel-functietitels als zoektermen; CV-import naar profiel vanuit cv_structured (#129)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Scraper/CV-import gebruikt laatste 2-3 cv_structured-functietitels (meest recente functies) als fallback (#130)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Filter-sidebar verplaatst naar rechts van vacaturelijst; "andere sector" label fix; alle titels in zoekheader (#131, #133)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>cv_structured job title supplement bij lege profiel-velden tijdens zoekopdracht (#132)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Taalkiezer bijgesneden: NL/EN/TR/UK/PL/RO — talen zonder directe roadmap verwijderd (#134)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LinkedIn-waarschuwingsbanner in briefmodal bij linkedin.com vacature-URL; laadspinners op Solliciteren / Opnieuw genereren / Kopieer &amp; solliciteer (#135)</span></li>
         </ul>
 
         <div class="section-label">LLM job search &amp; Dahl UX-fixes — 2026-06-28</div>
