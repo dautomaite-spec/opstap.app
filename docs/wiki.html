@@ -201,6 +201,15 @@
       <a href="#hours-dropdown">Hours dropdown</a>
       <a href="#dahl-ux-fixes">Dahl UX fixes</a>
       <a href="#dutch-copy-dashboard">Dutch copy fixes (dashboard)</a>
+      <span class="section-label">Apply UX — PR #135</span>
+      <a href="#linkedin-warning">LinkedIn warning banner</a>
+      <a href="#apply-button-spinners">Apply button spinners</a>
+      <span class="section-label">Homepage &amp; Search</span>
+      <a href="#homepage-personalisation">Homepage personalisation</a>
+      <a href="#profile-driven-search">Profile-driven search</a>
+      <a href="#cv-structured-title-fallback">cv_structured title fallback</a>
+      <a href="#filter-sidebar-right">Filter sidebar position</a>
+      <a href="#language-switcher-trim">Language switcher trim</a>
     </div>
   </nav>
 
@@ -989,6 +998,73 @@
       <li><strong>Credit cost format</strong> — credit cost notation standardised (e.g. "1 credit" not "1 credits"); matches the convention already used in BuyCreditsModal and the credits page</li>
     </ul>
     <div class="gotcha"><strong>Pattern:</strong> Run the /dutch-copy agent after any batch of UI copy changes before merging. Small pluralisation and format inconsistencies accumulate quickly and erode trust with Dutch-speaking users.</div>
+
+    <h2 id="linkedin-warning">LinkedIn warning banner in letter modal (PR #135)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>When the job URL passed to the letter modal contains <code>linkedin.com</code>, an orange warning banner is shown inside the modal</li>
+      <li>Message warns the user that LinkedIn does not accept direct email applications and that manual submission via the LinkedIn page is required</li>
+      <li>Banner is conditional on the URL — shown only for LinkedIn jobs, invisible for all other sources</li>
+      <li>Key file: the letter modal component in <code>web/src/app/dashboard/components/</code> (LetterModal or DashboardClient)</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The check is a simple <code>url.includes('linkedin.com')</code> — fast and sufficient for the current scraper output. If the URL format changes (e.g. shortened link), the check may miss it. Monitor user feedback for missed warnings.</div>
+
+    <h2 id="apply-button-spinners">Loading spinners on apply buttons (PR #135)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Three buttons now show a loading spinner during their async action to prevent double-clicks and communicate progress:</li>
+      <li><strong>Solliciteren</strong> — spins during letter generation and the approve/send API call</li>
+      <li><strong>Opnieuw genereren</strong> — spins during letter regeneration</li>
+      <li><strong>Kopieer &amp; solliciteer</strong> — spins briefly while copying and transitioning state</li>
+      <li>Buttons are disabled while the spinner is active — prevents duplicate API calls</li>
+      <li>Key file: <code>web/src/app/dashboard/components/DashboardClient.tsx</code> and the letter modal component</li>
+    </ul>
+
+    <h2 id="homepage-personalisation">Homepage personalisation for logged-in users (PRs #127-#128)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>When a user is authenticated, the homepage hero is replaced with a personalised welcome block showing the user's name and a direct "Naar mijn dashboard" CTA</li>
+      <li>The rest of the homepage (features, testimonials, stats, blog preview) remains fully visible — marketing content stays intact for logged-in users who may share the URL or return to the homepage</li>
+      <li>Auth state is checked server-side in the root page component; the hero swap is conditional on <code>session !== null</code></li>
+      <li>Key file: <code>web/src/app/page.tsx</code></li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The personalised hero reads the user's display name from <code>session.user.user_metadata.full_name</code> (Google OAuth) or falls back to the email prefix. Ensure the fallback is clean — e.g. <code>d.automaite@gmail.com</code> should render as "d.automaite", not the full email.</div>
+
+    <h2 id="profile-driven-search">Profile-driven search + CV import (PR #129)</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Job search now uses all three profile job titles (<code>functietitel</code>, <code>functietitel2</code>, <code>functietitel3</code>) as query terms, not just the first</li>
+      <li>The search results header displays which titles are active in the current search so users can see what is being searched</li>
+      <li>CV import: users can trigger an import of <code>cv_structured</code> fields (job titles, skills, summary) directly into their editable profile fields from the profile page — no re-upload required</li>
+      <li>Key files: <code>web/src/app/dashboard/components/DashboardClient.tsx</code>, <code>web/src/app/dashboard/profiel/page.tsx</code></li>
+    </ul>
+
+    <h2 id="cv-structured-title-fallback">cv_structured job title fallback in search (PRs #130, #132)</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>When a user's profile <code>functietitel</code> fields are empty, the search endpoint supplements them from <code>cv_structured</code> — extracting the last 2-3 job titles (most recent roles) from the parsed CV</li>
+      <li>Using only the last 2-3 titles avoids over-broadening the search with outdated roles from early in the user's career</li>
+      <li>This also applies to the scraper fallback path: when the LLM returns fewer than 5 results and scrapers are called, the supplemented titles are used as scraper query terms</li>
+      <li>Key file: <code>backend/app/api/v1/jobs.py</code> (query construction logic)</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> <code>cv_structured</code> is a JSONB column — field names depend on the Claude extraction schema. If the extraction schema changes, update the key path used to extract job titles from <code>cv_structured</code> in the search endpoint.</div>
+
+    <h2 id="filter-sidebar-right">Filter sidebar position (PR #131)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The job search filter sidebar (sector, contract type, hours, location) was moved from the left of the job listings to the right</li>
+      <li>Rationale: conventional Dutch job board layout (Indeed NL, Jobbird, NVB) places filters on the right; users expected the job cards to be the leftmost element on the page</li>
+      <li>Layout is a CSS Flexbox reorder — no structural component change, just reversed <code>flex-direction</code> or <code>order</code> values</li>
+    </ul>
+
+    <h2 id="language-switcher-trim">Language switcher trim (PR #134)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Language switcher trimmed to 6 options: NL (active), EN, TR, UK, PL, RO</li>
+      <li>Removed: AR, DE, FR, and other languages that had no near-term roadmap — reduces visual noise and avoids false expectations</li>
+      <li>The removed locales can be re-added when there is a concrete plan for their copy and RTL support (Arabic)</li>
+      <li>Key file: the LanguageSwitcher component in <code>web/src/app/components/</code> or <code>web/src/app/dashboard/components/</code></li>
+    </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>
     <p><span class="tag tag-web">web</span></p>
