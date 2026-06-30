@@ -1,8 +1,9 @@
-'use client'
-
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
-export default function CreditsPage() {
+export default async function CreditsPage() {
+  const t = await getTranslations('CreditsPage')
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16"
       style={{ background: 'var(--color-lavender-bg)' }}>
@@ -20,22 +21,22 @@ export default function CreditsPage() {
         </div>
 
         <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-          Credits kopen (binnenkort)
+          {t('pageTitle')}
         </h1>
         <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--color-text-muted)' }}>
-          Betaalde credits zijn nog niet beschikbaar. Tijdens de beta ontvang je elke dag automatisch
-          <strong style={{ color: 'var(--color-text-primary)' }}> +2 gratis credits</strong>, tot een maximum van 15.
+          {t('betaDescription')}
+          <strong style={{ color: 'var(--color-text-primary)' }}> {t('freeCreditsBadge')}</strong>{t('betaDescriptionSuffix')}
         </p>
 
         <div className="rounded-xl p-4 mb-6 text-left" style={{ background: 'var(--color-lavender-card)' }}>
           <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-indigo-primary)' }}>
-            Meer credits nodig?
+            {t('moreCreditsHeading')}
           </p>
           <ul className="flex flex-col gap-1.5">
             {[
-              'Nodig iemand uit via jouw referral link (+3 credits)',
-              'Stuur feedback via "Probleem melden" (+2 bonus)',
-              'Credits verlopen nooit',
+              t('creditTipReferral'),
+              t('creditTipFeedback'),
+              t('creditTipNoExpiry'),
             ].map(item => (
               <li key={item} className="flex items-start gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
                 <span style={{ color: 'var(--color-indigo-primary)', flexShrink: 0 }}>✓</span>
@@ -50,7 +51,7 @@ export default function CreditsPage() {
           className="block w-full py-2.5 rounded-xl text-sm font-semibold text-white text-center transition hover:opacity-90"
           style={{ background: 'var(--color-indigo-primary)' }}
         >
-          Terug naar vacatures
+          {t('backButton')}
         </Link>
       </div>
     </main>

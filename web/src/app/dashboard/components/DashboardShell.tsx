@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { logout } from '@/app/actions/auth'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import CreditsWidget from './CreditsWidget'
 
 function LanguageSwitcher() {
+  const t = useTranslations('DashboardShell')
   const [open, setOpen] = useState(false)
   const langs = [
     { code: 'NL', flag: '🇳🇱', label: 'Nederlands', active: true },
@@ -22,7 +24,7 @@ function LanguageSwitcher() {
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition hover:opacity-80"
         style={{ color: 'var(--color-text-primary)', background: 'var(--color-lavender-card)' }}
-        title="Taal"
+        title={t('languageSwitcherTitle')}
       >
         <span>🇳🇱</span>
         <span>NL</span>
@@ -48,7 +50,7 @@ function LanguageSwitcher() {
               >
                 <span>{l.flag}</span>
                 <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', fontWeight: l.active ? 600 : 400 }}>{l.label}</span>
-                {!l.active && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>binnenkort</span>}
+                {!l.active && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('langComingSoon')}</span>}
                 {l.active && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
                     <path d="M20 6 9 17l-5-5" />
@@ -63,87 +65,6 @@ function LanguageSwitcher() {
   )
 }
 
-const navItems = [
-  {
-    href: '/dashboard/profiel',
-    label: 'Mijn profiel',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-      </svg>
-    ),
-  },
-  {
-    href: '/dashboard/settings',
-    label: 'Instellingen',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/dashboard',
-    label: 'Vind vacatures',
-    exact: true,
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-      </svg>
-    ),
-  },
-  {
-    href: '/dashboard/opgeslagen',
-    label: 'Opgeslagen vacatures',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/dashboard/sollicitaties',
-    label: 'Jouw sollicitaties',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-        <rect x="9" y="3" width="6" height="4" rx="1" /><path d="m9 12 2 2 4-4" />
-      </svg>
-    ),
-  },
-]
-
-const secondaryItems = [
-  {
-    href: '/over-ons',
-    label: 'Over Opstap',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4m0-4h.01" />
-      </svg>
-    ),
-  },
-  {
-    href: '/faq',
-    label: 'Help & FAQ',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01" />
-      </svg>
-    ),
-  },
-  {
-    href: 'mailto:support@opstapapp.nl?subject=Probleem%20melden%20(Opstap)',
-    label: 'Probleem melden',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
-    ),
-  },
-]
-
 export default function DashboardShell({
   userName,
   userEmail,
@@ -153,9 +74,91 @@ export default function DashboardShell({
   userEmail: string
   children: React.ReactNode
 }) {
+  const t = useTranslations('DashboardShell')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
+
+  const navItems = [
+    {
+      href: '/dashboard/profiel',
+      label: t('navMijnProfiel'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+      ),
+    },
+    {
+      href: '/dashboard/settings',
+      label: t('navInstellingen'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+        </svg>
+      ),
+    },
+    {
+      href: '/dashboard',
+      label: t('navVindVacatures'),
+      exact: true,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+        </svg>
+      ),
+    },
+    {
+      href: '/dashboard/opgeslagen',
+      label: t('navOpgeslagenVacatures'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+      ),
+    },
+    {
+      href: '/dashboard/sollicitaties',
+      label: t('navJouwSollicitaties'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+          <rect x="9" y="3" width="6" height="4" rx="1" /><path d="m9 12 2 2 4-4" />
+        </svg>
+      ),
+    },
+  ]
+
+  const secondaryItems = [
+    {
+      href: '/over-ons',
+      label: t('navOverOpstap'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 16v-4m0-4h.01" />
+        </svg>
+      ),
+    },
+    {
+      href: '/faq',
+      label: t('navHelpFaq'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01" />
+        </svg>
+      ),
+    },
+    {
+      href: 'mailto:support@opstapapp.nl?subject=Probleem%20melden%20(Opstap)',
+      label: t('navProbleemMelden'),
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      ),
+    },
+  ]
 
   const initials = (userName.charAt(0) || userEmail.charAt(0)).toUpperCase()
   const sidebarW = collapsed ? 64 : 240
@@ -183,7 +186,7 @@ export default function DashboardShell({
           onClick={() => setCollapsed(c => !c)}
           className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg transition"
           style={{ color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.08)' }}
-          aria-label={collapsed ? 'Uitklappen' : 'Inklappen'}
+          aria-label={collapsed ? t('sidebarExpandAriaLabel') : t('sidebarCollapseAriaLabel')}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {collapsed ? <path d="m9 18 6-6-6-6" /> : <path d="m15 18-6-6 6-6" />}
@@ -276,7 +279,7 @@ export default function DashboardShell({
         <form action={logout} className="mx-2 mt-1">
           <button
             type="submit"
-            title={collapsed ? 'Uitloggen' : undefined}
+            title={collapsed ? t('logoutButtonTitle') : undefined}
             className="w-full flex items-center gap-3 rounded-lg px-2 py-2 text-xs transition"
             style={{
               color: 'rgba(255,255,255,0.55)',
@@ -288,7 +291,7 @@ export default function DashboardShell({
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            {!collapsed && <span>Uitloggen</span>}
+            {!collapsed && <span>{t('logoutButtonLabel')}</span>}
           </button>
         </form>
       </div>
@@ -352,7 +355,7 @@ export default function DashboardShell({
             onClick={() => setMobileOpen(true)}
             className="flex items-center justify-center w-8 h-8 rounded-lg"
             style={{ color: 'var(--color-text-primary)' }}
-            aria-label="Menu openen"
+            aria-label={t('mobileMenuOpenAriaLabel')}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />

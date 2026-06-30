@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { Job } from '@/lib/api'
 
 const PENDING_APPLY_KEY = 'opstap_pending_apply'
@@ -27,6 +28,7 @@ function removeSavedJob(id: string) {
 }
 
 export default function OpgeslagenPage() {
+  const t = useTranslations('OpgeslagenPage')
   const router = useRouter()
   const [jobs, setJobs] = useState<Job[]>([])
   const [ready, setReady] = useState(false)
@@ -48,14 +50,14 @@ export default function OpgeslagenPage() {
   }
 
   if (!ready) {
-    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
+    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('loading')}</div>
   }
 
   if (jobs.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Je hebt nog geen vacatures opgeslagen.</p>
-        <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>Klik op het bladwijzer-icoontje naast een vacature om hem hier te bewaren.</p>
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('emptyStateMessage')}</p>
+        <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>{t('emptyStateHint')}</p>
       </div>
     )
   }
@@ -63,8 +65,8 @@ export default function OpgeslagenPage() {
   return (
     <div>
       <div className="flex items-baseline justify-between mb-6">
-        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Opgeslagen vacatures</h1>
-        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{jobs.length} opgeslagen</span>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{t('pageTitle')}</h1>
+        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('savedCount', { count: jobs.length })}</span>
       </div>
       <div className="flex flex-col gap-3">
         {jobs.map(job => (
@@ -94,7 +96,7 @@ export default function OpgeslagenPage() {
                   className="px-3 py-1.5 text-xs rounded-lg text-white font-medium text-center transition hover:opacity-90"
                   style={{ background: 'var(--color-indigo-primary)' }}
                 >
-                  Solliciteren
+                  {t('applyButton')}
                 </button>
                 <a
                   href={job.url}
@@ -103,14 +105,14 @@ export default function OpgeslagenPage() {
                   className="px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
                   style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
                 >
-                  Bekijken
+                  {t('viewButton')}
                 </a>
                 <button
                   onClick={() => handleUnsave(job.id)}
                   className="px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
                   style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
                 >
-                  Verwijderen
+                  {t('removeButton')}
                 </button>
               </div>
             </div>

@@ -1,12 +1,16 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { register } from '@/app/actions/auth'
 import SocialButtons from '@/app/components/SocialButtons'
 
-export const metadata: Metadata = {
-  title: 'Account aanmaken | Opstap',
-  description: 'Maak een Opstap-account aan en begin automatisch te solliciteren op Nederlandse vacatures.',
-  alternates: { canonical: 'https://opstapapp.nl/register' },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('RegisterPage')
+  return {
+    title: t('pageTitle'),
+    description: t('pageDescription'),
+    alternates: { canonical: 'https://opstapapp.nl/register' },
+  }
 }
 
 export default async function RegisterPage({
@@ -15,6 +19,7 @@ export default async function RegisterPage({
   searchParams: Promise<{ error?: string; ref?: string; invite?: string }>
 }) {
   const { error, ref, invite } = await searchParams
+  const t = await getTranslations('RegisterPage')
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--color-lavender-bg)' }}>
@@ -25,10 +30,10 @@ export default async function RegisterPage({
 
         <div className="rounded-2xl p-8" style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.08)' }}>
           <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-            Account aanmaken
+            {t('heading')}
           </h1>
           <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-            Maak een account aan en begin met automatisch solliciteren.
+            {t('subheading')}
           </p>
 
           {error && (
@@ -42,7 +47,7 @@ export default async function RegisterPage({
             {invite && <input type="hidden" name="invite" value={invite} />}
             <div className="flex flex-col gap-1">
               <label htmlFor="naam" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Volledige naam
+                {t('nameLabel')}
               </label>
               <input
                 id="naam"
@@ -61,7 +66,7 @@ export default async function RegisterPage({
 
             <div className="flex flex-col gap-1">
               <label htmlFor="email" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                E-mailadres
+                {t('emailLabel')}
               </label>
               <input
                 id="email"
@@ -80,7 +85,7 @@ export default async function RegisterPage({
 
             <div className="flex flex-col gap-1">
               <label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Wachtwoord
+                {t('passwordLabel')}
               </label>
               <input
                 id="password"
@@ -96,19 +101,22 @@ export default async function RegisterPage({
                   background: 'var(--color-lavender-bg)',
                 }}
               />
-              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Minimaal 8 tekens</span>
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('passwordHint')}</span>
             </div>
 
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Door een account aan te maken ga je akkoord met onze{' '}
-              <Link href="/voorwaarden" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-                algemene voorwaarden
-              </Link>
-              {' '}en ons{' '}
-              <Link href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-                privacyvoorwaarden
-              </Link>
-              .
+              {t.rich('termsText', {
+                algemeneVoorwaarden: (chunks) => (
+                  <Link href="/voorwaarden" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
+                    {chunks}
+                  </Link>
+                ),
+                privacyvoorwaarden: (chunks) => (
+                  <Link href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
 
             <button
@@ -116,20 +124,20 @@ export default async function RegisterPage({
               className="mt-1 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
               style={{ background: 'var(--color-indigo-primary)' }}
             >
-              Account aanmaken
+              {t('submitButton')}
             </button>
           </form>
         </div>
 
         <div className="rounded-2xl p-6 mt-4" style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.08)' }}>
-          <p className="text-xs text-center mb-3" style={{ color: 'var(--color-text-muted)' }}>Of registreer met</p>
+          <p className="text-xs text-center mb-3" style={{ color: 'var(--color-text-muted)' }}>{t('socialDivider')}</p>
           <SocialButtons />
         </div>
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
-          Al een account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link href="/login" className="font-medium underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            Inloggen
+            {t('loginLink')}
           </Link>
         </p>
       </div>

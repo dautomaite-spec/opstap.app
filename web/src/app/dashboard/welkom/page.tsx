@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { api, ApiError } from '@/lib/api'
 import { JOB_TITLES } from '@/lib/jobTitles'
 
@@ -18,6 +19,7 @@ function trackEvent(name: string) {
 type Step = 1 | 2 | 3
 
 export default function WelkomPage() {
+  const t = useTranslations('WelkomPage')
   const router = useRouter()
   const searchParams = useSearchParams()
   const [step, setStep] = useState<Step>(1)
@@ -59,7 +61,7 @@ export default function WelkomPage() {
       trackEvent('Onboarding: Profile Saved')
       setStep(2)
     } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : 'Opslaan mislukt. Probeer het opnieuw.')
+      setSaveError(err instanceof ApiError ? err.message : t('saveErrorFallback'))
     } finally {
       setSaving(false)
     }
@@ -76,7 +78,7 @@ export default function WelkomPage() {
       setCvDone(true)
       setTimeout(() => setStep(3), 800)
     } catch (err) {
-      setCvError(err instanceof ApiError ? err.message : 'CV uploaden mislukt.')
+      setCvError(err instanceof ApiError ? err.message : t('cvUploadErrorFallback'))
     } finally {
       setUploadingCV(false)
       e.target.value = ''
@@ -94,7 +96,7 @@ export default function WelkomPage() {
 
       {/* Progress indicator */}
       <div className="flex flex-col items-center gap-2 mb-8">
-        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>Stap {step} van 3</p>
+        <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('progressLabel', { step })}</p>
         <div className="flex items-center gap-2">
           {([1, 2, 3] as Step[]).map(n => (
             <div
@@ -115,32 +117,33 @@ export default function WelkomPage() {
       {step === 1 && (
         <div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-indigo-primary)' }}>
-            Welkom bij Opstap!
+            {t('step1Heading')}
           </h1>
           <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-            Vertel ons iets over jezelf. We gebruiken dit om de juiste vacatures en brieven voor je te vinden.
+            {t('step1Description')}
           </p>
           {saveError && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{saveError}</p>
           )}
-          <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Velden met * zijn verplicht</p>
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>{t('requiredFieldsNote')}</p>
           <form onSubmit={handleProfileSave} className="flex flex-col gap-4">
-            <WField label="Hoe heet je? *" name="naam" required placeholder="Voor- en achternaam" />
+            <WField label={t('nameLabel')} name="naam" required placeholder={t('namePlaceholder')} />
             <datalist id="job-titles-list">
-              {JOB_TITLES.map(t => <option key={t} value={t} />)}
+              {JOB_TITLES.map(title => <option key={title} value={title} />)}
             </datalist>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Wat voor werk zoek je? *</label>
-              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Voeg tot 3 rollen toe. Opstap zoekt voor al je titels.</p>
-              <input list="job-titles-list" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-              <input list="job-titles-list" name="functietitel_2" placeholder="Tweede rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-              <input list="job-titles-list" name="functietitel_3" placeholder="Derde rol (optioneel)" className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('jobTitleLabel')}</label>
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('jobTitleHint')}</p>
+              <input list="job-titles-list" name="functietitel" required placeholder={t('jobTitle1Placeholder')} className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <input list="job-titles-list" name="functietitel_2" placeholder={t('jobTitle2Placeholder')} className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+              <input list="job-titles-list" name="functietitel_3" placeholder={t('jobTitle3Placeholder')} className="px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
             </div>
-            <WField label="Waar woon je?" name="woonplaats" placeholder="bijv. Amsterdam" />
+            <WField label={t('locationLabel')} name="woonplaats" placeholder={t('locationPlaceholder')} />
             <WTextarea
-              label="Over jezelf & wat je zoekt"
+              label={t('aboutLabel')}
               name="extra_info"
-              placeholder="Ik ben een enthousiaste teamspeler die graag met mensen werkt. In mijn vrije tijd speel ik voetbal. Ik zoek een uitdagende functie waarbij ik kan groeien..."
+              hint={t('aboutHint')}
+              placeholder={t('aboutPlaceholder')}
             />
             <button
               type="submit"
@@ -148,7 +151,7 @@ export default function WelkomPage() {
               className="py-3 rounded-xl text-sm font-semibold text-white mt-2 transition hover:opacity-90 disabled:opacity-50"
               style={{ background: 'var(--color-indigo-primary)' }}
             >
-              {saving ? 'Opslaan…' : 'Verder →'}
+              {saving ? t('savingButton') : t('nextButton')}
             </button>
           </form>
         </div>
@@ -158,13 +161,13 @@ export default function WelkomPage() {
       {step === 2 && (
         <div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-indigo-primary)' }}>
-            Upload je CV
+            {t('step2Heading')}
           </h1>
           <p className="text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
-            Met je CV schrijft Opstap sterkere, persoonlijkere brieven. Je kunt dit ook later doen.
+            {t('step2Description')}
           </p>
           <p className="text-xs mb-6" style={{ color: 'var(--color-text-muted)' }}>
-            Je CV wordt versleuteld opgeslagen op EU-servers en nooit gedeeld met derden.
+            {t('step2PrivacyNote')}
           </p>
 
           {cvError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{cvError}</p>}
@@ -174,7 +177,7 @@ export default function WelkomPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-success-text)' }}>
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <p className="text-sm font-medium" style={{ color: 'var(--color-success-text)' }}>CV opgeslagen!</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--color-success-text)' }}>{t('cvUploadedSuccess')}</p>
             </div>
           ) : (
             <>
@@ -182,25 +185,25 @@ export default function WelkomPage() {
               {showAvgConsent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
                   <div className="w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--color-white)' }}>
-                    <h3 className="font-bold text-base mb-3" style={{ color: 'var(--color-text-primary)' }}>Toestemming CV opslaan</h3>
+                    <h3 className="font-bold text-base mb-3" style={{ color: 'var(--color-text-primary)' }}>{t('avgConsentHeading')}</h3>
                     <div className="text-sm mb-4 flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                      <p>Je CV wordt versleuteld opgeslagen op EU-servers en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
+                      <p>{t('avgConsentBody1')}</p>
                       <ul className="flex flex-col gap-1 pl-4 list-disc">
-                        <li>Voor het genereren van je motivatiebrieven wordt je CV-inhoud verwerkt via de Anthropic API (AI-dienst). Anthropic gebruikt API-verzoeken niet voor het trainen van hun modellen</li>
-                        <li>Je gegevens worden niet gedeeld met andere derden</li>
-                        <li>Je kunt je CV op elk moment zelf verwijderen</li>
+                        <li>{t('avgConsentBullet1')}</li>
+                        <li>{t('avgConsentBullet2')}</li>
+                        <li>{t('avgConsentBullet3')}</li>
                       </ul>
                     </div>
-                    <p className="text-sm mb-1 font-medium" style={{ color: 'var(--color-text-primary)' }}>Bewaartermijn</p>
+                    <p className="text-sm mb-1 font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('retentionLabel')}</p>
                     <select
                       value={retentionDays}
                       onChange={e => setRetentionDays(Number(e.target.value))}
                       className="w-full px-3 py-2 rounded-lg border text-sm mb-4"
                       style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
                     >
-                      <option value={7}>7 dagen</option>
-                      <option value={30}>30 dagen (standaard)</option>
-                      <option value={90}>90 dagen</option>
+                      <option value={7}>{t('retention7Days')}</option>
+                      <option value={30}>{t('retention30Days')}</option>
+                      <option value={90}>{t('retention90Days')}</option>
                     </select>
                     <div className="flex gap-3 justify-end">
                       <button
@@ -208,14 +211,14 @@ export default function WelkomPage() {
                         className="px-4 py-2 text-sm rounded-lg border hover:opacity-80 transition"
                         style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
                       >
-                        Annuleren
+                        {t('cancelButton')}
                       </button>
                       <button
                         onClick={() => { setShowAvgConsent(false); fileInputRef.current?.click() }}
                         className="px-5 py-2 text-sm font-semibold rounded-lg text-white transition hover:opacity-90"
                         style={{ background: 'var(--color-indigo-primary)' }}
                       >
-                        Ik ga akkoord
+                        {t('agreeButton')}
                       </button>
                     </div>
                   </div>
@@ -228,7 +231,7 @@ export default function WelkomPage() {
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50 mb-3"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                {uploadingCV ? 'Uploaden…' : 'CV uploaden (PDF of DOCX)'}
+                {uploadingCV ? t('uploadingButton') : t('uploadCvButton')}
               </button>
             </>
           )}
@@ -238,7 +241,7 @@ export default function WelkomPage() {
             className="w-full py-3 rounded-xl text-sm font-medium border transition hover:opacity-80"
             style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
           >
-            {cvDone ? 'Verder →' : 'Overslaan'}
+            {cvDone ? t('nextButton') : t('skipButton')}
           </button>
         </div>
       )}
@@ -255,20 +258,22 @@ export default function WelkomPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-indigo-primary)' }}>
-            Je bent er klaar voor!
+            {t('step3Heading')}
           </h1>
           <p className="text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
-            Je hebt <strong style={{ color: 'var(--color-text-primary)' }}>5 gratis credits</strong> om mee te starten.
+            {t.rich('step3CreditsLine', {
+              strong: (chunks) => <strong style={{ color: 'var(--color-text-primary)' }}>{chunks}</strong>
+            })}
           </p>
           <p className="text-sm mb-8" style={{ color: 'var(--color-text-muted)' }}>
-            Zoek vacatures, kies er meerdere tegelijk en laat Opstap je brieven schrijven.
+            {t('step3Instruction')}
           </p>
           <button
             onClick={finish}
             className="w-full py-3 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
             style={{ background: 'var(--color-indigo-primary)' }}
           >
-            Vacatures zoeken →
+            {t('searchJobsButton')}
           </button>
         </div>
       )}
@@ -293,14 +298,14 @@ function WField({ label, name, required, placeholder }: {
   )
 }
 
-function WTextarea({ label, name, placeholder }: {
-  label: string; name: string; placeholder?: string
+function WTextarea({ label, name, hint, placeholder }: {
+  label: string; name: string; hint?: string; placeholder?: string
 }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</label>
       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-        Hoe meer je deelt, hoe persoonlijker je motivatiebrief wordt.
+        {hint}
       </p>
       <textarea
         name={name}

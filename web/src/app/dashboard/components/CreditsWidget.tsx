@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import BuyCreditsModal from './BuyCreditsModal'
 
 export default function CreditsWidget({ collapsed }: { collapsed: boolean }) {
+  const t = useTranslations('CreditsWidget')
   const [balance, setBalance] = useState<number | null>(null)
   const [showModal, setShowModal] = useState(false)
 
@@ -29,7 +31,7 @@ export default function CreditsWidget({ collapsed }: { collapsed: boolean }) {
           <span
             className="text-xs font-bold text-white cursor-pointer"
             onClick={() => setShowModal(true)}
-            title={`${balance} credits`}
+            title={t('creditsTooltip', { balance })}
           >
             {balance}
           </span>
@@ -46,7 +48,7 @@ export default function CreditsWidget({ collapsed }: { collapsed: boolean }) {
                 <path d="M12 8v4l3 3" />
               </svg>
               <span className="text-xs font-medium text-white truncate">
-                {balance} credit{balance !== 1 ? 's' : ''}
+                {balance !== 1 ? t('creditsLabelPlural', { balance }) : t('creditsLabel', { balance })}
               </span>
             </div>
             <button
@@ -56,7 +58,7 @@ export default function CreditsWidget({ collapsed }: { collapsed: boolean }) {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.25)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)' }}
             >
-              Koop
+              {t('buyButton')}
             </button>
           </>
         )}

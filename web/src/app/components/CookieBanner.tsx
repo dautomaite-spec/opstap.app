@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
 const CONSENT_KEY = 'opstap_cookie_consent'
 
@@ -26,6 +27,7 @@ function applyConsent(val: 'accepted' | 'rejected') {
 }
 
 export default function CookieBanner() {
+  const t = useTranslations('CookieBanner')
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function CookieBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Cookiemelding"
+      aria-label={t('ariaLabel')}
       className="fixed bottom-0 left-0 right-0 z-50 flex items-end sm:items-center justify-center p-4"
       style={{ background: 'rgba(26,24,48,0.45)', backdropFilter: 'blur(2px)' }}
     >
@@ -64,11 +66,11 @@ export default function CookieBanner() {
         style={{ background: 'var(--color-white)', border: '1px solid var(--color-lavender-card)' }}
       >
         <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
-          Wij gebruiken analytics
+          {t('analyticsHeading')}
         </p>
         <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
-          Opstap gebruikt analytische cookies om het gebruik van de app te meten en te verbeteren. We slaan geen persoonlijke gegevens op zonder jouw toestemming. Lees meer in onze{' '}
-          <a href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>privacyverklaring</a>.
+          {t('analyticsDescription')}{' '}
+          <a href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>{t('privacyLink')}</a>.
         </p>
         <div className="flex gap-2">
           <button
@@ -76,7 +78,7 @@ export default function CookieBanner() {
             className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
             style={{ background: 'var(--color-indigo-primary)' }}
           >
-            Accepteren
+            {t('acceptButton')}
           </button>
           <button
             onClick={reject}
@@ -87,7 +89,7 @@ export default function CookieBanner() {
               background: 'var(--color-lavender-bg)',
             }}
           >
-            Weigeren
+            {t('rejectButton')}
           </button>
         </div>
       </div>

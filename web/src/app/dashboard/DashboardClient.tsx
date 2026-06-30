@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
@@ -100,6 +101,7 @@ function formatDate(iso?: string): string | null {
 
 export default function DashboardClient({ userId, userEmail }: { userId: string; userEmail: string }) {
   const router = useRouter()
+  const t = useTranslations('DashboardClient')
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [showProfileForm, setShowProfileForm] = useState(false)
@@ -280,7 +282,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           // fall through to error
         }
       }
-      setProfileError('Opslaan mislukt. Probeer het opnieuw.')
+      setProfileError(t('profileSaveError'))
     }
   }
 
@@ -294,7 +296,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       const res = await api.apply.fromUrl(urlLetterInput.trim(), writingStyle)
       setUrlLetterResult(res)
     } catch (err) {
-      setUrlLetterError(err instanceof ApiError ? err.message : 'Er is iets misgegaan.')
+      setUrlLetterError(err instanceof ApiError ? err.message : t('generalError'))
     } finally {
       setUrlLetterLoading(false)
     }
@@ -315,7 +317,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       writeCachedJobs(results, stale)
       localStorage.setItem(LAST_SEARCH_KEY, String(Date.now()))
     } catch (err) {
-      setSearchError(err instanceof ApiError ? err.message : 'Er is iets misgegaan. Probeer het opnieuw.')
+      setSearchError(err instanceof ApiError ? err.message : t('generalErrorRetry'))
       setMinAnimDone(true)
     } finally {
       setSearching(false)
@@ -341,7 +343,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       if (err instanceof ApiError && err.status === 402) {
         setShowBuyCredits(true)
       } else {
-        setApplyError(err instanceof ApiError ? err.message : 'Kon brief niet genereren.')
+        setApplyError(err instanceof ApiError ? err.message : t('letterGenerateError'))
       }
     } finally {
       setGeneratingLetter(false)
@@ -359,10 +361,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       }
       window.open(applyState.job.url, '_blank', 'noopener,noreferrer')
       trackEvent('Application Sent')
-      setApplySuccess(`Brief gekopieerd en vacature geopend voor ${applyState.job.title}.`)
+      setApplySuccess(t('applySuccessMessage', { jobTitle: applyState.job.title }))
       setApplyState(null)
     } catch (err) {
-      setApplyError(err instanceof ApiError ? err.message : 'Er is iets misgegaan.')
+      setApplyError(err instanceof ApiError ? err.message : t('generalError'))
       setApplyState(s => s ? { ...s, sending: false } : s)
     }
   }
@@ -379,12 +381,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         letter_nl: applyState.letter,
       })
       trackEvent('Application Sent')
-      setEmailSendSuccess(`Sollicitatie verstuurd naar ${recipientEmail}.`)
+      setEmailSendSuccess(t('emailSendSuccessMessage', { email: recipientEmail }))
       setApplyState(null)
       setEmailApplyOpen(false)
       setRecipientEmail('')
     } catch (err) {
-      setEmailSendError(err instanceof ApiError ? err.message : 'Versturen mislukt.')
+      setEmailSendError(err instanceof ApiError ? err.message : t('emailSendErrorFallback'))
     } finally {
       setSendingEmail(false)
     }
@@ -420,97 +422,97 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   }
 
   if (profileLoading) {
-    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
+    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('loadingState')}</div>
   }
 
   if (showProfileForm) {
     return (
       <div className="max-w-md mx-auto mt-8">
         <div className="mb-1">
-          <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Profiel aanmaken</h2>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{t('profileFormTitle')}</h2>
         </div>
-        <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>Vul je gegevens in zodat we de juiste vacatures en brieven voor je kunnen vinden.</p>
-        <p className="text-xs mb-5" style={{ color: 'var(--color-text-muted)' }}>Velden met * zijn verplicht</p>
+        <p className="text-sm mb-1" style={{ color: 'var(--color-text-muted)' }}>{t('profileFormSubtitle')}</p>
+        <p className="text-xs mb-5" style={{ color: 'var(--color-text-muted)' }}>{t('profileFormRequiredNote')}</p>
         {profileError && <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{profileError}</p>}
         <form onSubmit={handleProfileSave} className="flex flex-col gap-4">
-          <Field label="Volledige naam *" name="naam" required />
+          <Field label={t('fieldLabelFullName')} name="naam" required />
 
           {/* Job titles */}
           <datalist id="db-job-titles">
             {JOB_TITLES.map(t => <option key={t} value={t} />)}
           </datalist>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Functietitel(s) *</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelJobTitles')}</label>
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Voeg tot 3 rollen toe. Opstap zoekt voor al je titels.
+              {t('fieldLabelJobTitlesHint')}
             </p>
-            <input list="db-job-titles" name="functietitel" required placeholder="bijv. Software Developer" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-            <input list="db-job-titles" name="functietitel_2" placeholder="Tweede functietitel (optioneel)" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-            <input list="db-job-titles" name="functietitel_3" placeholder="Derde functietitel (optioneel)" className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel" required placeholder={t('placeholderJobTitle1')} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel_2" placeholder={t('placeholderJobTitle2')} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel_3" placeholder={t('placeholderJobTitle3')} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
           </div>
 
-          <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" />
+          <Field label={t('fieldLabelCity')} name="woonplaats" placeholder={t('placeholderCity')} />
 
           <div className="flex gap-3">
             <div className="flex flex-col gap-1 flex-1">
-              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Uren per week</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelHoursPerWeek')}</label>
               <select name="uren_per_week" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
-                <option value="">Geen voorkeur</option>
-                <option value="16">Max 16 uur</option>
-                <option value="24">16-24 uur</option>
-                <option value="32">24-32 uur</option>
-                <option value="36">32-36 uur</option>
-                <option value="40">40 uur (fulltime)</option>
+                <option value="">{t('hoursOptionNoPreference')}</option>
+                <option value="16">{t('hoursOptionMax16')}</option>
+                <option value="24">{t('hoursOption16to24')}</option>
+                <option value="32">{t('hoursOption24to32')}</option>
+                <option value="36">{t('hoursOption32to36')}</option>
+                <option value="40">{t('hoursOption40')}</option>
               </select>
             </div>
             <div className="flex flex-col gap-1 flex-1">
-              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Beschikbaarheid</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelAvailability')}</label>
               <select name="beschikbaarheid" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
-                <option value="">Niet opgegeven</option>
-                <option value="fulltime">Fulltime</option>
-                <option value="parttime">Parttime</option>
-                <option value="both">Fulltime of parttime</option>
+                <option value="">{t('availabilityOptionNotSpecified')}</option>
+                <option value="fulltime">{t('availabilityOptionFulltime')}</option>
+                <option value="parttime">{t('availabilityOptionParttime')}</option>
+                <option value="both">{t('availabilityOptionBoth')}</option>
               </select>
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Salaris (bruto/maand)</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelSalary')}</label>
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
-                <input name="salaris_min" type="number" min={0} max={50000} step={100} placeholder="Min" className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input name="salaris_min" type="number" min={0} max={50000} step={100} placeholder={t('salaryPlaceholderMin')} className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
               <span className="text-sm shrink-0" style={{ color: 'var(--color-text-muted)' }}>–</span>
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
-                <input name="salaris_max" type="number" min={0} max={50000} step={100} placeholder="Max" className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input name="salaris_max" type="number" min={0} max={50000} step={100} placeholder={t('salaryPlaceholderMax')} className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Werklocatie</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelWorkLocation')}</label>
             <select name="werklocatie" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
-              <option value="">Geen voorkeur</option>
-              <option value="op locatie">Op locatie</option>
-              <option value="hybride">Hybride</option>
-              <option value="remote">Thuis werken</option>
+              <option value="">{t('workLocationNoPreference')}</option>
+              <option value="op locatie">{t('workLocationOnSite')}</option>
+              <option value="hybride">{t('workLocationHybrid')}</option>
+              <option value="remote">{t('workLocationRemote')}</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Opleidingsniveau</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelEducationLevel')}</label>
             <select name="opleidingsniveau" className="px-3 py-2 rounded-lg border text-sm" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}>
-              <option value="">Niet opgegeven</option>
-              <option value="vmbo">VMBO / Basis</option>
-              <option value="mbo">MBO</option>
-              <option value="hbo">HBO</option>
-              <option value="wo_bachelor">WO Bachelor</option>
-              <option value="wo_master">WO Master</option>
-              <option value="phd">PhD / Promotie</option>
+              <option value="">{t('educationNotSpecified')}</option>
+              <option value="vmbo">{t('educationVmbo')}</option>
+              <option value="mbo">{t('educationMbo')}</option>
+              <option value="hbo">{t('educationHbo')}</option>
+              <option value="wo_bachelor">{t('educationWoBachelor')}</option>
+              <option value="wo_master">{t('educationWoMaster')}</option>
+              <option value="phd">{t('educationPhd')}</option>
             </select>
           </div>
           <button type="submit" className="py-2.5 rounded-xl text-sm font-semibold text-white mt-2 hover:opacity-90 transition" style={{ background: 'var(--color-indigo-primary)' }}>
-            Opslaan en verder
+            {t('saveAndContinueButton')}
           </button>
         </form>
       </div>
@@ -519,15 +521,18 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>Vacatures</h1>
+      <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>{t('pageTitle')}</h1>
 
       {/* Search trigger */}
       {jobs.length === 0 && !searching && (
         <div className="flex flex-col items-center gap-3 py-10">
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             {profile?.functietitel
-              ? `Zoekopdracht: ${[profile.functietitel, profile.functietitel_2, profile.functietitel_3].filter(Boolean).join(', ')}${profile.woonplaats ? ` · ${profile.woonplaats}` : ''}`
-              : 'Vul eerst je profiel in om te zoeken.'}
+              ? t('searchQueryDisplay', {
+                  titels: [profile.functietitel, profile.functietitel_2, profile.functietitel_3].filter(Boolean).join(', '),
+                  locatie: profile.woonplaats ? ` · ${profile.woonplaats}` : '',
+                })
+              : t('noProfilePrompt')}
           </p>
           <button
             onClick={handleNewSearch}
@@ -535,7 +540,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
             style={{ background: 'var(--color-indigo-primary)' }}
           >
-            Zoek vacatures
+            {t('searchButton')}
           </button>
         </div>
       )}
@@ -552,7 +557,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80"
             style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
           >
-            Zoek opnieuw
+            {t('searchAgainButton')}
           </button>
         </div>
       )}
@@ -564,7 +569,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           className="text-xs underline"
           style={{ color: 'var(--color-indigo-primary)' }}
         >
-          {urlLetterOpen ? 'Sluiten' : 'Heb je een vacature-URL? Plak hem hier →'}
+          {urlLetterOpen ? t('urlLetterCloseButton') : t('urlLetterOpenButton')}
         </button>
         {urlLetterOpen && (
           <div className="mt-3 p-4 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
@@ -572,7 +577,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               <input
                 value={urlLetterInput}
                 onChange={e => setUrlLetterInput(e.target.value)}
-                placeholder="https://nl.indeed.com/vacatures/..."
+                placeholder={t('urlLetterInputPlaceholder')}
                 className="px-3 py-2 rounded-lg border text-sm outline-none"
                 style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
               />
@@ -582,7 +587,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="self-start px-5 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                {urlLetterLoading ? 'Brief genereren…' : 'Genereer brief - 1 credit'}
+                {urlLetterLoading ? t('urlLetterGeneratingButton') : t('urlLetterGenerateButton')}
               </button>
               {urlLetterError && (
                 <p className="text-sm" style={{ color: 'var(--color-error)' }}>{urlLetterError}</p>
@@ -591,7 +596,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             {urlLetterResult && (
               <div className="mt-4 flex flex-col gap-3">
                 <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {urlLetterResult.job_title} bij {urlLetterResult.company}
+                  {t('urlLetterJobAtCompany', { job_title: urlLetterResult.job_title, company: urlLetterResult.company })}
                 </p>
                 <textarea
                   rows={12}
@@ -609,18 +614,18 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                     className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90"
                     style={{ background: 'var(--color-indigo-primary)' }}
                   >
-                    Kopieer & open vacature
+                    {t('urlLetterCopyAndOpenButton')}
                   </button>
                   <button
                     onClick={() => navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})}
                     className="px-3 py-2 rounded-lg text-sm border transition hover:opacity-80"
                     style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
                   >
-                    Alleen kopiëren
+                    {t('urlLetterCopyOnlyButton')}
                   </button>
                 </div>
                 <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Brief bewerken kan hierboven. Klik op "Kopieer & open vacature" om de brief te plakken in het sollicitatieformulier.
+                  {t('urlLetterEditHint')}
                 </p>
               </div>
             )}
@@ -640,7 +645,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           onClose={(sentCount) => {
             setShowMultiApply(false)
             exitMultiSelect()
-            if (sentCount > 0) setApplySuccess(`${sentCount} sollicitatie${sentCount !== 1 ? 's' : ''} verstuurd.`)
+            if (sentCount > 0) setApplySuccess(t('multiApplySuccessMessage', { count: sentCount, suffix: sentCount !== 1 ? 's' : '' }))
           }}
         />
       )}
@@ -652,14 +657,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
           style={{ background: 'var(--color-indigo-primary)' }}
         >
           <span className="text-sm text-white font-medium">
-            {selectedIds.size} geselecteerd
+            {t('multiSelectCount', { count: selectedIds.size })}
           </span>
           <button
             onClick={() => setShowMultiApply(true)}
             className="px-4 py-1.5 rounded-xl text-sm font-semibold transition hover:opacity-90"
             style={{ background: 'white', color: 'var(--color-indigo-primary)' }}
           >
-            Solliciteer → ({selectedIds.size} credits)
+            {t('multiSelectApplyButton', { count: selectedIds.size })}
           </button>
         </div>
       )}
@@ -668,7 +673,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       {applyState && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.4)' }}>
           <div className="w-full max-w-lg rounded-2xl p-6 my-4 max-h-[90vh] overflow-y-auto" style={{ background: 'var(--color-white)' }}>
-            <h3 className="font-bold text-base mb-1" style={{ color: 'var(--color-text-primary)' }}>Motivatiebrief</h3>
+            <h3 className="font-bold text-base mb-1" style={{ color: 'var(--color-text-primary)' }}>{t('letterModalTitle')}</h3>
             <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>{applyState.job.title} · {applyState.job.company}</p>
             <div className="flex items-center gap-3 mb-3">
               <select
@@ -677,10 +682,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="px-3 py-1.5 rounded-lg border text-sm"
                 style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
               >
-                <option value="formeel">Formeel</option>
-                <option value="informeel">Informeel</option>
-                <option value="enthousiast">Enthousiast</option>
-                <option value="luchtig">Luchtig</option>
+                <option value="formeel">{t('writingStyleFormeel')}</option>
+                <option value="informeel">{t('writingStyleInformeel')}</option>
+                <option value="enthousiast">{t('writingStyleEnthousiast')}</option>
+                <option value="luchtig">{t('writingStyleLuchtig')}</option>
               </select>
               <button
                 onClick={() => handleGenerateLetter(applyState.job)}
@@ -691,13 +696,13 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 {generatingLetter ? (
                   <span className="flex items-center gap-1.5">
                     <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
-                    Genereren…
+                    {t('regenButtonGenerating')}
                   </span>
-                ) : 'Opnieuw genereren'}
+                ) : t('regenButton')}
               </button>
               {applyState.regenRemaining !== null && (
                 <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  {applyState.regenRemaining}× over
+                  {t('regenRemaining', { count: applyState.regenRemaining })}
                 </span>
               )}
             </div>
@@ -711,7 +716,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             {/* LinkedIn warning */}
             {applyState.job.url.includes('linkedin.com') && (
               <div className="mt-3 rounded-lg px-3 py-2.5 text-xs" style={{ background: '#FFF7ED', color: '#92400E', border: '1px solid #FED7AA' }}>
-                <strong>LinkedIn-vacature:</strong> om via LinkedIn te solliciteren heb je een account nodig. Zoek ook op de website van {applyState.job.company} - daar staat vaak een directe sollicitatielink of een e-mailadres
+                {t('linkedInWarning', { company: applyState.job.company })}
               </div>
             )}
             {/* Email send section */}
@@ -724,7 +729,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
-                {emailApplyOpen ? 'Verbergen' : 'Stuur per e-mail naar recruiter'}
+                {emailApplyOpen ? t('emailApplyToggleHide') : t('emailApplyToggleShow')}
               </button>
               {emailApplyOpen && (
                 <div className="mt-2 flex flex-col gap-2">
@@ -739,7 +744,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       type="email"
                       value={recipientEmail}
                       onChange={e => setRecipientEmail(e.target.value)}
-                      placeholder="recruiter@bedrijf.nl"
+                      placeholder={t('emailPlaceholder')}
                       className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none"
                       style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
                     />
@@ -749,7 +754,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       className="px-4 py-2 text-sm font-medium rounded-lg text-white transition hover:opacity-90 disabled:opacity-50"
                       style={{ background: 'var(--color-indigo-primary)' }}
                     >
-                      {sendingEmail ? 'Versturen…' : 'Verstuur'}
+                      {sendingEmail ? t('emailSendingButton') : t('emailSendButton')}
                     </button>
                   </div>
                 </div>
@@ -762,7 +767,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="px-4 py-2 text-sm rounded-lg border transition"
                 style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)', background: 'var(--color-hover-surface)' }}
               >
-                Annuleren
+                {t('cancelButton')}
               </button>
               <button
                 onClick={handleSendViasite}
@@ -773,9 +778,9 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 {applyState.sending ? (
                   <span className="flex items-center gap-1.5">
                     <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
-                    Bezig…
+                    {t('applyingButton')}
                   </span>
-                ) : 'Kopieer & solliciteer via site'}
+                ) : t('copyAndApplyButton')}
               </button>
             </div>
           </div>
@@ -794,10 +799,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             <path d="M20 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
           </svg>
           <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-            AI zoekt vacatures voor je…
+            {t('searchingTitle')}
           </p>
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            Dit duurt 30-60 seconden
+            {t('searchingSubtitle')}
           </p>
         </div>
       )}
@@ -808,7 +813,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
       )}
       {jobs.length === 0 && !searching && !searchError && sortedJobs.length === 0 && (
         <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
-          Geen vacatures gevonden. Probeer opnieuw te zoeken.
+          {t('noJobsFound')}
         </p>
       )}
 
@@ -822,14 +827,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
               {multiSelect ? (
                 <>
                   <span className="text-xs font-medium" style={{ color: 'var(--color-indigo-primary)' }}>
-                    {selectedIds.size}/5 geselecteerd
+                    {t('multiSelectCountOfMax', { count: selectedIds.size })}
                   </span>
                   <button onClick={exitMultiSelect} className="text-xs underline" style={{ color: 'var(--color-text-muted)' }}>
-                    Annuleren
+                    {t('multiSelectCancelButton')}
                   </button>
                 </>
               ) : (
-                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length} {filteredJobs.length === 1 ? 'vacature' : 'vacatures'}</span>
+                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{filteredJobs.length === 1 ? t('jobCountSingular', { count: filteredJobs.length }) : t('jobCountPlural', { count: filteredJobs.length })}</span>
               )}
               <div className="ml-auto">
                 <button
@@ -840,7 +845,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                     color: multiSelect ? 'white' : 'var(--color-text-muted)',
                   }}
                 >
-                  Meerdere selecteren
+                  {t('multipleSelectButton')}
                 </button>
               </div>
             </div>
@@ -853,12 +858,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span><strong>Voeg je CV toe</strong> voor sterkere, persoonlijkere brieven →</span>
+                <span>{t('cvNudge')}</span>
               </a>
             )}
             {jobsStale && (
               <div className="mb-4 px-3 py-2 rounded-lg text-xs" style={{ background: '#fef3c7', color: '#92400e' }}>
-                Vacatures worden vernieuwd op de achtergrond. Je ziet nu resultaten uit onze cache.
+                {t('staleJobsNotice')}
               </div>
             )}
             {searchError && <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{searchError}</p>}
@@ -868,14 +873,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 {profile?.referral_code && (
                   <div className="px-3 py-2.5 rounded-lg text-xs flex items-center justify-between gap-3" style={{ background: 'var(--color-lavender-card)' }}>
                     <span style={{ color: 'var(--color-text-muted)' }}>
-                      Ken je iemand die ook op zoek is? Deel Opstap en jullie krijgen allebei <strong style={{ color: 'var(--color-text-primary)' }}>+3 credits</strong>.
+                      {t('referralNudge')}
                     </span>
                     <button
                       onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://opstapapp.nl'}/register?ref=${profile.referral_code}`).catch(() => {})}
                       className="shrink-0 text-xs px-3 py-1 rounded-lg font-medium transition hover:opacity-90"
                       style={{ background: 'var(--color-indigo-primary)', color: 'white' }}
                     >
-                      Kopieer link
+                      {t('referralCopyLinkButton')}
                     </button>
                   </div>
                 )}
@@ -901,19 +906,19 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                           <p className="font-semibold text-sm truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
                           {isCurveball ? (
                             <span
-                              title="Andere sector, maar jouw vaardigheden passen hier goed bij"
+                              title={t('curveballBadgeTooltip')}
                               className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
                               style={{ background: '#fff7ed', color: '#c2410c' }}
                             >
-                              Andere sector
+                              {t('curveballBadge')}
                             </span>
                           ) : profile && (
                             <span
-                              title="Hoe goed de vacature past bij jouw functietitel en woonplaats"
+                              title={t('matchBadgeTooltip')}
                               className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 cursor-help"
                               style={{ background: matchBg, color: matchColor }}
                             >
-                              {pct}% match
+                              {t('matchBadge', { pct })}
                             </span>
                           )}
                         </div>
@@ -930,7 +935,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                           )}
                           {postedDate && (
                             <span className="text-xs" style={{ color: ageDays > 21 ? '#d97706' : 'var(--color-text-muted)' }}>
-                              {ageDays > 21 ? `Geplaatst ${postedDate} (mogelijk verlopen)` : `Geplaatst ${postedDate}`}
+                              {ageDays > 21 ? t('jobPostedDateExpired', { date: postedDate }) : t('jobPostedDate', { date: postedDate })}
                             </span>
                           )}
                         </div>
@@ -953,7 +958,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                                 className="text-xs mt-0.5 underline"
                                 style={{ color: 'var(--color-indigo-primary)' }}
                               >
-                                {isExpanded ? 'Minder' : 'Meer'}
+                                {isExpanded ? t('jobDescriptionLess') : t('jobDescriptionMore')}
                               </button>
                             )}
                           </div>
@@ -985,9 +990,9 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                             {generatingLetter ? (
                               <span className="flex items-center gap-1.5">
                                 <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
-                                Laden…
+                                {t('applyJobButtonLoading')}
                               </span>
-                            ) : 'Solliciteren - 1 credit'}
+                            ) : t('applyJobButton')}
                           </button>
                         )}
                         <div className="flex gap-1.5">
@@ -998,11 +1003,11 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                             className="flex-1 px-3 py-1.5 text-xs rounded-lg border text-center transition hover:opacity-80"
                             style={{ borderColor: 'var(--color-indigo-primary)', color: 'var(--color-indigo-primary)' }}
                           >
-                            Bekijken
+                            {t('viewJobButton')}
                           </a>
                           <button
                             onClick={() => toggleSave(job)}
-                            title={savedJobs[job.id] ? 'Verwijder uit opgeslagen' : 'Opslaan'}
+                            title={savedJobs[job.id] ? t('unsaveJobTooltip') : t('saveJobTooltip')}
                             className="px-2 py-1.5 rounded-lg border transition hover:opacity-80"
                             style={{
                               borderColor: savedJobs[job.id] ? 'var(--color-indigo-primary)' : 'var(--color-lavender-card)',
@@ -1029,7 +1034,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             style={{ width: 180, background: 'var(--color-lavender-card)' }}
           >
             <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Sorteren</p>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>{t('sortLabel')}</p>
               <div className="flex flex-col gap-1">
                 {(['match', 'salary', 'date'] as SortKey[]).map(key => (
                   <button
@@ -1042,33 +1047,38 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                       fontWeight: sortBy === key ? 600 : 400,
                     }}
                   >
-                    {{ match: 'Beste match', salary: 'Salaris', date: 'Nieuwste' }[key]}
+                    {{ match: t('sortByMatch'), salary: t('sortBySalary'), date: t('sortByDate') }[key]}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Dienstverband</p>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>{t('filterContractLabel')}</p>
               <div className="flex flex-col gap-1">
-                {['Fulltime', 'Parttime', 'Tijdelijk', 'Vast'].map(ct => (
-                  <label key={ct} className="flex items-center gap-2 cursor-pointer">
+                {([
+                  { val: 'Fulltime', label: t('filterContractFulltime') },
+                  { val: 'Parttime', label: t('filterContractParttime') },
+                  { val: 'Tijdelijk', label: t('filterContractTijdelijk') },
+                  { val: 'Vast', label: t('filterContractVast') },
+                ] as { val: string; label: string }[]).map(({ val, label }) => (
+                  <label key={val} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={filterContracts.includes(ct)}
+                      checked={filterContracts.includes(val)}
                       onChange={e => setFilterContracts(prev =>
-                        e.target.checked ? [...prev, ct] : prev.filter(x => x !== ct)
+                        e.target.checked ? [...prev, val] : prev.filter(x => x !== val)
                       )}
                       className="rounded"
                     />
-                    <span className="text-xs" style={{ color: 'var(--color-text-primary)' }}>{ct}</span>
+                    <span className="text-xs" style={{ color: 'var(--color-text-primary)' }}>{label}</span>
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Soort vacature</p>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>{t('filterJobTypeLabel')}</p>
               <div className="flex flex-col gap-1">
-                {[{ label: 'Alles', val: null }, { label: 'Match', val: false }, { label: 'Andere sector', val: true }].map(opt => (
+                {[{ label: t('filterJobTypeAll'), val: null }, { label: t('filterJobTypeMatch'), val: false }, { label: t('filterJobTypeCurveball'), val: true }].map(opt => (
                   <button
                     key={String(opt.val)}
                     onClick={() => setFilterCurveball(opt.val)}
@@ -1090,7 +1100,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                 className="text-xs underline text-left mt-1"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                Filters wissen
+                {t('clearFiltersButton')}
               </button>
             )}
           </aside>

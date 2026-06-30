@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 const navLinks = [
   { href: '/dashboard', label: 'Vind vacatures' },
@@ -13,6 +14,7 @@ const navLinks = [
 ]
 
 export default function PublicMobileMenu({ userName }: { userName: string | null }) {
+  const t = useTranslations('PublicMobileMenu')
   const [open, setOpen] = useState(false)
 
   return (
@@ -22,7 +24,7 @@ export default function PublicMobileMenu({ userName }: { userName: string | null
         onClick={() => setOpen(true)}
         className="flex items-center justify-center w-8 h-8 rounded-lg"
         style={{ color: 'rgba(255,255,255,0.85)' }}
-        aria-label="Menu openen"
+        aria-label={t('menuOpenAriaLabel')}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="3" y1="6" x2="21" y2="6" />
@@ -57,7 +59,7 @@ export default function PublicMobileMenu({ userName }: { userName: string | null
             onClick={() => setOpen(false)}
             className="flex items-center justify-center w-8 h-8 rounded-lg"
             style={{ color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.08)' }}
-            aria-label="Menu sluiten"
+            aria-label={t('menuCloseAriaLabel')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -101,7 +103,7 @@ export default function PublicMobileMenu({ userName }: { userName: string | null
               className="w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
               style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)' }}
             >
-              Aan de slag
+              {t('aanDeSlagButton')}
             </Link>
           )}
           <Link
@@ -110,7 +112,7 @@ export default function PublicMobileMenu({ userName }: { userName: string | null
             className="text-center text-sm transition hover:opacity-80"
             style={{ color: 'rgba(255,255,255,0.6)' }}
           >
-            Inloggen
+            {t('inloggenLink')}
           </Link>
         </div>
       </aside>

@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 export default function ResetPasswordPage() {
+  const t = useTranslations('ResetPasswordPage')
   const router = useRouter()
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -19,7 +21,7 @@ export default function ResetPasswordPage() {
     const confirm = fd.get('confirm') as string
 
     if (password !== confirm) {
-      setError('Wachtwoorden komen niet overeen')
+      setError(t('errorPasswordMismatch'))
       setSaving(false)
       return
     }
@@ -27,7 +29,7 @@ export default function ResetPasswordPage() {
     const supabase = createClient()
     const { error: err } = await supabase.auth.updateUser({ password })
     if (err) {
-      setError('Wachtwoord opslaan mislukt. Probeer het opnieuw')
+      setError(t('errorSaveFailed'))
       setSaving(false)
       return
     }
@@ -44,10 +46,10 @@ export default function ResetPasswordPage() {
 
         <div className="rounded-2xl p-8" style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.08)' }}>
           <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-            Nieuw wachtwoord instellen
+            {t('pageTitle')}
           </h1>
           <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-            Kies een nieuw wachtwoord van minimaal 8 tekens.
+            {t('pageDescription')}
           </p>
 
           {error && (
@@ -59,7 +61,7 @@ export default function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Nieuw wachtwoord
+                {t('newPasswordLabel')}
               </label>
               <input
                 id="password"
@@ -78,7 +80,7 @@ export default function ResetPasswordPage() {
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="confirm" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Herhaal wachtwoord
+                {t('confirmPasswordLabel')}
               </label>
               <input
                 id="confirm"
@@ -101,7 +103,7 @@ export default function ResetPasswordPage() {
               className="mt-1 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
               style={{ background: 'var(--color-indigo-primary)' }}
             >
-              {saving ? 'Opslaan…' : 'Wachtwoord opslaan'}
+              {saving ? t('saveButtonSaving') : t('saveButtonIdle')}
             </button>
           </form>
         </div>
