@@ -109,6 +109,7 @@ export default function ProfielPage() {
         werklocatie: (fd.get('werklocatie') as string) || undefined,
         opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
         extra_info: (fd.get('extra_info') as string) || undefined,
+        job_preferences: (fd.get('job_preferences') as string) || undefined,
         leeftijd: fd.get('leeftijd') ? Number(fd.get('leeftijd')) : undefined,
         brief_taal: (fd.get('brief_taal') as string) || 'nl',
         salaris_min: fd.get('salaris_min') ? Number(fd.get('salaris_min')) : undefined,
@@ -216,6 +217,7 @@ export default function ProfielPage() {
                 <input list="job-titles-list" name="functietitel_2" placeholder={t('functietitel2Placeholder')} defaultValue={profile.functietitel_2 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
                 <input list="job-titles-list" name="functietitel_3" placeholder={t('functietitel3Placeholder')} defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
+              <PreferencesField label={t('jobPreferencesLabel')} description={t('jobPreferencesDescription')} placeholder={t('jobPreferencesPlaceholder')} defaultValue={profile.job_preferences ?? ''} />
               <Field label={t('fieldLabelWoonplaats')} name="woonplaats" placeholder={t('woonplaatsPlaceholder')} defaultValue={profile.woonplaats} />
               <SelectField label={t('fieldLabelUrenPerWeek')} name="uren_per_week" defaultValue={profile.uren_per_week?.toString() ?? ''}>
                 <option value="">{t('urenGeenVoorkeur')}</option>
@@ -484,6 +486,31 @@ function Field({ label, name, type = 'text', placeholder, required, defaultValue
         className="px-3 py-2 rounded-lg border text-sm outline-none"
         style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
       />
+    </div>
+  )
+}
+
+function PreferencesField({ label, description, placeholder, defaultValue }: {
+  label: string; description: string; placeholder: string; defaultValue: string
+}) {
+  const [count, setCount] = useState(defaultValue.length)
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</label>
+      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{description}</p>
+      <textarea
+        name="job_preferences"
+        rows={3}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        maxLength={300}
+        onChange={e => setCount(e.target.value.length)}
+        className="px-3 py-2 rounded-lg border text-sm outline-none resize-none"
+        style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+      />
+      <span className="text-xs text-right" style={{ color: count > 260 ? 'var(--color-error)' : 'var(--color-text-muted)' }}>
+        {count}/300
+      </span>
     </div>
   )
 }

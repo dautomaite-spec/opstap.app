@@ -82,7 +82,20 @@ function matchScore(job: Job, profile: Profile | null): number {
   } else {
     score += 5
   }
-  return Math.min(score, 99)
+  if (profile.job_preferences) {
+    const NEG = /\b(no|not|don'?t|never|zonder|niet|geen|avoid|liever geen|buitenshuis)\b/i
+    const jobText = (job.title + ' ' + (job.description_snippet ?? '')).toLowerCase()
+    const lines = profile.job_preferences.split(/[.\n,;]+/).map(s => s.trim()).filter(Boolean)
+    for (const line of lines) {
+      const words = line.toLowerCase().split(/\s+/).filter(w => w.length > 3)
+      const hits = words.filter(w => jobText.includes(w)).length
+      if (hits > 0) {
+        if (NEG.test(line)) score -= Math.min(15, hits * 8)
+        else score += Math.min(10, hits * 5)
+      }
+    }
+  }
+  return Math.min(Math.max(score, 0), 99)
 }
 
 function parseSalary(range?: string): number {
