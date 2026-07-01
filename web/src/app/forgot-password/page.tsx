@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { forgotPassword } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export default async function ForgotPasswordPage({
   searchParams: Promise<{ error?: string; sent?: string }>
 }) {
   const { error, sent } = await searchParams
+  const t = await getTranslations('ForgotPasswordPage')
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--color-lavender-bg)' }}>
@@ -23,26 +25,26 @@ export default async function ForgotPasswordPage({
 
         <div className="rounded-2xl p-8" style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.08)' }}>
           <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-            Wachtwoord vergeten
+            {t('pageTitle')}
           </h1>
 
           {sent ? (
             <>
               <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-                Als er een account bestaat voor dit e-mailadres, ontvang je binnen enkele minuten een resetlink. Controleer ook je spammap.
+                {t('sentDescription')}
               </p>
               <Link
                 href="/login"
                 className="block text-center py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                Terug naar inloggen
+                {t('backToLoginButton')}
               </Link>
             </>
           ) : (
             <>
               <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-                Vul je e-mailadres in en we sturen je een resetlink.
+                {t('formDescription')}
               </p>
 
               {error && (
@@ -54,7 +56,7 @@ export default async function ForgotPasswordPage({
               <form action={forgotPassword} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
                   <label htmlFor="email" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    E-mailadres
+                    {t('emailLabel')}
                   </label>
                   <input
                     id="email"
@@ -75,7 +77,7 @@ export default async function ForgotPasswordPage({
                   className="mt-1 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                   style={{ background: 'var(--color-indigo-primary)' }}
                 >
-                  Resetlink versturen
+                  {t('submitButton')}
                 </button>
               </form>
             </>
@@ -84,7 +86,7 @@ export default async function ForgotPasswordPage({
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
           <Link href="/login" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            Terug naar inloggen
+            {t('backToLoginLink')}
           </Link>
         </p>
       </div>

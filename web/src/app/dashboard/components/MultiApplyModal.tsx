@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { api, ApiError } from '@/lib/api'
 import type { Job, Profile } from '@/lib/api'
 import BuyCreditsModal from './BuyCreditsModal'
@@ -27,6 +28,7 @@ export default function MultiApplyModal({
   writingStyle: string
   onClose: (sentCount: number) => void
 }) {
+  const t = useTranslations('MultiApplyModal')
   const [entries, setEntries] = useState<Entry[]>(
     selectedJobs.map(job => ({ job, letter: '', status: 'pending' }))
   )
@@ -59,14 +61,14 @@ export default function MultiApplyModal({
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
         const next = updated.map((e, i) =>
-          i >= idx ? { ...e, status: 'error' as EntryStatus, error: i === idx ? 'Onvoldoende credits' : 'Overgeslagen' } : e
+          i >= idx ? { ...e, status: 'error' as EntryStatus, error: i === idx ? t('errorInsufficientCredits') : t('errorSkipped') } : e
         )
         setEntries([...next])
         setShowBuyCredits(true)
         setPhase('review')
         return
       }
-      const next = updated.map((e, i) => i === idx ? { ...e, status: 'error' as EntryStatus, error: 'Genereren mislukt' } : e)
+      const next = updated.map((e, i) => i === idx ? { ...e, status: 'error' as EntryStatus, error: t('errorGenerateFailed') } : e)
       setEntries([...next])
       await runGenerating(idx + 1, next)
     }
@@ -95,7 +97,7 @@ export default function MultiApplyModal({
         sent++
         await new Promise(r => setTimeout(r, 400))
       } catch {
-        setEntries(prev => prev.map((e, j) => j === i ? { ...e, status: 'failed', error: 'Versturen mislukt' } : e))
+        setEntries(prev => prev.map((e, j) => j === i ? { ...e, status: 'failed', error: t('errorSendFailed') } : e))
       }
     }
 
@@ -119,15 +121,15 @@ export default function MultiApplyModal({
           <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-lavender-card)' }}>
             <div>
               <h3 className="font-bold text-base" style={{ color: 'var(--color-text-primary)' }}>
-                {phase === 'generating' && 'Brieven genereren…'}
-                {phase === 'review' && 'Controleer je brieven'}
-                {phase === 'sending' && 'Sollicitaties versturen…'}
-                {phase === 'done' && 'Klaar!'}
+                {phase === 'generating' && t('phaseGeneratingTitle')}
+                {phase === 'review' && t('phaseReviewTitle')}
+                {phase === 'sending' && t('phaseSendingTitle')}
+                {phase === 'done' && t('phaseDoneTitle')}
               </h3>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                {phase === 'generating' && `${generatedCount} van ${totalCount} gereed`}
-                {phase === 'review' && `${readyCount} brief${readyCount !== 1 ? 'ven' : ''} gereed om te versturen`}
-                {(phase === 'sending' || phase === 'done') && `${sentCountRef.current} van ${readyCount} verstuurd`}
+                {phase === 'generating' && t('generatingProgress', { generatedCount, totalCount })}
+                {phase === 'review' && (readyCount === 1 ? t('reviewSubtitleSingular', { readyCount }) : t('reviewSubtitlePlural', { readyCount }))}
+                {(phase === 'sending' || phase === 'done') && t('sendingProgress', { sentCount: sentCountRef.current, readyCount })}
               </p>
             </div>
             {(phase === 'review' || phase === 'done') && (
@@ -136,7 +138,7 @@ export default function MultiApplyModal({
                 className="text-xs px-3 py-1.5 rounded-lg border transition hover:opacity-80"
                 style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
               >
-                {phase === 'done' ? 'Sluiten' : 'Annuleren'}
+                {phase === 'done' ? t('closeButton') : t('cancelButton')}
               </button>
             )}
           </div>
@@ -163,10 +165,10 @@ export default function MultiApplyModal({
                   <p className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>{entry.job.company}</p>
                 </div>
                 <span className="text-xs shrink-0" style={{ color: entry.error ? '#dc2626' : 'var(--color-text-muted)' }}>
-                  {entry.status === 'pending' && 'Wachten…'}
-                  {entry.status === 'generating' && 'Genereren…'}
-                  {entry.status === 'ready' && 'Gereed'}
-                  {entry.status === 'error' && (entry.error ?? 'Fout')}
+                  {entry.status === 'pending' && t('statusPending')}
+                  {entry.status === 'generating' && t('statusGenerating')}
+                  {entry.status === 'ready' && t('statusReady')}
+                  {entry.status === 'error' && (entry.error ?? t('statusErrorFallback'))}
                 </span>
               </div>
             ))}
@@ -219,14 +221,14 @@ export default function MultiApplyModal({
           {phase === 'review' && readyCount > 0 && (
             <div className="px-6 py-4 border-t shrink-0" style={{ borderColor: 'var(--color-lavender-card)' }}>
               <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
-                Elke vacature wordt geopend in een nieuw tabblad. Plak je brief in het sollicitatieformulier.
+                {t('footerInstructionText')}
               </p>
               <button
                 onClick={handleSendAll}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                Verstuur {readyCount} sollicitatie{readyCount !== 1 ? 's' : ''}
+                {readyCount === 1 ? t('sendAllButtonSingular', { readyCount }) : t('sendAllButtonPlural', { readyCount })}
               </button>
             </div>
           )}
@@ -234,14 +236,14 @@ export default function MultiApplyModal({
           {phase === 'done' && (
             <div className="px-6 py-4 border-t shrink-0 text-center" style={{ borderColor: 'var(--color-lavender-card)' }}>
               <p className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-                {sentCountRef.current} van {readyCount} sollicitaties verstuurd.
+                {t('doneSummary', { sentCount: sentCountRef.current, readyCount })}
               </p>
               <button
                 onClick={() => onClose(sentCountRef.current)}
                 className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                Sluiten
+                {t('closeButton')}
               </button>
             </div>
           )}

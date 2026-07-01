@@ -1,24 +1,20 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import type { Profile, Application } from '@/lib/api'
 
-const OPLEIDINGSNIVEAU_LABELS: Record<string, string> = {
-  vmbo: 'VMBO / Basis', mbo: 'MBO', hbo: 'HBO',
-  wo_bachelor: 'WO Bachelor', wo_master: 'WO Master', phd: 'PhD',
-}
-
-function profileCompleteness(p: Profile): { pct: number; missing: string[] } {
+function profileCompletenessKeys(p: Profile): { pct: number; missingKeys: string[] } {
   const fields: [keyof Profile, string][] = [
-    ['functietitel', 'Functietitel'],
-    ['woonplaats', 'Woonplaats'],
-    ['uren_per_week', 'Uren per week'],
-    ['werklocatie', 'Werklocatie'],
-    ['opleidingsniveau', 'Opleidingsniveau'],
-    ['cv_url', 'CV'],
+    ['functietitel', 'missingFieldFunctietitel'],
+    ['woonplaats', 'missingFieldWoonplaats'],
+    ['uren_per_week', 'missingFieldUrenPerWeek'],
+    ['werklocatie', 'missingFieldWerklocatie'],
+    ['opleidingsniveau', 'missingFieldOpleidingsniveau'],
+    ['cv_url', 'missingFieldCv'],
   ]
   const filled = fields.filter(([k]) => !!p[k]).length
-  const missing = fields.filter(([k]) => !p[k]).map(([, l]) => l)
-  return { pct: Math.round((filled / fields.length) * 100), missing }
+  const missingKeys = fields.filter(([k]) => !p[k]).map(([, key]) => key)
+  return { pct: Math.round((filled / fields.length) * 100), missingKeys }
 }
 
 interface Props {
@@ -27,9 +23,12 @@ interface Props {
 }
 
 export default function Achievements({ profile, applications }: Props) {
+  const t = useTranslations('Achievements')
+
   if (!profile) return null
 
-  const { pct, missing } = profileCompleteness(profile)
+  const { pct, missingKeys } = profileCompletenessKeys(profile)
+  const missing = missingKeys.map(key => t(key as Parameters<typeof t>[0]))
   const hasCV = !!profile.cv_url
   const hasApplied = applications.length > 0
 
@@ -38,32 +37,32 @@ export default function Achievements({ profile, applications }: Props) {
       key: 'profile',
       done: true,
       icon: '👤',
-      title: 'Profiel aangemaakt',
-      desc: 'Je eerste stap is gezet.',
+      title: t('achievementProfileTitle'),
+      desc: t('achievementProfileDesc'),
     },
     {
       key: 'cv',
       done: hasCV,
       icon: '📄',
-      title: 'CV geüpload',
-      desc: hasCV ? 'CV is opgeslagen.' : 'Upload je CV voor betere brieven.',
-      cta: hasCV ? undefined : { label: 'CV uploaden', href: '/dashboard/settings' },
+      title: t('achievementCvTitle'),
+      desc: hasCV ? t('achievementCvDescDone') : t('achievementCvDescTodo'),
+      cta: hasCV ? undefined : { label: t('achievementCvCta'), href: '/dashboard/settings' },
     },
     {
       key: 'apply',
       done: hasApplied,
       icon: '🚀',
-      title: 'Eerste sollicitatie',
-      desc: hasApplied ? `${applications.length} sollicitatie${applications.length !== 1 ? 's' : ''} verstuurd.` : 'Solliciteer op je eerste vacature.',
-      cta: hasApplied ? undefined : { label: 'Zoek vacatures', href: '/dashboard' },
+      title: t('achievementApplyTitle'),
+      desc: hasApplied ? t('achievementApplyDescDone', { count: applications.length, suffix: applications.length !== 1 ? 's' : '' }) : t('achievementApplyDescTodo'),
+      cta: hasApplied ? undefined : { label: t('achievementApplyCta'), href: '/dashboard' },
     },
     {
       key: 'complete',
       done: pct === 100,
       icon: '⭐',
-      title: 'Profiel compleet',
-      desc: pct === 100 ? 'Alle velden zijn ingevuld.' : `${pct}% compleet. Nog: ${missing.join(', ')}.`,
-      cta: pct < 100 ? { label: 'Aanvullen', href: '/dashboard/settings' } : undefined,
+      title: t('achievementCompleteTitle'),
+      desc: pct === 100 ? t('achievementCompleteDescDone') : t('achievementCompleteDescTodo', { pct, missing: missing.join(', ') }),
+      cta: pct < 100 ? { label: t('achievementCompleteCta'), href: '/dashboard/settings' } : undefined,
     },
   ]
 
@@ -72,8 +71,8 @@ export default function Achievements({ profile, applications }: Props) {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Voortgang</h2>
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{doneCount}/{achievements.length} voltooid</span>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{t('sectionHeading')}</h2>
+        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('progressCount', { doneCount, achievementsCount: achievements.length })}</span>
       </div>
 
       {/* Progress bar */}

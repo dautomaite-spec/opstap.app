@@ -2,19 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import type { Application } from '@/lib/api'
-
-const STATUS_LABELS: Record<string, string> = {
-  sent: 'Verstuurd',
-  pending: 'In behandeling',
-  rejected: 'Afgewezen',
-  accepted: 'Aangenomen',
-  replied: 'Beantwoord',
-  interview: 'Uitgenodigd voor gesprek',
-  failed: 'Mislukt',
-  draft: 'Concept',
-}
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   sent: { bg: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' },
@@ -30,6 +20,19 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 interface Stats { sent: number; replied: number; interview: number; accepted: number }
 
 export default function SollicitatiesPage() {
+  const t = useTranslations('SollicitiesPage')
+
+  const STATUS_LABELS: Record<string, string> = {
+    sent: t('statusSent'),
+    pending: t('statusPending'),
+    rejected: t('statusRejected'),
+    accepted: t('statusAccepted'),
+    replied: t('statusReplied'),
+    interview: t('statusInterview'),
+    failed: t('statusFailed'),
+    draft: t('statusDraft'),
+  }
+
   const [history, setHistory] = useState<Application[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,20 +97,20 @@ export default function SollicitatiesPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>Laden…</p>
+    return <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>{t('loading')}</p>
   }
 
   if (history.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Je hebt nog niet gesolliciteerd.</p>
-        <p className="text-xs mt-2 mb-6" style={{ color: 'var(--color-text-muted)' }}>Ga naar Vacatures om te beginnen.</p>
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('emptyState')}</p>
+        <p className="text-xs mt-2 mb-6" style={{ color: 'var(--color-text-muted)' }}>{t('emptyStateHint')}</p>
         <Link
           href="/dashboard"
           className="inline-block px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--color-indigo-primary)' }}
         >
-          Zoek vacatures
+          {t('emptyStateCta')}
         </Link>
       </div>
     )
@@ -118,13 +121,13 @@ export default function SollicitatiesPage() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Jouw sollicitaties</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{t('pageTitle')}</h1>
         {interviewCount > 0 && (
           <span
             className="text-xs font-bold px-2.5 py-1 rounded-full"
             style={{ background: '#fef3c7', color: '#92400e' }}
           >
-            {interviewCount} gesprek{interviewCount !== 1 ? 'ken' : ''}
+            {interviewCount !== 1 ? t('interviewBadgePlural', { count: interviewCount }) : t('interviewBadge', { count: interviewCount })}
           </span>
         )}
       </div>
@@ -133,13 +136,13 @@ export default function SollicitatiesPage() {
       {stats && (
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Verstuurd', value: stats.sent, color: 'var(--color-indigo-primary)', bg: 'var(--color-lavender-bg)' },
-            { label: 'Beantwoord', value: stats.replied, color: '#065f46', bg: '#d1fae5' },
-            { label: 'Gesprek', value: stats.interview, color: '#92400e', bg: '#fef3c7' },
-          ].map(t => (
-            <div key={t.label} className="rounded-xl p-3 text-center" style={{ background: t.bg }}>
-              <p className="text-2xl font-bold" style={{ color: t.color }}>{t.value}</p>
-              <p className="text-xs mt-0.5" style={{ color: t.color, opacity: 0.8 }}>{t.label}</p>
+            { label: t('statTileVerstuurd'), value: stats.sent, color: 'var(--color-indigo-primary)', bg: 'var(--color-lavender-bg)' },
+            { label: t('statTileBeantwoord'), value: stats.replied, color: '#065f46', bg: '#d1fae5' },
+            { label: t('statTileGesprek'), value: stats.interview, color: '#92400e', bg: '#fef3c7' },
+          ].map(tile => (
+            <div key={tile.label} className="rounded-xl p-3 text-center" style={{ background: tile.bg }}>
+              <p className="text-2xl font-bold" style={{ color: tile.color }}>{tile.value}</p>
+              <p className="text-xs mt-0.5" style={{ color: tile.color, opacity: 0.8 }}>{tile.label}</p>
             </div>
           ))}
         </div>
@@ -174,12 +177,12 @@ export default function SollicitatiesPage() {
                     className="text-xs px-2 py-1 rounded-full border-0 shrink-0 cursor-pointer disabled:opacity-60"
                     style={{ background: statusStyle.bg, color: statusStyle.color, outline: 'none' }}
                   >
-                    <option value="sent">Verstuurd</option>
-                    <option value="pending">In behandeling</option>
-                    <option value="replied">Beantwoord</option>
-                    <option value="interview">Uitgenodigd voor gesprek</option>
-                    <option value="accepted">Aangenomen</option>
-                    <option value="rejected">Afgewezen</option>
+                    <option value="sent">{t('selectOptionSent')}</option>
+                    <option value="pending">{t('selectOptionPending')}</option>
+                    <option value="replied">{t('selectOptionReplied')}</option>
+                    <option value="interview">{t('selectOptionInterview')}</option>
+                    <option value="accepted">{t('selectOptionAccepted')}</option>
+                    <option value="rejected">{t('selectOptionRejected')}</option>
                   </select>
                 )}
               </div>
@@ -210,9 +213,9 @@ export default function SollicitatiesPage() {
                   <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                     {new Date(app.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                     {app.replied_at && (
-                      <span> · Beantwoord op {new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</span>
+                      <span> · {t('repliedOn', { date: new Date(app.replied_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) })}</span>
                     )}
-                    {isUpdating && <span> · Opslaan…</span>}
+                    {isUpdating && <span> · {t('saving')}</span>}
                   </p>
                   {app.status === 'failed' && (
                     <button
@@ -221,7 +224,7 @@ export default function SollicitatiesPage() {
                       className="text-xs px-2.5 py-1 rounded-lg font-medium transition hover:opacity-80 disabled:opacity-50"
                       style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
                     >
-                      {isRetrying ? 'Bezig…' : 'Opnieuw'}
+                      {isRetrying ? t('retryingButton') : t('retryButton')}
                     </button>
                   )}
                   {app.letter_nl && (
@@ -230,15 +233,15 @@ export default function SollicitatiesPage() {
                       className="text-xs px-2.5 py-1 rounded-lg font-medium transition hover:opacity-80"
                       style={{ background: 'var(--color-lavender-bg)', color: 'var(--color-indigo-primary)' }}
                     >
-                      {expandedLetter === app.id ? 'Verberg brief' : 'Bekijk brief'}
+                      {expandedLetter === app.id ? t('hideLetter') : t('viewLetter')}
                     </button>
                   )}
                 </div>
                 {app.status === 'sent' && (
                   <div className="flex items-center gap-1">
-                    <span className="text-xs mr-1" style={{ color: 'var(--color-text-muted)' }}>Brief:</span>
+                    <span className="text-xs mr-1" style={{ color: 'var(--color-text-muted)' }}>{t('letterLabel')}</span>
                     <button
-                      title="Brief was goed"
+                      title={t('thumbUpTitle')}
                       onClick={() => handleRating(app, 1)}
                       className="p-1 rounded transition hover:bg-green-50"
                       style={{ color: app.letter_rating === 1 ? '#16a34a' : 'var(--color-text-muted)' }}
@@ -246,7 +249,7 @@ export default function SollicitatiesPage() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill={app.letter_rating === 1 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
                     </button>
                     <button
-                      title="Brief kon beter"
+                      title={t('thumbDownTitle')}
                       onClick={() => handleRating(app, -1)}
                       className="p-1 rounded transition hover:bg-red-50"
                       style={{ color: app.letter_rating === -1 ? '#dc2626' : 'var(--color-text-muted)' }}

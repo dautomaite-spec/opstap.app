@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 const GOOGLE_ICON = (
   <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -16,6 +17,7 @@ interface SocialButtonsProps {
 }
 
 export default function SocialButtons({ redirectTo }: SocialButtonsProps) {
+  const t = useTranslations('SocialButtons')
   const supabase = createClient()
 
   async function handleGoogle() {
@@ -35,7 +37,7 @@ export default function SocialButtons({ redirectTo }: SocialButtonsProps) {
       style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', background: 'var(--color-white)' }}
     >
       {GOOGLE_ICON}
-      Doorgaan met Google
+      {t('continueWithGoogle')}
     </button>
   )
 }

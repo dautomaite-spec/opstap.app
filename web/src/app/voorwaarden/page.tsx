@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = {
   title: 'Algemene voorwaarden | Opstap',
@@ -7,7 +8,9 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://opstapapp.nl/voorwaarden' },
 }
 
-export default function VoorwaardenPage() {
+export default async function VoorwaardenPage() {
+  const t = await getTranslations('VoorwaardenPage')
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-lavender-bg)' }}>
       <nav className="px-6 py-4 border-b" style={{ background: 'var(--color-white)', borderColor: 'var(--color-lavender-card)' }}>
@@ -18,56 +21,56 @@ export default function VoorwaardenPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-          Algemene voorwaarden
+          {t('pageTitle')}
         </h1>
         <p className="text-sm mb-8" style={{ color: 'var(--color-text-muted)' }}>
-          Laatste wijziging: juni 2026
+          {t('lastModified')}
         </p>
 
-        <Section title="1. Over Opstap">
-          Opstap is een dienst die werkzoekenden in Nederland helpt bij het vinden van vacatures en het opstellen van sollicitatiebrieven met behulp van kunstmatige intelligentie. Door gebruik te maken van Opstap ga je akkoord met deze voorwaarden.
+        <Section title={t('section1Title')}>
+          {t('section1Body')}
         </Section>
 
-        <Section title="2. Account">
-          Je bent verantwoordelijk voor de beveiliging van je account en wachtwoord. Gebruik Opstap alleen voor legitieme sollicitatiedoeleinden. Misbruik, waaronder het versturen van spam of het solliciteren op vacatures die je niet serieus overweegt, is niet toegestaan en kan leiden tot blokkering van je account.
+        <Section title={t('section2Title')}>
+          {t('section2Body')}
         </Section>
 
-        <Section title="3. Gebruik van de dienst">
-          Opstap mag je gebruiken voor persoonlijk, niet-commercieel gebruik. Het is niet toegestaan de dienst te automatiseren buiten de geboden functionaliteit, de dienst door te verkopen of aan derden ter beschikking te stellen.
+        <Section title={t('section3Title')}>
+          {t('section3Body')}
         </Section>
 
-        <Section title="4. Gegenereerde sollicitatiebrieven">
-          De door AI gegenereerde motivatiebrieven zijn een hulpmiddel. Jij bent zelf verantwoordelijk voor de inhoud van alle sollicitaties die je verstuurt. Opstap is niet aansprakelijk voor de gevolgen van ingediende sollicitaties.
+        <Section title={t('section4Title')}>
+          {t('section4Body')}
         </Section>
 
-        <Section title="5. Beschikbaarheid">
-          We streven naar een hoge beschikbaarheid maar geven geen garanties. We mogen de dienst aanpassen, uitbreiden of beëindigen. Bij beëindiging ontvang je tijdig bericht en de mogelijkheid je gegevens te exporteren.
+        <Section title={t('section5Title')}>
+          {t('section5Body')}
         </Section>
 
-        <Section title="6. Persoonsgegevens">
-          Hoe we omgaan met je persoonsgegevens staat beschreven in ons{' '}
+        <Section title={t('section6Title')}>
+          {t('section6BodyPrefix')}{' '}
           <Link href="/privacy" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            privacyvoorwaarden
+            {t('section6PrivacyLink')}
           </Link>
-          , dat onderdeel uitmaakt van deze voorwaarden.
+          {t('section6BodySuffix')}
         </Section>
 
-        <Section title="7. Aansprakelijkheid">
-          Opstap is niet aansprakelijk voor indirecte schade of gevolgschade die voortvloeit uit het gebruik van de dienst. Onze aansprakelijkheid is in alle gevallen beperkt tot het bedrag dat je in de afgelopen drie maanden voor de dienst hebt betaald.
+        <Section title={t('section7Title')}>
+          {t('section7Body')}
         </Section>
 
-        <Section title="8. Wijzigingen">
-          We kunnen deze voorwaarden van tijd tot tijd aanpassen. Wezenlijke wijzigingen kondigen we aan via e-mail of een melding in de app, minimaal 14 dagen van tevoren.
+        <Section title={t('section8Title')}>
+          {t('section8Body')}
         </Section>
 
-        <Section title="9. Toepasselijk recht">
-          Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter in Nederland.
+        <Section title={t('section9Title')}>
+          {t('section9Body')}
         </Section>
 
-        <Section title="10. Contact">
-          Vragen over deze voorwaarden? Stuur een e-mail naar{' '}
+        <Section title={t('section10Title')}>
+          {t('section10BodyPrefix')}{' '}
           <a href="mailto:info@opstapapp.nl" className="underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            info@opstapapp.nl
+            {t('section10EmailLink')}
           </a>
           .
         </Section>

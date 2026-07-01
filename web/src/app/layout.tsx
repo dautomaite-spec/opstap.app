@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import Script from 'next/script'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getLocale } from 'next-intl/server'
 import CookieBanner from '@/app/components/CookieBanner'
 import './globals.css'
 
@@ -54,10 +56,12 @@ posthog.init(${JSON.stringify(key)},{
 });
 `
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const phKey = process.env.NEXT_PUBLIC_POSTHOG_KEY
+  const locale = await getLocale()
+  const messages = await getMessages()
   return (
-    <html lang="nl" className={`${geist.variable} h-full antialiased`}>
+    <html lang={locale} className={`${geist.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {phKey && (
@@ -69,8 +73,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body className="min-h-full flex flex-col">
-        {children}
-        <CookieBanner />
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          <CookieBanner />
+        </NextIntlClientProvider>
       </body>
     </html>
   )

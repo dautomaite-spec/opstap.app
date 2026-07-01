@@ -4,8 +4,10 @@ import SidebarNavLink from './SidebarNavLink'
 import PublicMobileMenu from './PublicMobileMenu'
 import LanguageSwitcherPublic from './LanguageSwitcherPublic'
 import { createClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
 
 export default async function PublicShell({ children }: { children: React.ReactNode }) {
+  const t = await getTranslations('PublicShell')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userName = (user?.user_metadata?.naam as string | undefined)
@@ -45,18 +47,18 @@ export default async function PublicShell({ children }: { children: React.ReactN
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', background: 'var(--color-indigo-primary)' }}>
           <div className="px-6 pt-8 pb-6">
             <Link href="/" className="font-bold text-xl text-white tracking-tight hover:opacity-90 transition">Opstap</Link>
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Meer kansen. Minder moeite.</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{t('slogan')}</p>
           </div>
 
           <nav className="flex-1 px-3 pr-10 flex flex-col gap-1">
-            <SidebarNavLink href="/dashboard/profiel" label="Mijn profiel" />
-            <SidebarNavLink href="/dashboard/settings" label="Instellingen" />
-            <SidebarNavLink href="/dashboard" label="Vind vacatures" />
-            <SidebarNavLink href="/dashboard/opgeslagen" label="Opgeslagen vacatures" />
+            <SidebarNavLink href="/dashboard/profiel" label={t('navMijnProfiel')} />
+            <SidebarNavLink href="/dashboard/settings" label={t('navInstellingen')} />
+            <SidebarNavLink href="/dashboard" label={t('navVindVacatures')} />
+            <SidebarNavLink href="/dashboard/opgeslagen" label={t('navOpgeslagenVacatures')} />
             <div className="my-2 mx-3 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
-            <SidebarNavLink href="/over-ons" label="Over Opstap" />
-            <SidebarNavLink href="/faq" label="Help & FAQ" />
-            <SidebarNavLink href="/contact" label="Contact" />
+            <SidebarNavLink href="/over-ons" label={t('navOverOpstap')} />
+            <SidebarNavLink href="/faq" label={t('navHelpFaq')} />
+            <SidebarNavLink href="/contact" label={t('navContact')} />
           </nav>
 
           <div className="px-4 py-6 flex flex-col gap-3">
@@ -77,7 +79,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
                 className="w-full text-center py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                 style={{ background: 'rgba(255,255,255,0.22)', border: '1.5px solid rgba(255,255,255,0.7)' }}
               >
-                Aan de slag
+                {t('ctaAanDeSlag')}
               </Link>
             )}
           </div>
@@ -103,7 +105,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
             </div>
           ) : (
             <Link href="/login" className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.18)' }}>
-              Inloggen
+              {t('mobileLoginButton')}
             </Link>
           )}
         </div>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { login } from '@/app/actions/auth'
 import SocialButtons from '@/app/components/SocialButtons'
 
@@ -14,6 +15,7 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
+  const t = await getTranslations('LoginPage')
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--color-lavender-bg)' }}>
@@ -24,7 +26,7 @@ export default async function LoginPage({
 
         <div className="rounded-2xl p-8" style={{ background: 'var(--color-white)', boxShadow: '0 2px 16px rgba(61,58,140,0.08)' }}>
           <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>
-            Inloggen
+            {t('heading')}
           </h1>
 
           {error && (
@@ -36,7 +38,7 @@ export default async function LoginPage({
           <form action={login} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="email" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                E-mailadres
+                {t('emailLabel')}
               </label>
               <input
                 id="email"
@@ -55,7 +57,7 @@ export default async function LoginPage({
 
             <div className="flex flex-col gap-1">
               <label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Wachtwoord
+                {t('passwordLabel')}
               </label>
               <input
                 id="password"
@@ -77,19 +79,19 @@ export default async function LoginPage({
               className="mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
               style={{ background: 'var(--color-indigo-primary)' }}
             >
-              Inloggen
+              {t('loginButton')}
             </button>
           </form>
 
           <p className="text-center text-sm mt-4">
             <Link href="/forgot-password" className="underline" style={{ color: 'var(--color-text-muted)' }}>
-              Wachtwoord vergeten?
+              {t('forgotPassword')}
             </Link>
           </p>
 
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px" style={{ background: 'var(--color-lavender-card)' }} />
-            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>of</span>
+            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('dividerOr')}</span>
             <div className="flex-1 h-px" style={{ background: 'var(--color-lavender-card)' }} />
           </div>
 
@@ -97,9 +99,9 @@ export default async function LoginPage({
         </div>
 
         <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-muted)' }}>
-          Nog geen account?{' '}
+          {t('noAccountYet')}{' '}
           <Link href="/register" className="font-medium underline" style={{ color: 'var(--color-indigo-primary)' }}>
-            Account aanmaken
+            {t('createAccount')}
           </Link>
         </p>
       </div>

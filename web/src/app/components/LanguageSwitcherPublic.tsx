@@ -1,18 +1,32 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
+import { setLocale } from '@/actions/setLocale'
 
 const langs = [
-  { code: 'NL', flag: '🇳🇱', label: 'Nederlands', active: true },
-  { code: 'EN', flag: '🇬🇧', label: 'English', active: false },
-  { code: 'TR', flag: '🇹🇷', label: 'Türkçe', active: false },
-  { code: 'UK', flag: '🇺🇦', label: 'Українська', active: false },
-  { code: 'PL', flag: '🇵🇱', label: 'Polski', active: false },
-  { code: 'RO', flag: '🇷🇴', label: 'Română', active: false },
+  { code: 'nl', flag: '🇳🇱', label: 'Nederlands' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'tr', flag: '🇹🇷', label: 'Türkçe' },
+  { code: 'uk', flag: '🇺🇦', label: 'Українська' },
+  { code: 'pl', flag: '🇵🇱', label: 'Polski' },
+  { code: 'ro', flag: '🇷🇴', label: 'Română' },
 ]
 
 export default function LanguageSwitcherPublic() {
   const [open, setOpen] = useState(false)
+  const locale = useLocale()
+  const router = useRouter()
+
+  const currentLang = langs.find(l => l.code === locale) ?? langs[0]
+
+  async function handleSelect(code: string) {
+    await setLocale(code)
+    setOpen(false)
+    router.refresh()
+  }
+
   return (
     <div style={{ position: 'relative' }}>
       <button
@@ -21,7 +35,7 @@ export default function LanguageSwitcherPublic() {
         style={{ color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.12)' }}
         title="Taal"
       >
-        <span style={{ fontSize: 18, lineHeight: 1 }}>🇳🇱</span>
+        <span style={{ fontSize: 18, lineHeight: 1 }}>{currentLang.flag}</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6" />
         </svg>
@@ -33,25 +47,25 @@ export default function LanguageSwitcherPublic() {
             className="absolute right-0 top-full mt-1 rounded-xl border py-1 z-50"
             style={{ minWidth: 180, background: 'var(--color-white)', borderColor: 'var(--color-lavender-card)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
           >
-            {langs.map(l => (
-              <div
-                key={l.code}
-                className="flex items-center gap-2.5 px-3 py-2"
-                style={{
-                  cursor: l.active ? 'pointer' : 'not-allowed',
-                  opacity: l.active ? 1 : 0.45,
-                }}
-              >
-                <span>{l.flag}</span>
-                <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', fontWeight: l.active ? 600 : 400 }}>{l.label}</span>
-                {!l.active && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>binnenkort</span>}
-                {l.active && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
-              </div>
-            ))}
+            {langs.map(l => {
+              const isActive = l.code === locale
+              return (
+                <button
+                  key={l.code}
+                  onClick={() => handleSelect(l.code)}
+                  className="flex items-center gap-2.5 px-3 py-2 w-full text-left"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <span>{l.flag}</span>
+                  <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', fontWeight: isActive ? 600 : 400 }}>{l.label}</span>
+                  {isActive && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </>
       )}

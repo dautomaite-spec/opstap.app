@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Application } from '@/lib/api'
 import { JOB_TITLES } from '@/lib/jobTitles'
@@ -12,6 +13,7 @@ const OPLEIDINGSNIVEAU_LABELS: Record<string, string> = {
 }
 
 export default function ProfielPage() {
+  const t = useTranslations('ProfielPage')
   const [tab, setTab] = useState<'gegevens' | 'prestaties'>('gegevens')
   const [profile, setProfile] = useState<Profile | null>(null)
   const [applications, setApplications] = useState<Application[]>([])
@@ -48,11 +50,11 @@ export default function ProfielPage() {
     setCvSuccess('')
     try {
       const res = await api.profile.uploadCV(file, cvRetentionDays)
-      setCvSuccess(`CV geüpload. Wordt automatisch verwijderd op ${new Date(res.expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.`)
+      setCvSuccess(t('cvUploadSuccess', { date: new Date(res.expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) }))
       const updated = await api.profile.get().catch(() => null)
       if (updated) setProfile(updated)
     } catch (err) {
-      setCvError(err instanceof ApiError ? err.message : 'Uploaden mislukt. Probeer opnieuw.')
+      setCvError(err instanceof ApiError ? err.message : t('cvUploadErrorFallback'))
     } finally {
       setCvUploading(false)
       if (cvInputRef.current) cvInputRef.current.value = ''
@@ -65,10 +67,10 @@ export default function ProfielPage() {
     setCvSuccess('')
     try {
       await api.profile.deleteCV()
-      setCvSuccess('CV verwijderd')
+      setCvSuccess(t('cvDeleteSuccess'))
       setProfile(p => p ? { ...p, cv_url: undefined, cv_expires_at: undefined } : p)
     } catch (err) {
-      setCvError(err instanceof ApiError ? err.message : 'Verwijderen mislukt.')
+      setCvError(err instanceof ApiError ? err.message : t('cvDeleteErrorFallback'))
     } finally {
       setCvDeleting(false)
     }
@@ -81,9 +83,9 @@ export default function ProfielPage() {
     try {
       const updated = await api.profile.applyCV()
       setProfile(updated)
-      setCvApplySuccess('Profiel ingevuld vanuit je CV.')
+      setCvApplySuccess(t('cvApplySuccess'))
     } catch (err) {
-      setCvError(err instanceof ApiError ? err.message : 'Invullen mislukt. Probeer het opnieuw.')
+      setCvError(err instanceof ApiError ? err.message : t('cvApplyErrorFallback'))
     } finally {
       setCvApplying(false)
     }
@@ -116,23 +118,23 @@ export default function ProfielPage() {
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : 'Opslaan mislukt.')
+      setSaveError(err instanceof ApiError ? err.message : t('saveErrorFallback'))
     } finally {
       setSaving(false)
     }
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>Laden…</div>
+    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('loadingState')}</div>
   }
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>Mijn profiel</h1>
+      <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>{t('pageTitle')}</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 p-1 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
-        {([['gegevens', 'Mijn gegevens'], ['prestaties', 'Prestaties']] as const).map(([key, label]) => (
+        {([['gegevens', t('tabGegevens')], ['prestaties', t('tabPrestaties')]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -167,9 +169,9 @@ export default function ProfielPage() {
             return (
               <div className="mb-5 p-3 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Profiel volledigheid</span>
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('profileCompletenessLabel')}</span>
                   <span className="text-xs font-semibold" style={{ color: complete ? '#16a34a' : 'var(--color-indigo-primary)' }}>
-                    {filled}/6 {complete ? '· Compleet!' : ''}
+                    {t('profileCompletenessCount', { filled })} {complete ? t('profileCompletenessComplete') : ''}
                   </span>
                 </div>
                 <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-lavender-bg)' }}>
@@ -180,9 +182,9 @@ export default function ProfielPage() {
                 </div>
                 {!complete && (
                   <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
-                    Ontbreekt: {missing.join(', ')}.
+                    {t('profileMissingFields', { missing: missing.join(', ') })}
                     {!profile.profile_bonus_given && (
-                      <>{' '}<strong style={{ color: 'var(--color-indigo-primary)' }}>Vul alles in voor +1 gratis credit.</strong></>
+                      <>{' '}<strong style={{ color: 'var(--color-indigo-primary)' }}>{t('profileCompletionBonus')}</strong></>
                     )}
                   </p>
                 )}
@@ -191,7 +193,7 @@ export default function ProfielPage() {
           })()}
           {saveSuccess && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
-              Wijzigingen opgeslagen
+              {t('saveSuccess')}
             </p>
           )}
           {saveError && (
@@ -201,36 +203,36 @@ export default function ProfielPage() {
           )}
           {profile ? (
             <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <Field label="Volledige naam *" name="naam" required defaultValue={profile.naam} />
+              <Field label={t('fieldLabelNaam')} name="naam" required defaultValue={profile.naam} />
               <datalist id="job-titles-list">
-                {JOB_TITLES.map(t => <option key={t} value={t} />)}
+                {JOB_TITLES.map(title => <option key={title} value={title} />)}
               </datalist>
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Functietitel(s)</label>
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelFunctietitels')}</label>
                 <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Voeg tot 3 rollen toe. Opstap zoekt en solliciteert voor al je titels.
+                  {t('functietitelsDescription')}
                 </p>
-                <input list="job-titles-list" name="functietitel" placeholder="bijv. Software Developer" defaultValue={profile.functietitel ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-                <input list="job-titles-list" name="functietitel_2" placeholder="Tweede functietitel (optioneel)" defaultValue={profile.functietitel_2 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-                <input list="job-titles-list" name="functietitel_3" placeholder="Derde functietitel (optioneel)" defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input list="job-titles-list" name="functietitel" placeholder={t('functietitel1Placeholder')} defaultValue={profile.functietitel ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input list="job-titles-list" name="functietitel_2" placeholder={t('functietitel2Placeholder')} defaultValue={profile.functietitel_2 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+                <input list="job-titles-list" name="functietitel_3" placeholder={t('functietitel3Placeholder')} defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
-              <Field label="Woonplaats" name="woonplaats" placeholder="bijv. Amsterdam" defaultValue={profile.woonplaats} />
-              <SelectField label="Uren per week" name="uren_per_week" defaultValue={profile.uren_per_week?.toString() ?? ''}>
-                <option value="">Geen voorkeur</option>
-                <option value="16">Max 16 uur</option>
-                <option value="24">16-24 uur</option>
-                <option value="32">24-32 uur</option>
-                <option value="36">32-36 uur</option>
-                <option value="40">40 uur (fulltime)</option>
+              <Field label={t('fieldLabelWoonplaats')} name="woonplaats" placeholder={t('woonplaatsPlaceholder')} defaultValue={profile.woonplaats} />
+              <SelectField label={t('fieldLabelUrenPerWeek')} name="uren_per_week" defaultValue={profile.uren_per_week?.toString() ?? ''}>
+                <option value="">{t('urenGeenVoorkeur')}</option>
+                <option value="16">{t('urenMax16')}</option>
+                <option value="24">{t('uren1624')}</option>
+                <option value="32">{t('uren2432')}</option>
+                <option value="36">{t('uren3236')}</option>
+                <option value="40">{t('uren40')}</option>
               </SelectField>
-              <SelectField label="Beschikbaarheid" name="beschikbaarheid" defaultValue={profile.beschikbaarheid ?? ''}>
-                <option value="">Niet opgegeven</option>
-                <option value="fulltime">Fulltime</option>
-                <option value="parttime">Parttime</option>
-                <option value="both">Fulltime of parttime</option>
+              <SelectField label={t('fieldLabelBeschikbaarheid')} name="beschikbaarheid" defaultValue={profile.beschikbaarheid ?? ''}>
+                <option value="">{t('beschikbaarheidNietOpgegeven')}</option>
+                <option value="fulltime">{t('beschikbaarheidFulltime')}</option>
+                <option value="parttime">{t('beschikbaarheidParttime')}</option>
+                <option value="both">{t('beschikbaarheidBoth')}</option>
               </SelectField>
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Salaris (bruto/maand)</label>
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelSalaris')}</label>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'var(--color-text-muted)' }}>€</span>
@@ -240,7 +242,7 @@ export default function ProfielPage() {
                       min={0}
                       max={50000}
                       step={100}
-                      placeholder="Min"
+                      placeholder={t('salarisMinPlaceholder')}
                       defaultValue={profile.salaris_min?.toString() ?? ''}
                       className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none"
                       style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
@@ -255,7 +257,7 @@ export default function ProfielPage() {
                       min={0}
                       max={50000}
                       step={100}
-                      placeholder="Max"
+                      placeholder={t('salarisMaxPlaceholder')}
                       defaultValue={profile.salaris_max?.toString() ?? ''}
                       className="w-full pl-7 pr-3 py-2 rounded-lg border text-sm outline-none"
                       style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
@@ -263,32 +265,32 @@ export default function ProfielPage() {
                   </div>
                 </div>
               </div>
-              <SelectField label="Werklocatie" name="werklocatie" defaultValue={profile.werklocatie ?? ''}>
-                <option value="">Geen voorkeur</option>
-                <option value="op locatie">Op locatie</option>
-                <option value="hybride">Hybride</option>
-                <option value="remote">Thuis werken</option>
+              <SelectField label={t('fieldLabelWerklocatie')} name="werklocatie" defaultValue={profile.werklocatie ?? ''}>
+                <option value="">{t('werklocatieGeenVoorkeur')}</option>
+                <option value="op locatie">{t('werklocatieOpLocatie')}</option>
+                <option value="hybride">{t('werklocatieHybride')}</option>
+                <option value="remote">{t('werklocatieRemote')}</option>
               </SelectField>
-              <SelectField label="Opleidingsniveau" name="opleidingsniveau" defaultValue={profile.opleidingsniveau ?? ''}>
-                <option value="">Niet opgegeven</option>
-                <option value="vmbo">VMBO / Basis</option>
-                <option value="mbo">MBO</option>
-                <option value="hbo">HBO</option>
-                <option value="wo_bachelor">WO Bachelor</option>
-                <option value="wo_master">WO Master</option>
-                <option value="phd">PhD / Promotie</option>
+              <SelectField label={t('fieldLabelOpleidingsniveau')} name="opleidingsniveau" defaultValue={profile.opleidingsniveau ?? ''}>
+                <option value="">{t('opleidingNietOpgegeven')}</option>
+                <option value="vmbo">{t('opleidingVmbo')}</option>
+                <option value="mbo">{t('opleidingMbo')}</option>
+                <option value="hbo">{t('opleidingHbo')}</option>
+                <option value="wo_bachelor">{t('opleidingWoBachelor')}</option>
+                <option value="wo_master">{t('opleidingWoMaster')}</option>
+                <option value="phd">{t('opleidingPhd')}</option>
               </SelectField>
 
               {/* About me */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Over jezelf</label>
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('fieldLabelOverJezelf')}</label>
                 <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Vertel iets over wie je bent: je hobby's, interesses, hoe jij werkt, wat je drijft. Hoe meer je deelt, hoe persoonlijker je motivatiebrief wordt.
+                  {t('overJezelfDescription')}
                 </p>
                 <textarea
                   name="extra_info"
                   rows={5}
-                  placeholder="Ik ben een enthousiaste teamspeler die graag met mensen werkt. In mijn vrije tijd speel ik voetbal en lees ik over technologie. Ik ben proactief, houd van uitdagingen en leer snel..."
+                  placeholder={t('overJezelfPlaceholder')}
                   defaultValue={profile.extra_info ?? ''}
                   maxLength={2000}
                   className="px-3 py-2 rounded-lg border text-sm outline-none resize-none"
@@ -297,16 +299,16 @@ export default function ProfielPage() {
               </div>
 
               <div className="flex gap-3">
-                <Field label="Leeftijd" name="leeftijd" type="number" placeholder="28" defaultValue={profile.leeftijd?.toString()} />
-                <SelectField label="Taal motivatiebrief" name="brief_taal" defaultValue={profile.brief_taal ?? 'nl'}>
-                  <option value="nl">Nederlands</option>
-                  <option value="en">Engels</option>
+                <Field label={t('fieldLabelLeeftijd')} name="leeftijd" type="number" placeholder="28" defaultValue={profile.leeftijd?.toString()} />
+                <SelectField label={t('fieldLabelBriefTaal')} name="brief_taal" defaultValue={profile.brief_taal ?? 'nl'}>
+                  <option value="nl">{t('briefTaalNl')}</option>
+                  <option value="en">{t('briefTaalEn')}</option>
                 </SelectField>
               </div>
 
               {/* CV upload section */}
               <div className="pt-2 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
-                <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</p>
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>{t('cvSectionTitle')}</p>
                 {cvError && (
                   <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{cvError}</p>
                 )}
@@ -324,11 +326,11 @@ export default function ProfielPage() {
                       </svg>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
-                          CV geüpload{profile.cv_parsed ? ' - gegevens verwerkt ✓' : ' - wordt verwerkt…'}
+                          {profile.cv_parsed ? t('cvUploadedParsed') : t('cvUploadedProcessing')}
                         </p>
                         {profile.cv_expires_at && (
                           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                            Vervalt {new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {t('cvExpiresAt', { date: new Date(profile.cv_expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }) })}
                           </p>
                         )}
                       </div>
@@ -339,7 +341,7 @@ export default function ProfielPage() {
                         className="text-xs px-3 py-1.5 rounded-lg border transition hover:opacity-80 disabled:opacity-50"
                         style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
                       >
-                        {cvDeleting ? 'Verwijderen…' : 'Verwijder CV'}
+                        {cvDeleting ? t('cvDeletingButton') : t('cvDeleteButton')}
                       </button>
                     </div>
                     {profile.cv_parsed && (
@@ -353,7 +355,7 @@ export default function ProfielPage() {
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                         </svg>
-                        {cvApplying ? 'Profiel invullen…' : 'Profiel invullen vanuit CV'}
+                        {cvApplying ? t('cvApplyingButton') : t('cvApplyButton')}
                       </button>
                     )}
                   </div>
@@ -377,10 +379,10 @@ export default function ProfielPage() {
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
                       </svg>
-                      {cvUploading ? 'Uploaden…' : 'CV uploaden (PDF, DOC, DOCX)'}
+                      {cvUploading ? t('cvUploadingButton') : t('cvUploadButton')}
                     </button>
                     <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
-                      Nog geen CV?{' '}
+                      {t('cvNoCV')}{' '}
                       <a
                         href="https://www.cvmaker.nl"
                         target="_blank"
@@ -388,7 +390,7 @@ export default function ProfielPage() {
                         className="underline hover:opacity-70 transition"
                         style={{ color: 'var(--color-indigo-primary)' }}
                       >
-                        Maak er gratis een via cvmaker.nl →
+                        {t('cvMakerLink')}
                       </a>
                     </p>
                   </div>
@@ -398,27 +400,27 @@ export default function ProfielPage() {
                 {cvConsentOpen && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
                     <div className="rounded-2xl p-6 max-w-sm w-full flex flex-col gap-4" style={{ background: 'var(--color-white)' }}>
-                      <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>CV uploaden</h3>
+                      <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>{t('consentModalTitle')}</h3>
                       <div className="text-sm flex flex-col gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                        <p>Je CV wordt versleuteld opgeslagen en uitsluitend gebruikt voor het genereren van motivatiebrieven.</p>
+                        <p>{t('consentModalBody')}</p>
                         <ul className="flex flex-col gap-1 pl-4 list-disc">
-                          <li>Je ontvangt 7 dagen van tevoren een herinnering</li>
-                          <li>Je kunt je CV op elk moment zelf verwijderen</li>
-                          <li>Voor het uitlezen van je CV wordt de inhoud eenmalig verstuurd naar de Anthropic API (AI-dienst). Anthropic slaat deze inhoud niet op en gebruikt deze niet voor training.</li>
-                          <li>Je gegevens worden niet gedeeld met andere derden</li>
+                          <li>{t('consentBullet1')}</li>
+                          <li>{t('consentBullet2')}</li>
+                          <li>{t('consentBullet3')}</li>
+                          <li>{t('consentBullet4')}</li>
                         </ul>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>Bewaartermijn</label>
+                        <label className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>{t('consentRetentionLabel')}</label>
                         <select
                           value={cvRetentionDays}
                           onChange={e => setCvRetentionDays(Number(e.target.value))}
                           className="px-3 py-2 rounded-lg border text-sm"
                           style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
                         >
-                          <option value={7}>7 dagen</option>
-                          <option value={30}>30 dagen (standaard)</option>
-                          <option value={90}>90 dagen</option>
+                          <option value={7}>{t('retention7Days')}</option>
+                          <option value={30}>{t('retention30Days')}</option>
+                          <option value={90}>{t('retention90Days')}</option>
                         </select>
                       </div>
                       <div className="flex gap-2">
@@ -428,7 +430,7 @@ export default function ProfielPage() {
                           className="flex-1 py-2 rounded-xl text-sm border transition hover:opacity-80"
                           style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
                         >
-                          Annuleren
+                          {t('consentCancelButton')}
                         </button>
                         <button
                           type="button"
@@ -436,7 +438,7 @@ export default function ProfielPage() {
                           className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                           style={{ background: 'var(--color-indigo-primary)' }}
                         >
-                          Akkoord en uploaden
+                          {t('consentAgreeButton')}
                         </button>
                       </div>
                     </div>
@@ -450,11 +452,11 @@ export default function ProfielPage() {
                 className="py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                 style={{ background: 'var(--color-indigo-primary)' }}
               >
-                {saving ? 'Opslaan…' : 'Opslaan'}
+                {saving ? t('savingButton') : t('saveButton')}
               </button>
             </form>
           ) : (
-            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Geen profiel gevonden.</p>
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('noProfileFound')}</p>
           )}
         </>
       )}
