@@ -136,6 +136,7 @@ export interface Profile {
   salaris_max?: number
   werklocatie?: string
   extra_info?: string
+  job_preferences?: string
   leeftijd?: number
   brief_taal?: string
   cv_url?: string
@@ -175,6 +176,7 @@ export interface ProfileCreate {
   salaris_max?: number
   werklocatie?: string
   extra_info?: string
+  job_preferences?: string
   opleidingsniveau?: string
   leeftijd?: number
   brief_taal?: string

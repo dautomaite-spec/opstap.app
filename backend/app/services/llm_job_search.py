@@ -98,9 +98,16 @@ def _build_system_prompt(profile: dict, keywords: str, location: str, limit: int
     title_str = _sanitize(", ".join(titles) if titles else keywords or "medewerker")
     loc = _sanitize(location or profile.get("woonplaats") or "Nederland", 100)
     extra = _sanitize(profile.get("extra_info") or "", 400)
+    prefs = _sanitize(profile.get("job_preferences") or "", 300)
     edu = _sanitize(profile.get("opleidingsniveau") or "", 50)
     werk = _sanitize(profile.get("werklocatie") or "", 50)
     naam = _sanitize(profile.get("naam") or "", 100)
+
+    prefs_section = (
+        f"\nZoekverfijning: {prefs}\n\nGebruik bovenstaande verfijning om resultaten te prioriteren: "
+        "positieve wensen verhogen de prioriteit, negatieve wensen (bijv. 'geen buitenwerk') verlagen "
+        "de prioriteit maar sluiten de vacature niet uit."
+    ) if prefs else ""
 
     return f"""Je bent een Nederlandse vacature-zoekassistent voor Opstap. Zoek {limit} actuele vacatures in Nederland.
 
@@ -111,7 +118,7 @@ Functietitel(s): {title_str}
 Woonplaats / regio: {loc}
 Werklocatie-voorkeur: {werk or 'geen voorkeur'}
 Opleidingsniveau: {edu or 'niet opgegeven'}
-Over de kandidaat: {extra or 'niet opgegeven'}
+Over de kandidaat: {extra or 'niet opgegeven'}{prefs_section}
 </kandidaatprofiel>
 
 Gebruik de web_search tool om vacatures te zoeken. Doe minimaal 3 zoekopdrachten met variaties, bijv:
