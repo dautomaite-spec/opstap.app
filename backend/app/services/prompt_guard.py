@@ -144,6 +144,10 @@ _OUTPUT_INJECTION_PATTERNS: Final[list[re.Pattern]] = [re.compile(p, re.IGNORECA
     r"<a\s+href",
     r"<img\s+src",
     r"javascript:",
+    # Salary / compensation figures must never appear in a generated letter
+    r"€\s*\d[\d.,]+",
+    r"\b\d[\d.]+\s*(?:euro|eur)\b",
+    r"\b(?:salaris|uurloon|vergoeding|bruto|netto)\s+(?:van\s+)?\d",
     # English-only output (letter must contain Dutch words)
     # Checked separately in validate_letter_output below
 ]]

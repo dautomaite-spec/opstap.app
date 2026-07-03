@@ -27,6 +27,17 @@ from app.services.prompt_guard import (
 
 _client: anthropic.AsyncAnthropic | None = None
 
+# Strip monetary values from CV free-text so salary never reaches the prompt
+_MONEY_RE = re.compile(
+    r'[€$£]\s*\d[\d.,]+'
+    r'|\d[\d.,]*\s*(?:euro|eur|usd|gbp)\b'
+    r'|\b\d+[.,]\d+\s*(?:per\s+(?:uur|maand|jaar))\b',
+    re.IGNORECASE,
+)
+
+def _strip_salary(text: str) -> str:
+    return _MONEY_RE.sub('[bedrag]', text)
+
 
 def _get_client() -> anthropic.AsyncAnthropic:
     global _client
@@ -240,14 +251,14 @@ async def generate_letter(
             werk_lines = []
             for w in werkervaring[:4]:
                 line = f"- {w.get('functie', '?')} bij {w.get('bedrijf', '?')} ({w.get('periode', '?')})"
-                taken = [str(t) for t in (w.get("taken") or [])[:3]]
+                taken = [_strip_salary(str(t)) for t in (w.get("taken") or [])[:3]]
                 if taken:
                     line += ": " + ", ".join(taken)
                 werk_lines.append(line)
             profile_lines.append("Werkervaring:\n" + "\n".join(werk_lines))
 
         if vaardigheden:
-            profile_lines.append(f"Vaardigheden: {', '.join(str(s) for s in vaardigheden[:20])}")
+            profile_lines.append(f"Vaardigheden: {', '.join(_strip_salary(str(s)) for s in vaardigheden[:20])}")
 
         if opleiding:
             o = opleiding[0]
@@ -260,7 +271,7 @@ async def generate_letter(
             profile_lines.append(f"Talen: {', '.join(str(t) for t in talen)}")
 
         if certificaten:
-            profile_lines.append(f"Certificaten: {', '.join(str(c) for c in certificaten[:10])}")
+            profile_lines.append(f"Certificaten: {', '.join(_strip_salary(str(c)) for c in certificaten[:10])}")
 
     profile_block = "\n".join(profile_lines) if profile_lines else "(geen aanvullende profielinfo)"
 
