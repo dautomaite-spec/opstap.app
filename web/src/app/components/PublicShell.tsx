@@ -55,6 +55,7 @@ export default async function PublicShell({ children }: { children: React.ReactN
             <SidebarNavLink href="/dashboard/settings" label={t('navInstellingen')} />
             <SidebarNavLink href="/dashboard" label={t('navVindVacatures')} />
             <SidebarNavLink href="/dashboard/opgeslagen" label={t('navOpgeslagenVacatures')} />
+            <SidebarNavLink href="/dashboard/sollicitaties" label={t('navJouwSollicitaties')} />
             <div className="my-2 mx-3 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
             <SidebarNavLink href="/over-ons" label={t('navOverOpstap')} />
             <SidebarNavLink href="/faq" label={t('navHelpFaq')} />
