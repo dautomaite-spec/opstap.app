@@ -102,12 +102,34 @@ def _build_system_prompt(profile: dict, keywords: str, location: str, limit: int
     edu = _sanitize(profile.get("opleidingsniveau") or "", 50)
     werk = _sanitize(profile.get("werklocatie") or "", 50)
     naam = _sanitize(profile.get("naam") or "", 100)
+    background = _sanitize(profile.get("job_background") or "", 400)
+    company_size = _sanitize(profile.get("job_company_size") or "", 50)
+    culture = _sanitize(profile.get("job_culture") or "", 50)
+    role_type = _sanitize(profile.get("job_role_type") or "", 50)
+    avoids = _sanitize(profile.get("job_avoids") or "", 300)
+    search_summary = _sanitize(profile.get("job_search_summary") or "", 600)
 
     prefs_section = (
         f"\nZoekverfijning: {prefs}\n\nGebruik bovenstaande verfijning om resultaten te prioriteren: "
         "positieve wensen verhogen de prioriteit, negatieve wensen (bijv. 'geen buitenwerk') verlagen "
         "de prioriteit maar sluiten de vacature niet uit."
     ) if prefs else ""
+
+    extra_profile_lines = []
+    if background:
+        extra_profile_lines.append(f"Achtergrond: {background}")
+    if company_size:
+        extra_profile_lines.append(f"Voorkeur bedrijfsgrootte: {company_size}")
+    if culture:
+        extra_profile_lines.append(f"Bedrijfscultuur voorkeur: {culture}")
+    if role_type:
+        extra_profile_lines.append(f"Rol type: {role_type}")
+    if avoids:
+        extra_profile_lines.append(f"Wil vermijden (lagere prioriteit, niet uitsluiten): {avoids}")
+    if search_summary:
+        extra_profile_lines.append(f"Zoekprofiel samenvatting: {search_summary}")
+
+    extra_block = ("\n" + "\n".join(extra_profile_lines)) if extra_profile_lines else ""
 
     return f"""Je bent een Nederlandse vacature-zoekassistent voor Opstap. Zoek {limit} actuele vacatures in Nederland.
 
@@ -118,7 +140,7 @@ Functietitel(s): {title_str}
 Woonplaats / regio: {loc}
 Werklocatie-voorkeur: {werk or 'geen voorkeur'}
 Opleidingsniveau: {edu or 'niet opgegeven'}
-Over de kandidaat: {extra or 'niet opgegeven'}{prefs_section}
+Over de kandidaat: {extra or 'niet opgegeven'}{extra_block}{prefs_section}
 </kandidaatprofiel>
 
 Gebruik de web_search tool om vacatures te zoeken. Doe minimaal 3 zoekopdrachten met variaties, bijv:

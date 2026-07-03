@@ -536,6 +536,24 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     <div>
       <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>{t('pageTitle')}</h1>
 
+      {/* Search profile summary card */}
+      {profile?.job_search_summary ? (
+        <div className="mb-5 p-4 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('summaryCardTitle')}</p>
+              <p className="text-sm" style={{ color: 'var(--color-text-primary)', lineHeight: 1.6 }}>{profile.job_search_summary}</p>
+            </div>
+            <a href="/dashboard/profiel" className="text-xs shrink-0 underline" style={{ color: 'var(--color-text-muted)' }}>{t('summaryEditLink')}</a>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-5 p-3 rounded-xl flex items-center justify-between gap-3" style={{ background: 'var(--color-lavender-card)' }}>
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('summaryMissingHint')}</p>
+          <a href="/dashboard/profiel" className="text-xs shrink-0 font-semibold" style={{ color: 'var(--color-indigo-primary)' }}>{t('summaryMissingLink')}</a>
+        </div>
+      )}
+
       {/* Search trigger */}
       {jobs.length === 0 && !searching && (
         <div className="flex flex-col items-center gap-3 py-10">
