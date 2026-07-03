@@ -20,6 +20,7 @@ export default function ProfielPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
   const [saveError, setSaveError] = useState('')
 
   const [summaryGenerating, setSummaryGenerating] = useState(false)
@@ -127,7 +128,7 @@ export default function ProfielPage() {
       })
       setProfile(updated)
       setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      setIsDirty(false)
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : t('saveErrorFallback'))
     } finally {
@@ -216,18 +217,13 @@ export default function ProfielPage() {
               </div>
             )
           })()}
-          {saveSuccess && (
-            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
-              {t('saveSuccess')}
-            </p>
-          )}
           {saveError && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>
               {saveError}
             </p>
           )}
           {profile ? (
-            <form onSubmit={handleSave} className="flex flex-col gap-4">
+            <form onSubmit={handleSave} onChange={() => { setIsDirty(true); setSaveSuccess(false) }} className="flex flex-col gap-4">
               <Field label={t('fieldLabelNaam')} name="naam" required defaultValue={profile.naam} />
               <datalist id="job-titles-list">
                 {JOB_TITLES.map(title => <option key={title} value={title} />)}
@@ -507,10 +503,19 @@ export default function ProfielPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'var(--color-indigo-primary)' }}
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                style={{ background: saveSuccess && !isDirty ? '#16a34a' : 'var(--color-indigo-primary)' }}
               >
-                {saving ? t('savingButton') : t('saveButton')}
+                {saving ? (
+                  t('savingButton')
+                ) : saveSuccess && !isDirty ? (
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    {t('saveSuccess')}
+                  </>
+                ) : (
+                  t('saveButton')
+                )}
               </button>
 
               {/* Generate search profile summary */}
