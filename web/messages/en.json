@@ -527,7 +527,8 @@
     "summaryCardTitle": "Your search profile",
     "summaryEditLink": "Edit",
     "summaryMissingHint": "Complete your profile for better search results.",
-    "summaryMissingLink": "Complete profile"
+    "summaryMissingLink": "Complete profile",
+    "reportDeadTooltip": "Job removed"
   },
   "SettingsPage": {
     "pageTitle": "Settings | Opstap",

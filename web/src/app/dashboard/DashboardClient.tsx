@@ -165,6 +165,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     })
   }, [])
 
+  const reportDead = useCallback((job: Job) => {
+    setJobs(prev => prev.filter(j => j.id !== job.id))
+    writeCachedJobs([], false)
+    api.jobs.reportDead(job.id).catch(() => {})
+  }, [])
+
   const [jobsStale, setJobsStale] = useState(false)
 
   // Search flow: button-triggered, minimum 5s spinner
@@ -1036,6 +1042,14 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
                           >
                             {t('viewJobButton')}
                           </a>
+                          <button
+                            onClick={() => reportDead(job)}
+                            title={t('reportDeadTooltip')}
+                            className="px-2 py-1.5 rounded-lg border transition hover:opacity-80"
+                            style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-text-muted)' }}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
                           <button
                             onClick={() => toggleSave(job)}
                             title={savedJobs[job.id] ? t('unsaveJobTooltip') : t('saveJobTooltip')}

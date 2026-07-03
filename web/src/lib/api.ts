@@ -99,6 +99,7 @@ export const api = {
     listSaved: () => request<{ job_id: string; job_data: Job; saved_at: string }[]>('GET', '/api/v1/jobs/saved/list'),
     save: (job_id: string, job_data: Job) => request<{ saved: boolean }>('POST', '/api/v1/jobs/saved', { job_id, job_data }),
     unsave: (job_id: string) => request<void>('DELETE', `/api/v1/jobs/saved/${job_id}`),
+    reportDead: (job_id: string) => request<void>('POST', `/api/v1/jobs/${job_id}/report-dead`),
   },
   apply: {
     generateLetter: (body: LetterRequest) => request<LetterResponse>('POST', '/api/v1/apply/letter', body),

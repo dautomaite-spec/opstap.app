@@ -527,7 +527,8 @@
     "summaryCardTitle": "Twoj profil wyszukiwania",
     "summaryEditLink": "Edytuj",
     "summaryMissingHint": "Uzupelnij profil dla lepszych wynikow.",
-    "summaryMissingLink": "Uzupelnij profil"
+    "summaryMissingLink": "Uzupelnij profil",
+    "reportDeadTooltip": "Oferta usunieta"
   },
   "SettingsPage": {
     "pageTitle": "Ustawienia | Opstap",

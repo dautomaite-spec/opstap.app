@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import uuid4
+from app.services.llm_job_search import _is_url_live
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ def _normalize_location(loc: str | None) -> str:
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 _FRESH_HOURS = 24  # DB results younger than this are served without re-scraping
-_STALE_DAYS = 14   # Fallback cap — never return results older than this
+_STALE_DAYS = 3    # Fallback cap — job listings expire fast; never return results older than this
 
 # In-process rate limit: (count, window_start) per user_id
 _llm_rate_state: dict[str, tuple[int, datetime]] = {}
@@ -159,7 +160,7 @@ async def search_jobs(
     # ── DB-first: check shared job pool for fresh matching results ────────────
     # text_search() changes the builder type to SyncQueryRequestBuilder which
     # lacks order/limit/filter — use client-side keyword filtering instead.
-    db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff)
+    db_query = supabase.table("jobs").select("*").gte("scraped_at", fresh_cutoff).is_("dead_at", "null")
     if location:
         db_query = db_query.ilike("location", f"%{location}%")
     cached_raw = [j for j in (db_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
@@ -222,6 +223,13 @@ async def search_jobs(
         flat = [j for group in (*jb_groups, *nvb_groups) for j in group]
         scraper_raw = [j for j in flat + indeed_results
                        if _is_nl_location(j.get("location"))]
+        # Liveness-check scraper results (parallel HEAD) — same filter applied to LLM results above
+        if scraper_raw:
+            live_flags = await asyncio.gather(*[_is_url_live(j["url"]) for j in scraper_raw])
+            dead = sum(1 for f in live_flags if not f)
+            if dead:
+                logger.info("Scraper liveness check: removed %d dead listing(s)", dead)
+            scraper_raw = [j for j, live in zip(scraper_raw, live_flags) if live]
         # Merge: keep LLM results first (richer), append scraper results
         existing_urls = {j["url"] for j in raw}
         for j in scraper_raw:
@@ -234,7 +242,7 @@ async def search_jobs(
     if not raw:
         # Scrapers returned nothing — fall back to DB with a 14-day staleness cap
         stale_cutoff = (now - timedelta(days=_STALE_DAYS)).isoformat()
-        fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff)
+        fb_query = supabase.table("jobs").select("*").gte("scraped_at", stale_cutoff).is_("dead_at", "null")
         if location:
             fb_query = fb_query.ilike("location", f"%{location}%")
         fb_raw = [j for j in (fb_query.order("scraped_at", desc=True).limit(min(params.limit * 4, 200)).execute().data or [])
@@ -342,6 +350,19 @@ async def unsave_job(
     supabase=Depends(get_supabase),
 ):
     supabase.table("saved_jobs").delete().eq("user_id", user_id).eq("job_id", job_id).execute()
+    return None
+
+
+# ── Dead link report (BEFORE /{job_id} to prevent route shadowing) ──────────
+
+@router.post("/{job_id}/report-dead", status_code=204)
+async def report_dead_job(
+    job_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase=Depends(get_supabase),
+):
+    """Mark a job as dead so it is filtered from all future cache results."""
+    supabase.table("jobs").update({"dead_at": datetime.now(timezone.utc).isoformat()}).eq("id", job_id).is_("dead_at", "null").execute()
     return None
 
 

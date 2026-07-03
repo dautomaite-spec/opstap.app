@@ -527,7 +527,8 @@
     "summaryCardTitle": "Jouw zoekprofiel",
     "summaryEditLink": "Aanpassen",
     "summaryMissingHint": "Vul je profiel verder in voor betere zoekresultaten.",
-    "summaryMissingLink": "Profiel aanvullen"
+    "summaryMissingLink": "Profiel aanvullen",
+    "reportDeadTooltip": "Vacature verwijderd"
   },
   "SettingsPage": {
     "pageTitle": "Instellingen | Opstap",

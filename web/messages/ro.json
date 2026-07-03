@@ -527,7 +527,8 @@
     "summaryCardTitle": "Profilul tau de cautare",
     "summaryEditLink": "Editeaza",
     "summaryMissingHint": "Completati profilul pentru rezultate mai bune.",
-    "summaryMissingLink": "Completeaza profilul"
+    "summaryMissingLink": "Completeaza profilul",
+    "reportDeadTooltip": "Oferta eliminata"
   },
   "SettingsPage": {
     "pageTitle": "Setări | Opstap",

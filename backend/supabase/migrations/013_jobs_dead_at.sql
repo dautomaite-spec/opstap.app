@@ -1,0 +1,2 @@
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS dead_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS jobs_live_idx ON jobs(dead_at) WHERE dead_at IS NULL;

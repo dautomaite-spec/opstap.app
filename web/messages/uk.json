@@ -527,7 +527,8 @@
     "summaryCardTitle": "Ваш профіль пошуку",
     "summaryEditLink": "Змінити",
     "summaryMissingHint": "Доповніть профіль для кращих результатів.",
-    "summaryMissingLink": "Доповнити профіль"
+    "summaryMissingLink": "Доповнити профіль",
+    "reportDeadTooltip": "Вакансія видалена"
   },
   "SettingsPage": {
     "pageTitle": "Налаштування | Opstap",

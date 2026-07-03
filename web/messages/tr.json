@@ -527,7 +527,8 @@
     "summaryCardTitle": "Arama profilin",
     "summaryEditLink": "Duzenle",
     "summaryMissingHint": "Daha iyi sonuclar icin profilini tamamla.",
-    "summaryMissingLink": "Profili tamamla"
+    "summaryMissingLink": "Profili tamamla",
+    "reportDeadTooltip": "Is ilani kaldirildi"
   },
   "SettingsPage": {
     "pageTitle": "Ayarlar | Opstap",
