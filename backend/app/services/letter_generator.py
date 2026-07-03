@@ -54,6 +54,7 @@ VERBODEN — gebruik dit NOOIT:
 - Em-dash (—) — gebruik nooit een em-dash, dit is een AI-signaal
 - Dubbele punt aan het einde van een zin gevolgd door een opsomming
 - Elke generieke zin die ook in 100 andere brieven kan staan
+- Salarisbedragen, uurlonen, vergoedingen of salarisverwachtingen — noem NOOIT getallen over beloning
 """
 
 # ─── Format ──────────────────────────────────────────────────────────────────
@@ -192,8 +193,7 @@ async def generate_letter(
     beschikbaarheid = str(profile.get("beschikbaarheid", ""))[:80]
     uren = profile.get("uren_per_week")
     werklocatie = str(profile.get("werklocatie", ""))[:80]
-    salaris_min = profile.get("salaris_min")
-    salaris_max = profile.get("salaris_max")
+    # Salary data is intentionally excluded — motivation letters must not mention salary
     # extra_info is the one truly free-text user field — apply strict guard
     extra_raw = str(profile.get("extra_info", ""))
     extra = sanitize_and_check_profile_text(extra_raw, "extra_info", 500)
@@ -223,10 +223,6 @@ async def generate_letter(
         profile_lines.append(f"Gewenste uren per week: {uren}")
     if werklocatie:
         profile_lines.append(f"Werklocatie voorkeur: {werklocatie}")
-    if salaris_min and salaris_max:
-        profile_lines.append(f"Salarisverwachting: €{salaris_min:,}–€{salaris_max:,} bruto/maand")
-    elif salaris_min:
-        profile_lines.append(f"Salarisverwachting: vanaf €{salaris_min:,} bruto/maand")
     if extra:
         profile_lines.append(f"Achtergrond / extra info: {extra}")
 

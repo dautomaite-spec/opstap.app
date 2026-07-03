@@ -1,5 +1,13 @@
 # Changelog — Opstap
 
+## 2026-07-03 (feat/job-search-preferences)
+- fix: add Jouw sollicitaties link to PublicShell sidebar nav — SidebarNavLink + navJouwSollicitaties i18n key added to all 6 translation files (nl/en/tr/uk/pl/ro)
+- fix(security): harden search-summary endpoint against prompt injection — multiple detection patterns, output scrubbed before DB write, 422 on detected injection
+- feat: richer search profile + AI-generated search summary — migration 012 adds 6 new profile columns (job_background, job_company_size, job_culture, job_role_type, job_avoids, job_search_summary); backend POST /profile/search-summary via Claude Haiku with rate limiting, prompt injection protection, output validation; profile page new "Zoekprofiel" section + dashboard summary card
+- feat: job search preferences field — new profile field to scope search results without excluding job titles; preference used as soft LLM context, not a hard filter
+- feat: full site i18n — NL/EN/TR/UK/PL/RO translations via next-intl; all UI strings migrated to t('key') calls; language switcher fully functional for all 6 locales
+- feat: remove LinkedIn from job scrapers — scrape_linkedin_nl() removed from asyncio.gather(); cached LinkedIn URLs filtered from DB results (cloud-IP ban made scraper non-functional)
+
 ## 2026-06-29 (PR #135 — LinkedIn warning + loading spinners)
 - feat: orange LinkedIn warning banner shown in the letter modal when the job URL contains linkedin.com — warns user that manual submission is required
 - feat: loading spinners added to Solliciteren, Opnieuw genereren, and Kopieer & solliciteer buttons — prevents double-clicks and shows progress state during API calls

@@ -336,7 +336,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Voortgangskaart</h1>
-      <p>Bijgewerkt op 2026-06-29 (LinkedIn warning + loading spinners, filter sidebar, profile-driven search)</p>
+      <p>Bijgewerkt op 2026-07-03 (i18n NL/EN/TR/UK/PL/RO, job search preferences, richer search profile + AI summary, PublicShell nav fix)</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -766,6 +766,11 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>"Andere sector" label wordt nu correct weergegeven in de filterssidebar; alle profieltitels zichtbaar in de zoekresultatenheader (#133).</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Taalkiezer bijgesneden tot NL/EN/TR/UK/PL/RO — talen zonder directe roadmap verwijderd om visuele ruis te verminderen (#134).</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LinkedIn-waarschuwingsbanner (oranje) in het briefmodal wanneer de vacature-URL linkedin.com bevat — gebruiker gewaarschuwd dat handmatige indiening vereist is. Laadspinners toegevoegd aan Solliciteren-, Opnieuw genereren- en Kopieer &amp; solliciteer-knoppen (#135).</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Volledige site i18n: NL/EN/TR/UK/PL/RO vertalingen via next-intl — alle UI-strings gemigreerd; taalkiezer volledig functioneel voor 6 talen</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LinkedIn verwijderd uit job scrapers: scrape_linkedin_nl() verwijderd uit asyncio.gather(); gecachte LinkedIn-URLs gefilterd bij ophalen uit de DB</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Zoekvoorkeurenveld (job_search_preferences): nieuw profielveld waarmee gebruikers zoekresultaten kunnen verfijnen zonder functies uit te sluiten</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Rijker zoekprofiel + AI-zoeksamenvatting (migratie 012): 6 nieuwe profielkolommen (job_background, job_company_size, job_culture, job_role_type, job_avoids, job_search_summary); POST /profile/search-summary via Claude Haiku met rate limiting, prompt-injectiebeveiliging en outputvalidatie; profielpagina "Zoekprofiel"-sectie + dashboard-samenvattingskaart</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>"Jouw sollicitaties" navigatielink toegevoegd aan PublicShell sidebar nav met i18n-sleutels voor alle 6 talen</span></li>
         </ul>
       </div>
 
