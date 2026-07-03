@@ -13,6 +13,11 @@ from app.core.config import settings
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.profile import ProfileCreate, ProfileUpdate, ProfileOut
+from app.services.prompt_guard import (
+    sanitize_and_check_profile_text,
+    validate_summary_output,
+    PromptInjectionError,
+)
 from app.services.credits import (
     award_signup_credits,
     award_referral_signup_credits,
@@ -218,11 +223,46 @@ async def export_my_data(
 _SUMMARY_MODEL = "claude-haiku-4-5-20251001"
 _SUMMARY_MAX_TOKENS = 300
 
+# Per-user rate limit: max 15 summary generations per hour (in-process, single-worker)
+import threading as _threading
+_summary_rate_lock = _threading.Lock()
+_summary_rate_state: dict[str, tuple[datetime, int]] = {}
+_SUMMARY_HOURLY_LIMIT = 15
 
-def _sanitize_field(val, max_len: int = 200) -> str:
+
+def _check_summary_rate_limit(user_id: str, now: datetime) -> bool:
+    with _summary_rate_lock:
+        entry = _summary_rate_state.get(user_id)
+        if entry:
+            window_start, count = entry
+            if (now - window_start).total_seconds() < 3600:
+                if count >= _SUMMARY_HOURLY_LIMIT:
+                    return False
+                _summary_rate_state[user_id] = (window_start, count + 1)
+            else:
+                _summary_rate_state[user_id] = (now, 1)
+        else:
+            _summary_rate_state[user_id] = (now, 1)
+        return True
+
+
+def _safe_field(p: dict, key: str, max_len: int = 150) -> str:
+    """Return empty string for non-free-text fields (no injection risk)."""
+    val = p.get(key)
     if not val:
         return ""
-    return str(val).replace("<", "").replace(">", "").strip()[:max_len]
+    return str(val).strip()[:max_len]
+
+
+def _safe_text_field(p: dict, key: str, max_len: int) -> str:
+    """Sanitize and injection-check a free-text profile field."""
+    val = p.get(key)
+    if not val:
+        return ""
+    try:
+        return sanitize_and_check_profile_text(str(val), key, max_len)
+    except PromptInjectionError:
+        raise HTTPException(status_code=422, detail=f"Veld '{key}' bevat ongeldige inhoud")
 
 
 @router.post("/search-summary", status_code=200)
@@ -231,6 +271,11 @@ async def generate_search_summary(
     supabase=Depends(get_supabase),
 ):
     """Generate a natural-language search profile summary using Claude Haiku and store it."""
+    now = datetime.now(timezone.utc)
+
+    if not _check_summary_rate_limit(user_id, now):
+        raise HTTPException(status_code=429, detail="Even wachten — je kunt maximaal 15 keer per uur een zoekprofiel genereren")
+
     result = supabase.table("profiles").select("*").eq("user_id", user_id).single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Profiel niet gevonden")
@@ -238,7 +283,7 @@ async def generate_search_summary(
     p = result.data
 
     def f(key, max_len=150):
-        return _sanitize_field(p.get(key), max_len)
+        return _safe_field(p, key, max_len)
 
     titles = [t for t in [f("functietitel"), f("functietitel_2"), f("functietitel_3")] if t]
     title_str = ", ".join(titles) if titles else "niet opgegeven"
@@ -248,13 +293,15 @@ async def generate_search_summary(
     uren = p.get("uren_per_week")
     sal_min = p.get("salaris_min")
     sal_max = p.get("salaris_max")
-    extra = f("extra_info", 400)
-    prefs = f("job_preferences", 300)
-    background = f("job_background", 400)
+    # Free-text fields: strict injection check + HTML strip
+    extra = _safe_text_field(p, "extra_info", 400)
+    prefs = _safe_text_field(p, "job_preferences", 300)
+    background = _safe_text_field(p, "job_background", 400)
+    avoids = _safe_text_field(p, "job_avoids", 300)
+    # Enum / short fields: no free-text injection risk
     company_size = f("job_company_size")
     culture = f("job_culture")
     role_type = f("job_role_type")
-    avoids = f("job_avoids", 300)
 
     salary_str = ""
     if sal_min and sal_max:
@@ -314,10 +361,17 @@ async def generate_search_summary(
         logger.error("search-summary generation failed: %s", exc)
         raise HTTPException(status_code=502, detail="Samenvatting kon niet worden gegenereerd")
 
-    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        validate_summary_output(summary)
+    except PromptInjectionError as exc:
+        logger.warning("search-summary output validation failed: %s", exc)
+        raise HTTPException(status_code=502, detail="Samenvatting kon niet worden gegenereerd")
+
+    now_iso = now.isoformat()
     supabase.table("profiles").update({
         "job_search_summary": summary,
         "updated_at": now_iso,
+        "last_active_at": now_iso,
     }).eq("user_id", user_id).execute()
 
     return {"summary": summary}
