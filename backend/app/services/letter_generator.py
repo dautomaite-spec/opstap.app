@@ -27,6 +27,17 @@ from app.services.prompt_guard import (
 
 _client: anthropic.AsyncAnthropic | None = None
 
+# Strip monetary values from CV free-text so salary never reaches the prompt
+_MONEY_RE = re.compile(
+    r'[€$£]\s*\d[\d.,]+'
+    r'|\d[\d.,]*\s*(?:euro|eur|usd|gbp)\b'
+    r'|\b\d+[.,]\d+\s*(?:per\s+(?:uur|maand|jaar))\b',
+    re.IGNORECASE,
+)
+
+def _strip_salary(text: str) -> str:
+    return _MONEY_RE.sub('[bedrag]', text)
+
 
 def _get_client() -> anthropic.AsyncAnthropic:
     global _client
@@ -54,6 +65,7 @@ VERBODEN — gebruik dit NOOIT:
 - Em-dash (—) — gebruik nooit een em-dash, dit is een AI-signaal
 - Dubbele punt aan het einde van een zin gevolgd door een opsomming
 - Elke generieke zin die ook in 100 andere brieven kan staan
+- Salarisbedragen, uurlonen, vergoedingen of salarisverwachtingen — noem NOOIT getallen over beloning
 """
 
 # ─── Format ──────────────────────────────────────────────────────────────────
@@ -192,8 +204,7 @@ async def generate_letter(
     beschikbaarheid = str(profile.get("beschikbaarheid", ""))[:80]
     uren = profile.get("uren_per_week")
     werklocatie = str(profile.get("werklocatie", ""))[:80]
-    salaris_min = profile.get("salaris_min")
-    salaris_max = profile.get("salaris_max")
+    # Salary data is intentionally excluded — motivation letters must not mention salary
     # extra_info is the one truly free-text user field — apply strict guard
     extra_raw = str(profile.get("extra_info", ""))
     extra = sanitize_and_check_profile_text(extra_raw, "extra_info", 500)
@@ -223,10 +234,6 @@ async def generate_letter(
         profile_lines.append(f"Gewenste uren per week: {uren}")
     if werklocatie:
         profile_lines.append(f"Werklocatie voorkeur: {werklocatie}")
-    if salaris_min and salaris_max:
-        profile_lines.append(f"Salarisverwachting: €{salaris_min:,}–€{salaris_max:,} bruto/maand")
-    elif salaris_min:
-        profile_lines.append(f"Salarisverwachting: vanaf €{salaris_min:,} bruto/maand")
     if extra:
         profile_lines.append(f"Achtergrond / extra info: {extra}")
 
@@ -244,14 +251,14 @@ async def generate_letter(
             werk_lines = []
             for w in werkervaring[:4]:
                 line = f"- {w.get('functie', '?')} bij {w.get('bedrijf', '?')} ({w.get('periode', '?')})"
-                taken = [str(t) for t in (w.get("taken") or [])[:3]]
+                taken = [_strip_salary(str(t)) for t in (w.get("taken") or [])[:3]]
                 if taken:
                     line += ": " + ", ".join(taken)
                 werk_lines.append(line)
             profile_lines.append("Werkervaring:\n" + "\n".join(werk_lines))
 
         if vaardigheden:
-            profile_lines.append(f"Vaardigheden: {', '.join(str(s) for s in vaardigheden[:20])}")
+            profile_lines.append(f"Vaardigheden: {', '.join(_strip_salary(str(s)) for s in vaardigheden[:20])}")
 
         if opleiding:
             o = opleiding[0]
@@ -264,7 +271,7 @@ async def generate_letter(
             profile_lines.append(f"Talen: {', '.join(str(t) for t in talen)}")
 
         if certificaten:
-            profile_lines.append(f"Certificaten: {', '.join(str(c) for c in certificaten[:10])}")
+            profile_lines.append(f"Certificaten: {', '.join(_strip_salary(str(c)) for c in certificaten[:10])}")
 
     profile_block = "\n".join(profile_lines) if profile_lines else "(geen aanvullende profielinfo)"
 

@@ -20,7 +20,12 @@ export default function ProfielPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
   const [saveError, setSaveError] = useState('')
+
+  const [summaryGenerating, setSummaryGenerating] = useState(false)
+  const [summaryError, setSummaryError] = useState('')
+  const [generatedSummary, setGeneratedSummary] = useState<string | null>(null)
 
   const [cvUploading, setCvUploading] = useState(false)
   const [cvError, setCvError] = useState('')
@@ -39,6 +44,7 @@ export default function ProfielPage() {
     ]).then(([p, apps]) => {
       setProfile(p)
       setApplications(apps as Application[])
+      if (p?.job_search_summary) setGeneratedSummary(p.job_search_summary)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -110,6 +116,11 @@ export default function ProfielPage() {
         opleidingsniveau: (fd.get('opleidingsniveau') as string) || undefined,
         extra_info: (fd.get('extra_info') as string) || undefined,
         job_preferences: (fd.get('job_preferences') as string) || undefined,
+        job_background: (fd.get('job_background') as string) || undefined,
+        job_company_size: (fd.get('job_company_size') as string) || undefined,
+        job_culture: (fd.get('job_culture') as string) || undefined,
+        job_role_type: (fd.get('job_role_type') as string) || undefined,
+        job_avoids: (fd.get('job_avoids') as string) || undefined,
         leeftijd: fd.get('leeftijd') ? Number(fd.get('leeftijd')) : undefined,
         brief_taal: (fd.get('brief_taal') as string) || 'nl',
         salaris_min: fd.get('salaris_min') ? Number(fd.get('salaris_min')) : undefined,
@@ -117,11 +128,25 @@ export default function ProfielPage() {
       })
       setProfile(updated)
       setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      setIsDirty(false)
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : t('saveErrorFallback'))
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleGenerateSummary() {
+    setSummaryGenerating(true)
+    setSummaryError('')
+    try {
+      const res = await api.profile.generateSearchSummary()
+      setGeneratedSummary(res.summary)
+      setProfile(p => p ? { ...p, job_search_summary: res.summary } : p)
+    } catch (err) {
+      setSummaryError(err instanceof ApiError ? err.message : t('summaryErrorFallback'))
+    } finally {
+      setSummaryGenerating(false)
     }
   }
 
@@ -192,18 +217,13 @@ export default function ProfielPage() {
               </div>
             )
           })()}
-          {saveSuccess && (
-            <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
-              {t('saveSuccess')}
-            </p>
-          )}
           {saveError && (
             <p className="text-sm mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>
               {saveError}
             </p>
           )}
           {profile ? (
-            <form onSubmit={handleSave} className="flex flex-col gap-4">
+            <form onSubmit={handleSave} onChange={() => { setIsDirty(true); setSaveSuccess(false) }} className="flex flex-col gap-4">
               <Field label={t('fieldLabelNaam')} name="naam" required defaultValue={profile.naam} />
               <datalist id="job-titles-list">
                 {JOB_TITLES.map(title => <option key={title} value={title} />)}
@@ -218,6 +238,38 @@ export default function ProfielPage() {
                 <input list="job-titles-list" name="functietitel_3" placeholder={t('functietitel3Placeholder')} defaultValue={profile.functietitel_3 ?? ''} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
               </div>
               <PreferencesField label={t('jobPreferencesLabel')} description={t('jobPreferencesDescription')} placeholder={t('jobPreferencesPlaceholder')} defaultValue={profile.job_preferences ?? ''} />
+
+              {/* Richer search profile section */}
+              <div className="pt-3 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>{t('searchProfileSectionTitle')}</p>
+                <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>{t('searchProfileSectionDesc')}</p>
+                <div className="flex flex-col gap-4">
+                  <LimitedTextarea label={t('backgroundLabel')} name="job_background" description={t('backgroundDesc')} placeholder={t('backgroundPlaceholder')} defaultValue={profile.job_background ?? ''} maxLength={400} rows={3} />
+                  <SelectField label={t('companySizeLabel')} name="job_company_size" defaultValue={profile.job_company_size ?? ''}>
+                    <option value="">{t('companySizeNone')}</option>
+                    <option value="startup">{t('companySizeStartup')}</option>
+                    <option value="scale-up">{t('companySizeScaleup')}</option>
+                    <option value="mkb">{t('companySizeMkb')}</option>
+                    <option value="corporaat">{t('companySizeCorporaat')}</option>
+                    <option value="overheid">{t('companySizeOverheid')}</option>
+                  </SelectField>
+                  <SelectField label={t('cultureLabel')} name="job_culture" defaultValue={profile.job_culture ?? ''}>
+                    <option value="">{t('cultureNone')}</option>
+                    <option value="plat">{t('culturePlat')}</option>
+                    <option value="hybride">{t('cultureHybride')}</option>
+                    <option value="gestructureerd">{t('cultureGestructureerd')}</option>
+                  </SelectField>
+                  <SelectField label={t('roleTypeLabel')} name="job_role_type" defaultValue={profile.job_role_type ?? ''}>
+                    <option value="">{t('roleTypeNone')}</option>
+                    <option value="specialist">{t('roleTypeSpecialist')}</option>
+                    <option value="teamlead">{t('roleTypeTeamlead')}</option>
+                    <option value="manager">{t('roleTypeManager')}</option>
+                    <option value="mixed">{t('roleTypeMixed')}</option>
+                  </SelectField>
+                  <LimitedTextarea label={t('avoidsLabel')} name="job_avoids" description={t('avoidsDesc')} placeholder={t('avoidsPlaceholder')} defaultValue={profile.job_avoids ?? ''} maxLength={300} rows={2} />
+                </div>
+              </div>
+
               <Field label={t('fieldLabelWoonplaats')} name="woonplaats" placeholder={t('woonplaatsPlaceholder')} defaultValue={profile.woonplaats} />
               <SelectField label={t('fieldLabelUrenPerWeek')} name="uren_per_week" defaultValue={profile.uren_per_week?.toString() ?? ''}>
                 <option value="">{t('urenGeenVoorkeur')}</option>
@@ -451,11 +503,48 @@ export default function ProfielPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'var(--color-indigo-primary)' }}
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                style={{ background: saveSuccess && !isDirty ? '#16a34a' : 'var(--color-indigo-primary)' }}
               >
-                {saving ? t('savingButton') : t('saveButton')}
+                {saving ? (
+                  t('savingButton')
+                ) : saveSuccess && !isDirty ? (
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    {t('saveSuccess')}
+                  </>
+                ) : (
+                  t('saveButton')
+                )}
               </button>
+
+              {/* Generate search profile summary */}
+              <div className="pt-1 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+                <p className="text-xs mb-2" style={{ color: 'var(--color-text-muted)' }}>{t('summaryHint')}</p>
+                {summaryError && (
+                  <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{summaryError}</p>
+                )}
+                {generatedSummary && (
+                  <div className="mb-3 p-3 rounded-xl text-sm" style={{ background: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
+                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('summaryCardTitle')}</p>
+                    <p>{generatedSummary}</p>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handleGenerateSummary}
+                  disabled={summaryGenerating}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
+                  style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+                >
+                  {summaryGenerating ? (
+                    <>
+                      <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                      {t('summaryGeneratingButton')}
+                    </>
+                  ) : t('summaryGenerateButton')}
+                </button>
+              </div>
             </form>
           ) : (
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('noProfileFound')}</p>
@@ -510,6 +599,32 @@ function PreferencesField({ label, description, placeholder, defaultValue }: {
       />
       <span className="text-xs text-right" style={{ color: count > 260 ? 'var(--color-error)' : 'var(--color-text-muted)' }}>
         {count}/300
+      </span>
+    </div>
+  )
+}
+
+function LimitedTextarea({ label, name, description, placeholder, defaultValue, maxLength, rows }: {
+  label: string; name: string; description?: string; placeholder: string; defaultValue: string; maxLength: number; rows: number
+}) {
+  const [count, setCount] = useState(defaultValue.length)
+  const warn = Math.floor(maxLength * 0.87)
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</label>
+      {description && <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{description}</p>}
+      <textarea
+        name={name}
+        rows={rows}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        maxLength={maxLength}
+        onChange={e => setCount(e.target.value.length)}
+        className="px-3 py-2 rounded-lg border text-sm outline-none resize-none"
+        style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+      />
+      <span className="text-xs text-right" style={{ color: count > warn ? 'var(--color-error)' : 'var(--color-text-muted)' }}>
+        {count}/{maxLength}
       </span>
     </div>
   )

@@ -210,6 +210,13 @@
       <a href="#cv-structured-title-fallback">cv_structured title fallback</a>
       <a href="#filter-sidebar-right">Filter sidebar position</a>
       <a href="#language-switcher-trim">Language switcher trim</a>
+      <span class="section-label">Search Profile</span>
+      <a href="#full-site-i18n">Full site i18n (next-intl)</a>
+      <a href="#linkedin-removed">LinkedIn removed from scrapers</a>
+      <a href="#job-search-preferences">Job search preferences field</a>
+      <a href="#richer-search-profile">Richer search profile</a>
+      <a href="#search-summary-endpoint">AI search summary endpoint</a>
+      <a href="#publicshell-nav-fix">PublicShell sidebar nav fix</a>
     </div>
   </nav>
 
@@ -1064,6 +1071,76 @@
       <li>Removed: AR, DE, FR, and other languages that had no near-term roadmap — reduces visual noise and avoids false expectations</li>
       <li>The removed locales can be re-added when there is a concrete plan for their copy and RTL support (Arabic)</li>
       <li>Key file: the LanguageSwitcher component in <code>web/src/app/components/</code> or <code>web/src/app/dashboard/components/</code></li>
+    </ul>
+
+    <h2 id="full-site-i18n">Full site i18n — next-intl (NL/EN/TR/UK/PL/RO)</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Library: <code>next-intl</code> — file-based translation dictionaries under <code>web/src/messages/</code>, one JSON file per locale (nl.json, en.json, tr.json, uk.json, pl.json, ro.json)</li>
+      <li>All UI strings in public pages and dashboard components migrated from hardcoded Dutch to <code>t('key')</code> calls</li>
+      <li>Language switcher is now fully functional for all 6 locales — switching renders the page in the selected language without a full reload</li>
+      <li>Previously NL was the only active locale; EN/TR/UK/PL/RO were greyed out "coming soon" — now all are live</li>
+      <li>Key files: <code>web/src/messages/</code> (all translation JSON), <code>web/src/i18n.ts</code>, <code>web/next.config.ts</code> (next-intl plugin)</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Arabic (AR) is intentionally absent — it requires RTL layout changes that are deferred to a future sprint. Do not add AR to the switcher until RTL support is implemented.</div>
+
+    <h2 id="linkedin-removed">LinkedIn removed from job scrapers</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li><code>scrape_linkedin_nl()</code> removed from <code>asyncio.gather()</code> in <code>backend/app/api/v1/jobs.py</code> — LinkedIn blocks all cloud/data-center IPs (including Railway EU West) so the scraper always returned 0 results</li>
+      <li>Cached LinkedIn URLs already in the <code>jobs</code> DB table are filtered out when serving results — prevents stale LinkedIn job cards from appearing in search results from the shared pool</li>
+      <li>The <code>scrape_linkedin_nl()</code> function itself remains in <code>job_scraper.py</code> for future use (residential proxy post-beta)</li>
+    </ul>
+    <div class="gotcha"><strong>Note:</strong> If a residential proxy is added post-beta, re-add <code>scrape_linkedin_nl</code> to the gather call and remove the DB filter. The function is still correct and tested.</div>
+
+    <h2 id="job-search-preferences">Job search preferences field</h2>
+    <p><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>New profile field <code>job_search_preferences</code> (free text) on the profiel page — lets users describe what they want from their next role in their own words</li>
+      <li>The field scopes search results without excluding job titles — preference information is added to the LLM search prompt as context, not as a hard filter</li>
+      <li>Design decision: exclusion logic (e.g. "no night shifts") was removed from this field after testing — it caused too many false negatives. Preferences that refine, not restrict, work better with the LLM search architecture.</li>
+      <li>Stored in the <code>profiles</code> table; passed through to <code>llm_job_search.py</code> as part of the user context string</li>
+    </ul>
+
+    <h2 id="richer-search-profile">Richer search profile — migration 012</h2>
+    <p><span class="tag tag-db">supabase</span><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>Migration 012 adds 6 new columns to the <code>profiles</code> table:
+        <ul>
+          <li><code>job_background</code> — free text: professional background / experience summary</li>
+          <li><code>job_company_size</code> — preferred company size (e.g. "startup", "MKB", "corporate")</li>
+          <li><code>job_culture</code> — preferred work culture description</li>
+          <li><code>job_role_type</code> — type of role wanted (e.g. "hands-on", "management", "freelance")</li>
+          <li><code>job_avoids</code> — things the user wants to avoid (passed as soft context, not hard filter)</li>
+          <li><code>job_search_summary</code> — AI-generated summary of the user's search profile (see search-summary endpoint)</li>
+        </ul>
+      </li>
+      <li>All 6 fields exposed in a new "Zoekprofiel" section on <code>/dashboard/profiel</code></li>
+      <li>A summary card on the dashboard shows the current <code>job_search_summary</code> so users know how the AI is interpreting their profile</li>
+      <li>These fields are passed as structured context to <code>llm_job_search.py</code> — significantly improves match quality for users who fill them in</li>
+    </ul>
+
+    <h2 id="search-summary-endpoint">AI search summary — POST /profile/search-summary</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Endpoint: <code>POST /profile/search-summary</code> in <code>backend/app/api/v1/profile.py</code></li>
+      <li>Calls Claude Haiku (cost-optimised) to generate a natural-language summary of the user's search profile from the 6 new fields + existing profile data</li>
+      <li>Rate limited: max 3 calls per user per hour (in-process dict) — prevents abuse since each call costs an LLM call</li>
+      <li>Prompt injection protection: input fields are sanitised before insertion into the prompt; known injection patterns are detected and rejected with a 422</li>
+      <li>Output validation: the generated summary is checked for minimum length, Dutch language indicators, and absence of prompt artifacts before being saved to <code>job_search_summary</code></li>
+      <li>Security hardening (commit 19f2abd): multiple detection patterns added for prompt injection; output is scrubbed before DB write</li>
+      <li>Frontend: "Genereer samenvatting" button on the profiel page triggers the endpoint; the dashboard summary card auto-refreshes</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Claude Haiku is used here, not Sonnet, to keep per-user cost low. If summary quality is consistently poor, switch to Sonnet but add stricter rate limiting.</div>
+    <div class="gotcha"><strong>AVG note:</strong> The summary is generated from user-provided data and stored in their own profile row. No third-party receives the raw field values — only the assembled prompt is sent to the Anthropic API, consistent with the existing AVG consent disclosure.</div>
+
+    <h2 id="publicshell-nav-fix">PublicShell sidebar nav — Jouw sollicitaties link</h2>
+    <p><span class="tag tag-web">web</span></p>
+    <ul>
+      <li>The PublicShell sidebar (used on public pages visible to logged-in users) was missing a link to <code>/dashboard/sollicitaties</code></li>
+      <li>Added a <code>SidebarNavLink</code> for "Jouw sollicitaties" alongside the existing dashboard links</li>
+      <li>i18n key <code>navJouwSollicitaties</code> added to all 6 translation files (nl/en/tr/uk/pl/ro) — consistent with the full-site i18n migration</li>
+      <li>Key files: <code>web/src/components/PublicShell.tsx</code>, <code>web/src/messages/*.json</code></li>
     </ul>
 
     <h2 id="email-routing">Email routing (@opstapapp.nl)</h2>

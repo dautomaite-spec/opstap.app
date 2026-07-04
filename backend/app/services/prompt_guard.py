@@ -144,6 +144,10 @@ _OUTPUT_INJECTION_PATTERNS: Final[list[re.Pattern]] = [re.compile(p, re.IGNORECA
     r"<a\s+href",
     r"<img\s+src",
     r"javascript:",
+    # Salary / compensation figures must never appear in a generated letter
+    r"€\s*\d[\d.,]+",
+    r"\b\d[\d.]+\s*(?:euro|eur)\b",
+    r"\b(?:salaris|uurloon|vergoeding|bruto|netto)\s+(?:van\s+)?\d",
     # English-only output (letter must contain Dutch words)
     # Checked separately in validate_letter_output below
 ]]
@@ -189,5 +193,35 @@ def validate_letter_output(letter: str) -> None:
     if dutch_hits < 5:
         raise PromptInjectionError(
             f"Generated letter does not appear to be in Dutch "
+            f"(only {dutch_hits} Dutch signal words found)."
+        )
+
+
+def validate_summary_output(summary: str) -> None:
+    """
+    Validate a generated search profile summary (shorter than a letter).
+    Raises PromptInjectionError if injection artefacts are present or output
+    does not appear to be Dutch prose.
+    """
+    if len(summary) < 20:
+        raise PromptInjectionError(
+            "Generated summary is suspiciously short — possible prompt manipulation."
+        )
+    if len(summary) > 600:
+        raise PromptInjectionError(
+            "Generated summary exceeds maximum length — possible prompt manipulation."
+        )
+
+    for pattern in _OUTPUT_INJECTION_PATTERNS:
+        if pattern.search(summary):
+            raise PromptInjectionError(
+                f"Generated summary contains suspicious content matching /{pattern.pattern}/"
+            )
+
+    # Must contain at least 3 Dutch signal word occurrences (summaries are shorter than letters)
+    dutch_hits = len(_DUTCH_RE.findall(summary))
+    if dutch_hits < 3:
+        raise PromptInjectionError(
+            f"Generated summary does not appear to be in Dutch "
             f"(only {dutch_hits} Dutch signal words found)."
         )
