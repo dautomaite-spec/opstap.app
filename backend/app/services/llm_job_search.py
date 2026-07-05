@@ -147,7 +147,17 @@ def _sanitize(text: str, max_len: int = 400) -> str:
     return text.replace("<", "").replace(">", "").strip()[:max_len]
 
 
-def _build_system_prompt(profile: dict, keywords: str, location: str, limit: int) -> str:
+_LANGUAGE_NAMES: dict[str, str] = {
+    "nl": "Nederlands",
+    "en": "English",
+    "tr": "Türkçe",
+    "uk": "Українська",
+    "pl": "Polish",
+    "ro": "Română",
+}
+
+
+def _build_system_prompt(profile: dict, keywords: str, location: str, limit: int, ui_language: str = "nl") -> str:
     titles = [t for t in [
         profile.get("functietitel"),
         profile.get("functietitel_2"),
@@ -188,6 +198,7 @@ def _build_system_prompt(profile: dict, keywords: str, location: str, limit: int
         extra_profile_lines.append(f"Zoekprofiel samenvatting: {search_summary}")
 
     extra_block = ("\n" + "\n".join(extra_profile_lines)) if extra_profile_lines else ""
+    lang_name = _LANGUAGE_NAMES.get(ui_language, "Nederlands")
 
     return f"""Je bent een Nederlandse vacature-zoekassistent voor Opstap. Zoek {limit} actuele vacatures in Nederland.
 
@@ -230,7 +241,7 @@ Na het zoeken, geef je antwoord terug als een JSON-array (geen markdown, geen ui
   "salary_range": "bijv. €2800-3500/maand of null",
   "contract_type": "Fulltime of Parttime of Tijdelijk of null",
   "posted_at": "YYYY-MM-DD of null",
-  "match_reason": "één zin in het Nederlands waarom dit past bij het profiel",
+  "match_reason": "één zin in {lang_name} waarom dit past bij het profiel",
   "is_curveball": true of false
 }}
 
@@ -261,12 +272,12 @@ def _tavily_search(client: TavilyClient, query: str) -> list[dict]:
         return []
 
 
-def _run_llm_search(profile: dict, keywords: str, location: str, limit: int) -> list[dict]:
+def _run_llm_search(profile: dict, keywords: str, location: str, limit: int, ui_language: str = "nl") -> list[dict]:
     """Synchronous inner function — runs the Claude tool-use loop."""
     ant = anthropic.Anthropic(api_key=settings.anthropic_api_key)
     tav = TavilyClient(api_key=settings.tavily_api_key)
 
-    system = _build_system_prompt(profile, keywords, location, limit)
+    system = _build_system_prompt(profile, keywords, location, limit, ui_language)
     tools: list[anthropic.types.ToolParam] = [
         {
             "name": "web_search",
@@ -356,6 +367,7 @@ async def llm_search_jobs(
     keywords: str,
     location: str,
     limit: int,
+    ui_language: str = "nl",
 ) -> list[dict]:
     """
     Search for Dutch job vacancies using Claude + Tavily.
@@ -367,7 +379,7 @@ async def llm_search_jobs(
     try:
         loop = asyncio.get_running_loop()
         raw_jobs = await loop.run_in_executor(
-            None, _run_llm_search, profile, keywords, location, limit
+            None, _run_llm_search, profile, keywords, location, limit, ui_language
         )
     except Exception as exc:
         logger.error("LLM job search failed: %s", exc)

@@ -222,6 +222,7 @@ export interface JobSearchParams {
   keywords?: string
   location?: string
   limit?: number
+  ui_language?: string
 }
 
 export interface LetterRequest {
