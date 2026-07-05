@@ -3,21 +3,35 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
+import { setLocale } from '@/actions/setLocale'
 import ThemeToggle from '@/app/components/ThemeToggle'
 import CreditsWidget from './CreditsWidget'
 
+const LANGS = [
+  { code: 'nl', flag: '🇳🇱', label: 'Nederlands' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'tr', flag: '🇹🇷', label: 'Türkçe' },
+  { code: 'uk', flag: '🇺🇦', label: 'Українська' },
+  { code: 'pl', flag: '🇵🇱', label: 'Polski' },
+  { code: 'ro', flag: '🇷🇴', label: 'Română' },
+]
+
 function LanguageSwitcher() {
   const t = useTranslations('DashboardShell')
+  const locale = useLocale()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
-  const langs = [
-    { code: 'NL', flag: '🇳🇱', label: 'Nederlands', active: true },
-    { code: 'EN', flag: '🇬🇧', label: 'English', active: false },
-    { code: 'AR', flag: '🇸🇦', label: 'العربية', active: false },
-    { code: 'TR', flag: '🇹🇷', label: 'Türkçe', active: false },
-    { code: 'UK', flag: '🇺🇦', label: 'Українська', active: false },
-  ]
+  const current = LANGS.find(l => l.code === locale) ?? LANGS[0]
+
+  async function handleSelect(code: string) {
+    await setLocale(code)
+    setOpen(false)
+    router.refresh()
+  }
+
   return (
     <div style={{ position: 'relative' }}>
       <button
@@ -26,8 +40,8 @@ function LanguageSwitcher() {
         style={{ color: 'var(--color-text-primary)', background: 'var(--color-lavender-card)' }}
         title={t('languageSwitcherTitle')}
       >
-        <span>🇳🇱</span>
-        <span>NL</span>
+        <span>{current.flag}</span>
+        <span>{current.code.toUpperCase()}</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="m6 9 6 6 6-6" />
         </svg>
@@ -39,25 +53,25 @@ function LanguageSwitcher() {
             className="absolute right-0 top-full mt-1 rounded-xl border py-1 z-50"
             style={{ minWidth: 180, background: 'var(--color-white)', borderColor: 'var(--color-lavender-card)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
           >
-            {langs.map(l => (
-              <div
-                key={l.code}
-                className="flex items-center gap-2.5 px-3 py-2"
-                style={{
-                  cursor: l.active ? 'pointer' : 'not-allowed',
-                  opacity: l.active ? 1 : 0.45,
-                }}
-              >
-                <span>{l.flag}</span>
-                <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', fontWeight: l.active ? 600 : 400 }}>{l.label}</span>
-                {!l.active && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('langComingSoon')}</span>}
-                {l.active && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
-              </div>
-            ))}
+            {LANGS.map(l => {
+              const isActive = l.code === locale
+              return (
+                <button
+                  key={l.code}
+                  onClick={() => handleSelect(l.code)}
+                  className="flex items-center gap-2.5 px-3 py-2 w-full text-left hover:opacity-80 transition"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <span>{l.flag}</span>
+                  <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', fontWeight: isActive ? 600 : 400 }}>{l.label}</span>
+                  {isActive && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-indigo-primary)' }}>
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </>
       )}
