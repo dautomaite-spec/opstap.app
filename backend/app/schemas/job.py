@@ -32,3 +32,4 @@ class JobSearchParams(BaseModel):
     contract_type: Optional[Literal["Vast", "Tijdelijk", "Fulltime", "Parttime"]] = None
     salary_min: Optional[int] = None
     limit: int = Field(20, ge=1, le=100)
+    ui_language: Optional[str] = Field(None, max_length=10)

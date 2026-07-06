@@ -2,30 +2,38 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createHash } from 'crypto'
 
 const API = process.env.NEXT_PUBLIC_API_URL!
-const ADMIN_KEY = process.env.ADMIN_API_KEY!
 
-function adminHeaders() {
+async function getAdminKey(): Promise<string> {
+  const cookieStore = await cookies()
+  return cookieStore.get('admin_key')?.value ?? ''
+}
+
+async function adminHeaders() {
+  const key = await getAdminKey()
   return {
     'Content-Type': 'application/json',
-    'X-Admin-Key': ADMIN_KEY,
+    'X-Admin-Key': key,
   }
 }
 
 export async function adminLogin(formData: FormData) {
   const key = formData.get('key') as string
-  if (!ADMIN_KEY || key !== ADMIN_KEY) {
-    redirect('/admin/login?error=1')
-  }
-  const token = createHash('sha256').update(ADMIN_KEY).digest('hex')
+  if (!key?.trim()) redirect('/admin/login?error=1')
+
+  const res = await fetch(`${API}/api/v1/admin/users?limit=1`, {
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': key },
+    cache: 'no-store',
+  })
+  if (!res.ok) redirect('/admin/login?error=1')
+
   const cookieStore = await cookies()
-  cookieStore.set('admin_session', token, {
+  cookieStore.set('admin_key', key, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 60 * 60 * 8, // 8 hours
+    maxAge: 60 * 60 * 8,
     path: '/',
   })
   redirect('/admin')
@@ -33,13 +41,13 @@ export async function adminLogin(formData: FormData) {
 
 export async function adminLogout() {
   const cookieStore = await cookies()
-  cookieStore.delete('admin_session')
+  cookieStore.delete('admin_key')
   redirect('/admin/login')
 }
 
 export async function fetchUsers() {
   const res = await fetch(`${API}/api/v1/admin/users`, {
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     cache: 'no-store',
   })
   if (!res.ok) return []
@@ -49,7 +57,7 @@ export async function fetchUsers() {
 export async function adjustCredits(userId: string, delta: number, reason: string) {
   const res = await fetch(`${API}/api/v1/admin/users/${userId}/credits`, {
     method: 'POST',
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     body: JSON.stringify({ delta, reason }),
   })
   if (!res.ok) {
@@ -62,7 +70,7 @@ export async function adjustCredits(userId: string, delta: number, reason: strin
 export async function toggleSuspend(userId: string, suspended: boolean) {
   const res = await fetch(`${API}/api/v1/admin/users/${userId}/suspend`, {
     method: 'PATCH',
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     body: JSON.stringify({ suspended }),
   })
   if (!res.ok) throw new Error('Actie mislukt')
@@ -72,7 +80,7 @@ export async function toggleSuspend(userId: string, suspended: boolean) {
 export async function deleteUser(userId: string) {
   const res = await fetch(`${API}/api/v1/admin/users/${userId}`, {
     method: 'DELETE',
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
   })
   if (!res.ok) throw new Error('Verwijderen mislukt')
   return res.json()
@@ -80,7 +88,7 @@ export async function deleteUser(userId: string) {
 
 export async function fetchInviteCodes() {
   const res = await fetch(`${API}/api/v1/invite/codes`, {
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     cache: 'no-store',
   })
   if (!res.ok) return []
@@ -90,7 +98,7 @@ export async function fetchInviteCodes() {
 export async function generateInviteCodes(count: number, notes: string, maxUses: number) {
   const res = await fetch(`${API}/api/v1/invite/codes`, {
     method: 'POST',
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     body: JSON.stringify({ count, notes, max_uses: maxUses }),
   })
   if (!res.ok) throw new Error('Genereren mislukt')
@@ -99,7 +107,7 @@ export async function generateInviteCodes(count: number, notes: string, maxUses:
 
 export async function fetchWaitlist() {
   const res = await fetch(`${API}/api/v1/invite/waitlist`, {
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     cache: 'no-store',
   })
   if (!res.ok) return []
@@ -109,7 +117,7 @@ export async function fetchWaitlist() {
 export async function inviteWaitlistEntry(id: string) {
   const res = await fetch(`${API}/api/v1/invite/waitlist/${id}/invite`, {
     method: 'POST',
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
     body: JSON.stringify({}),
   })
   if (!res.ok) throw new Error('Uitnodigen mislukt')
@@ -119,7 +127,7 @@ export async function inviteWaitlistEntry(id: string) {
 export async function blastReactivation(): Promise<{ queued: number }> {
   const res = await fetch(`${API}/api/v1/admin/blast/reactivation`, {
     method: 'POST',
-    headers: adminHeaders(),
+    headers: await adminHeaders(),
   })
   if (!res.ok) throw new Error('Blast mislukt')
   return res.json()

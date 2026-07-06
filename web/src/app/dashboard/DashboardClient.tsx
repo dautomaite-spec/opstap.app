@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { api, ApiError } from '@/lib/api'
 import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
@@ -115,6 +115,7 @@ function formatDate(iso?: string): string | null {
 export default function DashboardClient({ userId, userEmail }: { userId: string; userEmail: string }) {
   const router = useRouter()
   const t = useTranslations('DashboardClient')
+  const locale = useLocale()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [showProfileForm, setShowProfileForm] = useState(false)
@@ -330,7 +331,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     if (minAnimTimer.current) clearTimeout(minAnimTimer.current)
     minAnimTimer.current = setTimeout(() => setMinAnimDone(true), 5000)
     try {
-      const { jobs: results, stale } = await api.jobs.searchWithStale({ limit: 15 })
+      const { jobs: results, stale } = await api.jobs.searchWithStale({ limit: 15, ui_language: locale })
       setJobs(results)
       setJobsStale(stale)
       writeCachedJobs(results, stale)

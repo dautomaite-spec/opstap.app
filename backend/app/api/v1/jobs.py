@@ -199,7 +199,7 @@ async def search_jobs(
         response.headers["X-Jobs-Source"] = "cache"
         return _dedup_by_company(cached)[:params.limit] if cached else []
 
-    raw = await llm_search_jobs(profile, keywords, location, params.limit)
+    raw = await llm_search_jobs(profile, keywords, location, params.limit, params.ui_language or "nl")
 
     if len(raw) < 5:
         # LLM search returned too few — supplement with scrapers.

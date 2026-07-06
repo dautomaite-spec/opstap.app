@@ -34,7 +34,7 @@ function RotateKeyPanel() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#3d3a8c' }}>Admin API-sleutel roteren</div>
-          <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Genereer een nieuwe sleutel, kopieer hem en plak in Railway → Variables → ADMIN_API_KEY.</div>
+          <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Genereer een nieuwe sleutel, kopieer hem, plak in Railway - Variables - ADMIN_API_KEY, en log opnieuw in.</div>
         </div>
         <button onClick={generate} style={S.btn('primary')}>Nieuwe sleutel genereren</button>
       </div>
@@ -50,7 +50,7 @@ function RotateKeyPanel() {
       )}
       {newKey && (
         <p style={{ margin: '8px 0 0', fontSize: 11, color: '#dc2626' }}>
-          Sla de sleutel eerst op in Railway voordat je de pagina verlaat. Daarna update ook <code>.env.local</code>.
+          Sla de sleutel op in Railway voordat je de pagina verlaat. Log daarna opnieuw in met de nieuwe sleutel.
         </p>
       )}
     </div>
