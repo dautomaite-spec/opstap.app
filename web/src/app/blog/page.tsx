@@ -13,6 +13,24 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'sollicitatiebrief-zonder-ervaring',
+    title: 'Sollicitatiebrief als starter zonder werkervaring',
+    description: 'Geen werkervaring? Zo schrijf je toch een overtuigende brief. Met voorbeelden en tips voor starters op de Nederlandse arbeidsmarkt.',
+    date: '2025-07-06',
+  },
+  {
+    slug: 'hoeveel-sollicitaties-per-week',
+    title: 'Hoeveel sollicitaties per week sturen? De slimme strategie',
+    description: 'Hoeveel sollicitaties moet je per week sturen om snel een baan te vinden? Onderzoek en praktische tips voor de Nederlandse arbeidsmarkt.',
+    date: '2025-07-04',
+  },
+  {
+    slug: 'vacaturesites-nederland',
+    title: 'De beste vacaturesites in Nederland (2025)',
+    description: 'Vergelijking van de tien beste vacaturesites in Nederland: Indeed, LinkedIn, Jobbird, Nationale Vacaturebank en meer.',
+    date: '2025-07-02',
+  },
+  {
     slug: 'motivatiebrief-schrijven',
     title: 'Hoe schrijf je een sterke motivatiebrief in 2025?',
     description: 'Een goede motivatiebrief opent deuren. Leer wat recruiters verwachten en hoe je opvalt tussen honderden kandidaten.',
