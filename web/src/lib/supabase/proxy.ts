@@ -1,15 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { createHash } from 'crypto'
 
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Admin route guard — checked before Supabase (no auth needed)
+  // Admin route guard — presence of admin_key cookie means login was validated against the backend
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-    const session = request.cookies.get('admin_session')?.value
-    const adminKey = process.env.ADMIN_API_KEY
-    if (!adminKey || session !== createHash('sha256').update(adminKey).digest('hex')) {
+    const adminKey = request.cookies.get('admin_key')?.value
+    if (!adminKey) {
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
   }
