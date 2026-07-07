@@ -219,6 +219,7 @@ Gebruik de web_search tool om vacatures te zoeken. Doe minimaal 3 zoekopdrachten
 
 Zoek alleen naar vacatures IN NEDERLAND. Vermijd internationale of Engelstalige vacaturesites.
 Geef alleen directe vacature-URLs terug — URLs die naar precies één specifieke vacature verwijzen.
+KRITISCH: Gebruik UITSLUITEND URLs die letterlijk in de zoekresultaten staan die je hebt ontvangen. Verzin nooit een URL. Schrijf nooit een URL uit je geheugen. Als je geen directe vacature-URL in de resultaten vindt, sla die vacature dan over.
 VERBODEN URL-typen (retourneer deze NOOIT):
 - Zoekresultaatpagina's (bijv. /vacatures?query=, /m/jobs?q=, /vacatures/functie/)
 - Categorieoverzichten (bijv. /jobs/information-management-jobs, /jobs/strategisch-informatiemanager-jobs)
@@ -299,6 +300,7 @@ def _run_llm_search(profile: dict, keywords: str, location: str, limit: int, ui_
         {"role": "user", "content": f"Zoek {limit} passende vacatures."}
     ]
     tool_calls = 0
+    tavily_urls: set[str] = set()  # all URLs actually returned by Tavily
 
     while True:
         response = ant.messages.create(
@@ -320,6 +322,11 @@ def _run_llm_search(profile: dict, keywords: str, location: str, limit: int, ui_
         for tb in tool_blocks:
             tool_calls += 1
             results = _tavily_search(tav, tb.input.get("query", ""))
+            # Track every URL Tavily actually returned so we can reject hallucinated URLs later
+            if isinstance(results, dict):
+                for r in results.get("SEARCH_RESULTS", []):
+                    if r.get("url"):
+                        tavily_urls.add(r["url"])
             tool_results.append({
                 "type": "tool_result",
                 "tool_use_id": tb.id,
@@ -356,10 +363,21 @@ def _run_llm_search(profile: dict, keywords: str, location: str, limit: int, ui_
             raw = raw[:-3]
 
     try:
-        return json.loads(raw.strip())
+        jobs = json.loads(raw.strip())
     except json.JSONDecodeError:
         logger.warning("LLM job search: could not parse JSON response")
         return []
+
+    # Drop any job whose URL was not actually returned by Tavily — prevents
+    # hallucinated URLs that point to completely unrelated job listings.
+    if tavily_urls:
+        before = len(jobs)
+        jobs = [j for j in jobs if j.get("url") in tavily_urls]
+        dropped = before - len(jobs)
+        if dropped:
+            logger.info("LLM job search: dropped %d job(s) with hallucinated URLs", dropped)
+
+    return jobs
 
 
 async def llm_search_jobs(
