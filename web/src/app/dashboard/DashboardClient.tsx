@@ -8,6 +8,7 @@ import type { Profile, Job } from '@/lib/api'
 import BuyCreditsModal from './components/BuyCreditsModal'
 import MultiApplyModal from './components/MultiApplyModal'
 import { JOB_TITLES } from '@/lib/jobTitles'
+import { profileCompletenessKeys } from './components/Achievements'
 
 // localStorage is kept as a fast local cache; Supabase is the source of truth
 const SAVED_JOBS_KEY = 'opstap_saved_jobs'
@@ -266,6 +267,10 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
     })
   }, [sortedJobs, filterContracts, filterCurveball, profile])
 
+  function preventEnterSubmit(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') e.preventDefault()
+  }
+
   async function handleProfileSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -466,9 +471,9 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
               {t('fieldLabelJobTitlesHint')}
             </p>
-            <input list="db-job-titles" name="functietitel" required placeholder={t('placeholderJobTitle1')} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-            <input list="db-job-titles" name="functietitel_2" placeholder={t('placeholderJobTitle2')} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
-            <input list="db-job-titles" name="functietitel_3" placeholder={t('placeholderJobTitle3')} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel" required placeholder={t('placeholderJobTitle1')} onKeyDown={preventEnterSubmit} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel_2" placeholder={t('placeholderJobTitle2')} onKeyDown={preventEnterSubmit} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
+            <input list="db-job-titles" name="functietitel_3" placeholder={t('placeholderJobTitle3')} onKeyDown={preventEnterSubmit} className="px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }} />
           </div>
 
           <Field label={t('fieldLabelCity')} name="woonplaats" placeholder={t('placeholderCity')} />
@@ -554,12 +559,12 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
             <a href="/dashboard/profiel" className="text-xs shrink-0 underline" style={{ color: 'var(--color-text-muted)' }}>{t('summaryEditLink')}</a>
           </div>
         </div>
-      ) : (
+      ) : profile && profileCompletenessKeys(profile).pct < 100 ? (
         <div className="mb-5 p-3 rounded-xl flex items-center justify-between gap-3" style={{ background: 'var(--color-lavender-card)' }}>
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{t('summaryMissingHint')}</p>
           <a href="/dashboard/profiel" className="text-xs shrink-0 font-semibold" style={{ color: 'var(--color-indigo-primary)' }}>{t('summaryMissingLink')}</a>
         </div>
-      )}
+      ) : null}
 
       {/* Search trigger */}
       {jobs.length === 0 && !searching && (

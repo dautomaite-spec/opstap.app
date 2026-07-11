@@ -1,5 +1,22 @@
 # Changelog — Opstap
 
+## 2026-07-11 (fix/job-search-quality-and-summary)
+- fix: job URL hallucination — reject job URLs not found in Tavily results before returning them to the user (edc8b64)
+- fix: LLM job search company/location extraction — was showing "Onbekend"/wrong city
+- feat: match_score (0-100) wired end-to-end from llm_job_search.py through jobs.py to job cards
+- fix: 8/10 composite quality gate added to reject low-confidence LLM search results
+- fix: JSON-parse failure causing ~40% zero-result searches
+- fix: LinkedIn silent expired-listing redirect (trk=expired_jd_redirect) now detected instead of treated as alive
+- feat: werkenvoornederland.nl unblocked as a search source
+- fix: Jobbird scraper company/location CSS selectors and card-scoping logic (site markup changed, was returning "Onbekend" for 100% of results)
+- feat: search_summary.py — AI search-profile summary enriched with CV-structured data (samenvatting/vaardigheden/werkervaring), not just manual profile fields
+- feat: search summary regeneration auto-triggers (fire-and-forget) after profile create/update and after CV parsing; new POST /profile/search-summary/approve endpoint
+- fix: job_search_summary removed from client-writable ProfileCreate/ProfileUpdate schema (was a data-integrity gap); job_search_summary_approved_at added server-only (migration 014)
+- fix: dashboard Enter-key premature form submit on job-title inputs
+- fix: stale "complete your profile" banner (was gated on job_search_summary presence instead of actual field completeness)
+- feat: profile page — AI search summary moved to bottom of both tabs, made read-only with "I agree" acknowledgment instead of a gate, polling added for async server-side generation
+- chore: backend/scripts/ — diagnostic scripts for job search extraction, link liveness, and parse-failure debugging
+
 ## 2026-07-03 (feat/job-search-preferences)
 - fix: add Jouw sollicitaties link to PublicShell sidebar nav — SidebarNavLink + navJouwSollicitaties i18n key added to all 6 translation files (nl/en/tr/uk/pl/ro)
 - fix(security): harden search-summary endpoint against prompt injection — multiple detection patterns, output scrubbed before DB write, 422 on detected injection

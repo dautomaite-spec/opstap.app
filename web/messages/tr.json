@@ -712,10 +712,14 @@
     "avoidsLabel": "Tercih etmedigim seyler",
     "avoidsDesc": "Kacindigi sektorler, roller veya kosullar. Opstap bunlari dislamaz, ancak daha asagida siralar.",
     "avoidsPlaceholder": "Ornek: Cagri merkezi isi yok. 30 dakikadan fazla seyahat yok.",
-    "summaryHint": "Profilini kaydet, ardindan arama profili olustur. Opstap bunu panoda gosterir.",
-    "summaryCardTitle": "Arama profilin",
+    "summaryHint": "Bu arama profili, profilin ve ozgecmisin kullanilarak otomatik olusturulur. Profilini duzenledikce otomatik guncellenir.",
+    "summaryCardTitle": "Opstap bu ilanlari neden oneriyor",
     "summaryGenerateButton": "Arama profili olustur",
     "summaryGeneratingButton": "Olusturuluyor...",
+    "summaryRegenerateButton": "Yeniden olustur",
+    "summaryApproveButton": "Kabul ediyorum",
+    "summaryApproving": "Onaylaniyor...",
+    "summaryApproved": "{date} tarihinde onaylandi",
     "summaryErrorFallback": "Arama profili olusturulamadi. Tekrar deneyin."
   },
   "CreditsPage": {

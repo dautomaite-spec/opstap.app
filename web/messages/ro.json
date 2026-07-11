@@ -712,10 +712,14 @@
     "avoidsLabel": "Ce prefer sa evit",
     "avoidsDesc": "Sectoare, roluri sau conditii pe care doriti sa le evitati. Opstap nu le exclude, dar le clasifica mai jos.",
     "avoidsPlaceholder": "Ex: Fara munca in call center. Fara calatorii mai mult de 30 min.",
-    "summaryHint": "Salvati profilul, apoi generati un profil de cautare. Opstap il va afisa pe tabloul de bord.",
-    "summaryCardTitle": "Profilul tau de cautare",
+    "summaryHint": "Acest profil de cautare este generat automat pe baza profilului si CV-ului tau. Se actualizeaza automat cand iti editezi profilul.",
+    "summaryCardTitle": "De ce Opstap sugereaza aceste joburi",
     "summaryGenerateButton": "Genereaza profil de cautare",
     "summaryGeneratingButton": "Generare...",
+    "summaryRegenerateButton": "Regenereaza",
+    "summaryApproveButton": "Sunt de acord",
+    "summaryApproving": "Se confirma...",
+    "summaryApproved": "Confirmat pe {date}",
     "summaryErrorFallback": "Nu s-a putut genera profilul de cautare. Incercati din nou."
   },
   "CreditsPage": {

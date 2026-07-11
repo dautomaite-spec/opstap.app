@@ -365,8 +365,11 @@ async def scrape_jobbird(keywords: str, location: str = "", limit: int = 20) -> 
             soup = BeautifulSoup(resp.text, "html.parser")
             results = []
 
-            # Jobbird renders jobs in <article> tags or result divs
-            cards = soup.select("article.job, article[class*='job'], div.job-result, div[class*='vacancyitem'], li.job-list-item")
+            # Jobbird renders jobs as div.job-search__result-list__result (current markup)
+            cards = soup.select(
+                "div.job-search__result-list__result, "
+                "article.job, article[class*='job'], div.job-result, div[class*='vacancyitem'], li.job-list-item"
+            )
             if not cards:
                 # Broader fallback: any article with a link containing /nl/vacature/
                 cards = [a.find_parent("article") or a.find_parent("div") for a in soup.select("a[href*='/nl/vacature/']")]
@@ -391,11 +394,16 @@ async def scrape_jobbird(keywords: str, location: str = "", limit: int = 20) -> 
 
                 title_el = (card.select_one("h2 a, h3 a, .job-title a, .title a")
                             or card.select_one("h2, h3, .job-title, .title"))
-                company_el = card.select_one(".company, .employer, .company-name, [class*='company']")
-                location_el = card.select_one(".location, .city, [class*='location'], [class*='place']")
+                company_el = (card.select_one(".cro-recruiter-name")
+                              or card.select_one(".company, .employer, .company-name, [class*='company']"))
+                location_el = (card.select_one(".cro-job-location")
+                               or card.select_one(".location, .city, [class*='location'], [class*='place']"))
+                logo_el = card.select_one(".job-search__logo img[alt]")
 
                 title = (title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True))[:300]
-                company = (company_el.get_text(strip=True) if company_el else "Onbekend")[:200]
+                company = (company_el.get_text(strip=True) if company_el else None) \
+                    or (logo_el.get("alt", "").strip() if logo_el else None) or "Onbekend"
+                company = company[:200]
                 loc = (location_el.get_text(strip=True) if location_el else (location or "Nederland"))[:200]
 
                 if not title:

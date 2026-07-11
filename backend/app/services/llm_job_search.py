@@ -32,13 +32,14 @@ _NL_JOB_DOMAINS = [
     "nationalevacaturebank.nl", "werkzoeken.nl", "monsterboard.nl",
     "werk.nl", "intermediair.nl", "banenmarkt.nl", "adzuna.nl",
     "glassdoor.com", "jobs.ac.uk", "recruitee.com", "greenhouse.io",
+    "werkenvoornederland.nl",
     "werkenbij", "vacature", "career", "job", "werken",
 ]
 
 # Reject URLs containing these fragments — covers blocked domains, non-HTTP schemes,
 # localhost/loopback, private IP ranges, and cloud metadata endpoints.
 _BLOCKED_URL_FRAGMENTS: frozenset[str] = frozenset({
-    "defensie.nl", "politie.nl", "rijksoverheid.nl", "werkenvoornederland.nl",
+    "defensie.nl", "politie.nl", "rijksoverheid.nl",
     "javascript:", "data:", "localhost",
     # IPv4 loopback + private ranges + cloud metadata
     "127.0.0.1", "0.0.0.0", "169.254.", "10.", "192.168.",
@@ -63,6 +64,13 @@ _DEAD_CONTENT_SIGNALS = [
     "helaas is deze vacature",
     "job is no longer available",
     "this job is no longer",
+]
+
+# Sites that silently redirect an expired listing to a generic page (200 OK,
+# not a 404) instead of showing a dead-listing message. Checked against the
+# final URL after following redirects.
+_DEAD_REDIRECT_URL_SIGNALS = [
+    "expired_jd_redirect",  # LinkedIn: expired job -> company jobs search page
 ]
 
 # URL path fragments that indicate a non-vacancy page (search result, category, profile, post)
@@ -110,11 +118,16 @@ async def _is_url_live(url: str) -> bool:
                 r2 = await client.get(url)
                 if r2.status_code in _DEAD_STATUS_CODES:
                     return False
+                if any(sig in str(r2.url) for sig in _DEAD_REDIRECT_URL_SIGNALS):
+                    return False
                 # Scan first 8KB for known "vacancy expired" phrases
                 snippet = r2.text[:8000].lower()
                 if any(sig in snippet for sig in _DEAD_CONTENT_SIGNALS):
                     return False
                 return True
+            # 2xx/3xx-followed: still check for a soft-redirect-to-generic-page signal
+            if any(sig in str(r.url) for sig in _DEAD_REDIRECT_URL_SIGNALS):
+                return False
             return True
     except Exception:
         return True  # network error — assume live, don't penalise
@@ -235,13 +248,14 @@ BELANGRIJK: Neem in je resultaten precies 3 "verrassende" vacatures op (is_curve
 Na het zoeken, geef je antwoord terug als een JSON-array (geen markdown, geen uitleg). Elk object heeft exact deze velden:
 {{
   "title": "exacte functietitel",
-  "company": "bedrijfsnaam",
-  "location": "stad of regio in NL",
+  "company": "bedrijfsnaam — haal dit uit de titel (bijv. 'X bij Coolblue' of 'Vacature: Y - Bedrijf Z') of uit de snippet. Geef nooit 'Onbekend' terug tenzij de bedrijfsnaam echt nergens in titel of snippet voorkomt.",
+  "location": "de daadwerkelijke stad/plaats van de vacature zoals genoemd in titel of snippet — NIET automatisch de zoeklocatie van de kandidaat. Als de snippet een andere plaats noemt dan de kandidaat zocht, gebruik dan die werkelijke plaats.",
   "url": "directe URL naar de vacature",
   "description_snippet": "korte samenvatting max 200 tekens",
   "salary_range": "bijv. €2800-3500/maand of null",
   "contract_type": "Fulltime of Parttime of Tijdelijk of null",
   "posted_at": "YYYY-MM-DD of null",
+  "match_score": "geheel getal 0-100 dat aangeeft hoe goed deze vacature past bij het kandidaatprofiel (functietitel, locatie, opleiding, ervaring). Wees kritisch: 90-100 is een uitstekende match, 70-89 is behoorlijk, onder 70 is een zwakke match.",
   "match_reason": "één zin in {lang_name} waarom dit past bij het profiel",
   "is_curveball": true of false
 }}
@@ -262,7 +276,7 @@ def _tavily_search(client: TavilyClient, query: str) -> list[dict]:
                 {
                     "title": r.get("title", ""),
                     "url": r.get("url", ""),
-                    "snippet": (r.get("content") or "")[:600],
+                    "snippet": (r.get("content") or "")[:1200],
                 }
                 for r in (resp.get("results") or [])
             ],
@@ -271,6 +285,38 @@ def _tavily_search(client: TavilyClient, query: str) -> list[dict]:
     except Exception as exc:
         logger.warning("Tavily search error: %s", exc)
         return []
+
+
+def _extract_json_array(response: anthropic.types.Message) -> list[dict] | None:
+    """Extract a JSON array from Claude's text response. Returns None (not []) if
+    no parseable array was found at all, so callers can distinguish "genuinely
+    zero results" from "Claude didn't return JSON and needs a corrective retry"."""
+    text_blocks = [b for b in response.content if b.type == "text"]
+    if not text_blocks:
+        return None
+
+    raw = text_blocks[0].text.strip()
+    if raw.startswith("```"):
+        lines = raw.split("\n")
+        raw = "\n".join(lines[1:])
+        if raw.endswith("```"):
+            raw = raw[:-3]
+    raw = raw.strip()
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    start, end = raw.find("["), raw.rfind("]")
+    if start != -1 and end > start:
+        try:
+            return json.loads(raw[start:end + 1])
+        except json.JSONDecodeError:
+            pass
+
+    logger.warning("LLM job search: could not parse JSON response")
+    return None
 
 
 def _run_llm_search(profile: dict, keywords: str, location: str, limit: int, ui_language: str = "nl") -> list[dict]:
@@ -350,23 +396,29 @@ def _run_llm_search(profile: dict, keywords: str, location: str, limit: int, ui_
             )
             break
 
-    text_blocks = [b for b in response.content if b.type == "text"]
-    if not text_blocks:
-        return []
+    jobs = _extract_json_array(response)
 
-    raw = text_blocks[0].text.strip()
-    # Strip optional markdown code fences
-    if raw.startswith("```"):
-        lines = raw.split("\n")
-        raw = "\n".join(lines[1:])
-        if raw.endswith("```"):
-            raw = raw[:-3]
-
-    try:
-        jobs = json.loads(raw.strip())
-    except json.JSONDecodeError:
-        logger.warning("LLM job search: could not parse JSON response")
-        return []
+    if jobs is None:
+        # Claude stopped with a conversational refusal instead of a JSON array —
+        # typically it found too few "safe" direct-vacancy URLs and asks the user
+        # whether it should keep searching. Force one corrective retry rather than
+        # returning zero results outright.
+        messages.append({"role": "assistant", "content": response.content})
+        messages.append({
+            "role": "user",
+            "content": (
+                "Retourneer nu ALTIJD een JSON-array, ook als deze leeg is of maar 1-2 vacatures bevat. "
+                "Vraag NOOIT om bevestiging of om verder te mogen zoeken. "
+                "Geef gewoon de array terug van wat je tot nu toe hebt gevonden, desnoods []."
+            ),
+        })
+        response = ant.messages.create(
+            model=_SEARCH_MODEL,
+            system=system,
+            messages=messages,
+            max_tokens=4096,
+        )
+        jobs = _extract_json_array(response) or []
 
     # Drop any job whose URL was not actually returned by Tavily — prevents
     # hallucinated URLs that point to completely unrelated job listings.
@@ -433,11 +485,19 @@ async def llm_search_jobs(
         raw_reason = str(j.get("match_reason") or "").strip()
         match_reason = re.sub(r"<[^>]+>", "", raw_reason)[:300] or None
 
+        company = str(j.get("company") or "Onbekend")[:200]
+        loc = str(j.get("location") or "Nederland")[:200]
+
+        try:
+            match_score = max(0, min(100, int(j.get("match_score") or 0)))
+        except (TypeError, ValueError):
+            match_score = 0
+
         jobs.append({
             "id": str(uuid4()),
             "title": title[:300],
-            "company": str(j.get("company") or "Onbekend")[:200],
-            "location": str(j.get("location") or location or "Nederland")[:200],
+            "company": company,
+            "location": loc,
             "source": "ai_search",
             "url": url[:1000],
             "description_snippet": str(j.get("description_snippet") or "")[:500] or None,
@@ -445,6 +505,7 @@ async def llm_search_jobs(
             "contract_type": str(j.get("contract_type") or "")[:50] or None,
             "posted_at": posted_at_val,
             "scraped_at": now_str,
+            "match_score": match_score,
             # transient fields — not stored in DB, passed through in API response only
             "match_reason": match_reason,
             "is_curveball": bool(j.get("is_curveball")),
@@ -458,5 +519,30 @@ async def llm_search_jobs(
         if dead_count:
             logger.info("URL liveness check: removed %d dead listing(s) from %d results", dead_count, len(jobs))
         jobs = [j for j, live in zip(jobs, live_flags) if live]
+
+    # Quality gate — combine relevance (match_score) with extraction correctness
+    # (a missing company/location is itself a defect, not just a low-relevance job)
+    # into a single 0-10 score, and only surface jobs scoring 8+/10.
+    def _quality_score(job: dict) -> float:
+        score = job["match_score"] / 10
+        if job["company"] == "Onbekend":
+            score -= 2
+        if job["location"] == "Nederland":
+            score -= 1
+        return max(0.0, score)
+
+    for j in jobs:
+        j["quality_score"] = round(_quality_score(j), 1)
+
+    jobs.sort(key=lambda j: j["quality_score"], reverse=True)
+    qualified = [j for j in jobs if j["quality_score"] >= 8]
+    if qualified:
+        jobs = qualified
+    elif jobs:
+        # Nothing cleared the 8/10 bar — degrade gracefully to the best available
+        # results rather than showing an empty screen; is honest since curveballs
+        # and other checks already ran, this is a last-resort fallback only.
+        logger.info("Job search: no results scored >=8/10 quality, falling back to top %d", min(3, len(jobs)))
+        jobs = jobs[:3]
 
     return jobs[:limit]

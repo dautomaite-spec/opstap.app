@@ -712,10 +712,14 @@
     "avoidsLabel": "Wat ik liever vermijd",
     "avoidsDesc": "Sectoren, rollen of omstandigheden die je wilt vermijden. Opstap sluit ze niet uit, maar rangschikt ze lager.",
     "avoidsPlaceholder": "Bijv: Geen callcenterwerk. Liever geen reizen meer dan 30 min. Geen overheid.",
-    "summaryHint": "Sla je profiel op en genereer daarna een zoekprofiel. Opstap toont dit op het dashboard zodat je kunt controleren of de zoekstrategie klopt.",
-    "summaryCardTitle": "Jouw zoekprofiel",
+    "summaryHint": "Dit zoekprofiel is automatisch gegenereerd op basis van je profiel en CV, en wordt gebruikt om vacatures voor je te zoeken. Het wordt automatisch bijgewerkt als je je profiel wijzigt.",
+    "summaryCardTitle": "Waarom Opstap deze vacatures voorstelt",
     "summaryGenerateButton": "Genereer zoekprofiel",
     "summaryGeneratingButton": "Even genereren...",
+    "summaryRegenerateButton": "Opnieuw genereren",
+    "summaryApproveButton": "Ik ga akkoord",
+    "summaryApproving": "Even bevestigen...",
+    "summaryApproved": "Bevestigd op {date}",
     "summaryErrorFallback": "Kon het zoekprofiel niet genereren. Probeer opnieuw."
   },
   "CreditsPage": {

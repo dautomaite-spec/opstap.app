@@ -283,6 +283,7 @@ async def search_jobs(
             "salary_min_raw": j.get("salary_min_raw"),
             "salary_max_raw": j.get("salary_max_raw"),
             "contract_type": j.get("contract_type"),
+            "match_score": j.get("match_score"),
             "posted_at": j.get("posted_at"),
             "scraped_at": j["scraped_at"],
         }

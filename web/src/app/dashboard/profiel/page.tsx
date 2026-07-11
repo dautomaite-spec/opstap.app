@@ -24,8 +24,9 @@ export default function ProfielPage() {
   const [saveError, setSaveError] = useState('')
 
   const [summaryGenerating, setSummaryGenerating] = useState(false)
+  const [summaryApproving, setSummaryApproving] = useState(false)
+  const [summaryPolling, setSummaryPolling] = useState(false)
   const [summaryError, setSummaryError] = useState('')
-  const [generatedSummary, setGeneratedSummary] = useState<string | null>(null)
 
   const [cvUploading, setCvUploading] = useState(false)
   const [cvError, setCvError] = useState('')
@@ -44,9 +45,28 @@ export default function ProfielPage() {
     ]).then(([p, apps]) => {
       setProfile(p)
       setApplications(apps as Application[])
-      if (p?.job_search_summary) setGeneratedSummary(p.job_search_summary)
+      // Profile may have just been created (dashboard quick-form) and the
+      // backend generates the summary asynchronously — pick it up once ready.
+      if (p && !p.job_search_summary) pollForSummary(p.job_search_summary)
     }).finally(() => setLoading(false))
   }, [])
+
+  /** Backend regenerates the summary asynchronously after profile/CV changes —
+   * poll briefly for the updated value instead of leaving the UI stale. */
+  async function pollForSummary(previousSummary: string | undefined, attempts = 6, intervalMs = 3000) {
+    setSummaryPolling(true)
+    try {
+      for (let i = 0; i < attempts; i++) {
+        await new Promise(r => setTimeout(r, intervalMs))
+        const fresh = await api.profile.get().catch(() => null)
+        if (!fresh) continue
+        setProfile(fresh)
+        if (fresh.job_search_summary && fresh.job_search_summary !== previousSummary) return
+      }
+    } finally {
+      setSummaryPolling(false)
+    }
+  }
 
   async function handleCvUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -59,6 +79,8 @@ export default function ProfielPage() {
       setCvSuccess(t('cvUploadSuccess', { date: new Date(res.expires_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) }))
       const updated = await api.profile.get().catch(() => null)
       if (updated) setProfile(updated)
+      // CV parsing + summary regeneration both run in the background — poll longer here
+      pollForSummary(updated?.job_search_summary, 12, 3000)
     } catch (err) {
       setCvError(err instanceof ApiError ? err.message : t('cvUploadErrorFallback'))
     } finally {
@@ -90,6 +112,7 @@ export default function ProfielPage() {
       const updated = await api.profile.applyCV()
       setProfile(updated)
       setCvApplySuccess(t('cvApplySuccess'))
+      pollForSummary(updated.job_search_summary)
     } catch (err) {
       setCvError(err instanceof ApiError ? err.message : t('cvApplyErrorFallback'))
     } finally {
@@ -129,6 +152,7 @@ export default function ProfielPage() {
       setProfile(updated)
       setSaveSuccess(true)
       setIsDirty(false)
+      pollForSummary(updated.job_search_summary)
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : t('saveErrorFallback'))
     } finally {
@@ -141,12 +165,24 @@ export default function ProfielPage() {
     setSummaryError('')
     try {
       const res = await api.profile.generateSearchSummary()
-      setGeneratedSummary(res.summary)
-      setProfile(p => p ? { ...p, job_search_summary: res.summary } : p)
+      setProfile(p => p ? { ...p, job_search_summary: res.summary, job_search_summary_approved_at: undefined } : p)
     } catch (err) {
       setSummaryError(err instanceof ApiError ? err.message : t('summaryErrorFallback'))
     } finally {
       setSummaryGenerating(false)
+    }
+  }
+
+  async function handleApproveSummary() {
+    setSummaryApproving(true)
+    setSummaryError('')
+    try {
+      const res = await api.profile.approveSearchSummary()
+      setProfile(p => p ? { ...p, job_search_summary_approved_at: res.approved_at } : p)
+    } catch (err) {
+      setSummaryError(err instanceof ApiError ? err.message : t('summaryErrorFallback'))
+    } finally {
+      setSummaryApproving(false)
     }
   }
 
@@ -517,34 +553,6 @@ export default function ProfielPage() {
                   t('saveButton')
                 )}
               </button>
-
-              {/* Generate search profile summary */}
-              <div className="pt-1 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
-                <p className="text-xs mb-2" style={{ color: 'var(--color-text-muted)' }}>{t('summaryHint')}</p>
-                {summaryError && (
-                  <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{summaryError}</p>
-                )}
-                {generatedSummary && (
-                  <div className="mb-3 p-3 rounded-xl text-sm" style={{ background: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
-                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('summaryCardTitle')}</p>
-                    <p>{generatedSummary}</p>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={handleGenerateSummary}
-                  disabled={summaryGenerating}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
-                  style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
-                >
-                  {summaryGenerating ? (
-                    <>
-                      <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-                      {t('summaryGeneratingButton')}
-                    </>
-                  ) : t('summaryGenerateButton')}
-                </button>
-              </div>
             </form>
           ) : (
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('noProfileFound')}</p>
@@ -555,6 +563,74 @@ export default function ProfielPage() {
       {/* Prestaties tab */}
       {tab === 'prestaties' && (
         <Achievements profile={profile} applications={applications} />
+      )}
+
+      {/* AI search summary — always visible at the bottom regardless of active tab.
+          Read-only: it explains the automated search, it isn't itself editable. */}
+      {profile && (
+        <div className="mt-8 pt-5 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
+          <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('summaryCardTitle')}</p>
+          <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>{t('summaryHint')}</p>
+
+          {summaryError && (
+            <p className="text-xs mb-3 px-3 py-2 rounded-lg" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error)' }}>{summaryError}</p>
+          )}
+
+          {profile.job_search_summary ? (
+            <>
+              <div className="mb-3 p-3 rounded-xl text-sm" style={{ background: 'var(--color-lavender-card)', color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
+                <p>{profile.job_search_summary}</p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {profile.job_search_summary_approved_at ? (
+                  <p className="text-xs font-medium flex items-center gap-1" style={{ color: '#16a34a' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    {t('summaryApproved', { date: new Date(profile.job_search_summary_approved_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) })}
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleApproveSummary}
+                    disabled={summaryApproving}
+                    className="py-2 px-4 rounded-xl text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                    style={{ background: 'var(--color-indigo-primary)' }}
+                  >
+                    {summaryApproving ? t('summaryApproving') : t('summaryApproveButton')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleGenerateSummary}
+                  disabled={summaryGenerating}
+                  className="py-2 px-4 rounded-xl text-xs font-semibold transition hover:opacity-90 disabled:opacity-50"
+                  style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+                >
+                  {summaryGenerating ? t('summaryGeneratingButton') : t('summaryRegenerateButton')}
+                </button>
+              </div>
+            </>
+          ) : summaryPolling ? (
+            <p className="text-sm flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
+              <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+              {t('summaryGeneratingButton')}
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleGenerateSummary}
+              disabled={summaryGenerating}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
+            >
+              {summaryGenerating ? (
+                <>
+                  <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                  {t('summaryGeneratingButton')}
+                </>
+              ) : t('summaryGenerateButton')}
+            </button>
+          )}
+        </div>
       )}
     </div>
   )

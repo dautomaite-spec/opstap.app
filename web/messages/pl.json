@@ -712,10 +712,14 @@
     "avoidsLabel": "Czego wole unikac",
     "avoidsDesc": "Sektory, role lub warunki, ktorych chcesz unikac. Opstap ich nie wyklucza, ale rankinguje nizej.",
     "avoidsPlaceholder": "Np: Bez pracy w call center. Bez podrozy ponad 30 min.",
-    "summaryHint": "Zapisz profil, a nastepnie wygeneruj profil wyszukiwania. Opstap pokaze to na pulpicie.",
-    "summaryCardTitle": "Twoj profil wyszukiwania",
+    "summaryHint": "Ten profil wyszukiwania jest generowany automatycznie na podstawie Twojego profilu i CV. Aktualizuje sie automatycznie po edycji profilu.",
+    "summaryCardTitle": "Dlaczego Opstap proponuje te oferty",
     "summaryGenerateButton": "Generuj profil wyszukiwania",
     "summaryGeneratingButton": "Generowanie...",
+    "summaryRegenerateButton": "Generuj ponownie",
+    "summaryApproveButton": "Zgadzam sie",
+    "summaryApproving": "Potwierdzanie...",
+    "summaryApproved": "Potwierdzono {date}",
     "summaryErrorFallback": "Nie mozna wygenerowac profilu wyszukiwania. Sprobuj ponownie."
   },
   "CreditsPage": {
