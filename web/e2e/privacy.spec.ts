@@ -7,6 +7,6 @@ test('privacy page renders', async ({ page }) => {
 
 test('footer privacy link navigates correctly', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('link', { name: /privacybeleid/i }).click()
+  await page.getByRole('link', { name: /privacyvoorwaarden/i }).first().click()
   await expect(page).toHaveURL(/\/privacy/)
 })

@@ -36,6 +36,6 @@ test('nav link from home to login works', async ({ page }) => {
 
 test('nav link from home to register works', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('link', { name: 'Gratis starten' }).click()
+  await page.getByRole('link', { name: 'Maak een account' }).first().click()
   await expect(page).toHaveURL(/\/register/)
 })
