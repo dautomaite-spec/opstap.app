@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 from app.core.supabase import get_supabase
 from app.core.auth import get_current_user_id
 from app.schemas.job import JobOut, JobSearchParams
-from app.services.job_scraper import scrape_jobbird, scrape_nationale_vacaturebank, scrape_indeed_nl
+from app.services.job_scraper import scrape_jobbird, scrape_adzuna
 from app.services.llm_job_search import llm_search_jobs
 
 _LOCATION_REPLACEMENTS = {
@@ -209,27 +209,25 @@ async def search_jobs(
     raw = await llm_search_jobs(profile, keywords, location, params.limit, params.ui_language or "nl")
 
     if len(raw) < 5:
-        # LLM search returned too few — supplement with scrapers.
-        # Run Jobbird + NVB for each of the up-to-3 profile job titles so all
-        # recent experience types are covered; Indeed + LinkedIn only for the primary.
+        # LLM search returned too few — supplement with Jobbird + Adzuna for
+        # each of the up-to-3 profile job titles so all recent experience types
+        # are covered. NVB (Akamai bot wall) and Indeed (403s from datacenter
+        # IPs) are unreachable headlessly and were removed from this path.
         profile_titles = [t for t in [
             keywords,
             profile.get("functietitel_2"),
             profile.get("functietitel_3"),
         ] if t][:3]
         per_title_limit = max(params.limit // max(len(profile_titles), 1), 3)
-        indeed_limit = min(params.limit // 2, 10)
 
         jb_coros = [scrape_jobbird(kw, location, per_title_limit) for kw in profile_titles]
-        nvb_coros = [scrape_nationale_vacaturebank(kw, location, per_title_limit) for kw in profile_titles]
-        jb_groups, nvb_groups, indeed_results = await asyncio.gather(
+        adz_coros = [scrape_adzuna(kw, location, per_title_limit) for kw in profile_titles]
+        jb_groups, adz_groups = await asyncio.gather(
             asyncio.gather(*jb_coros),
-            asyncio.gather(*nvb_coros),
-            scrape_indeed_nl(keywords, location, indeed_limit),
+            asyncio.gather(*adz_coros),
         )
-        flat = [j for group in (*jb_groups, *nvb_groups) for j in group]
-        scraper_raw = [j for j in flat + indeed_results
-                       if _is_nl_location(j.get("location"))]
+        flat = [j for group in (*jb_groups, *adz_groups) for j in group]
+        scraper_raw = [j for j in flat if _is_nl_location(j.get("location"))]
         # Liveness-check scraper results (parallel HEAD) — same filter applied to LLM results above
         if scraper_raw:
             live_flags = await asyncio.gather(*[_is_url_live(j["url"]) for j in scraper_raw])
