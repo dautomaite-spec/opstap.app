@@ -79,22 +79,37 @@ def _safe_text_field(p: dict, key: str, max_len: int) -> str:
         return ""
 
 
+def _safe_cv_text(val, key: str, max_len: int) -> str:
+    """Sanitize a CV-extracted string for prompt use; drop it if injection-flagged.
+    CV content is untrusted input — a crafted CV can plant prompt instructions."""
+    text = str(val or "").strip()
+    if not text:
+        return ""
+    try:
+        return sanitize_and_check_profile_text(text, key, max_len)
+    except PromptInjectionError:
+        logger.warning("search-summary: dropping CV field %s, failed injection check", key)
+        return ""
+
+
 def _cv_block(cv: dict | None) -> str:
     """Extract a compact, sanitized slice of CV-structured data for the prompt."""
     if not cv:
         return ""
     parts = []
-    samenvatting = str(cv.get("samenvatting") or "").strip()
+    samenvatting = _safe_cv_text(cv.get("samenvatting"), "cv_samenvatting", 400)
     if samenvatting:
-        parts.append(f"CV-samenvatting: {sanitize_and_check_profile_text(samenvatting, 'cv_samenvatting', 400) if samenvatting else ''}")
-    vaardigheden = [str(v).strip() for v in (cv.get("vaardigheden") or []) if str(v).strip()][:12]
+        parts.append(f"CV-samenvatting: {samenvatting}")
+    vaardigheden = [s for s in (_safe_cv_text(v, "cv_vaardigheid", 60) for v in (cv.get("vaardigheden") or [])) if s][:12]
     if vaardigheden:
         parts.append(f"Vaardigheden uit CV: {', '.join(vaardigheden)}")
     werkervaring = cv.get("werkervaring") or []
-    recent = [
-        f"{(w.get('functie') or '').strip()} bij {(w.get('bedrijf') or '').strip()}".strip()
-        for w in werkervaring[:2] if (w.get("functie") or "").strip()
-    ]
+    recent = []
+    for w in werkervaring[:2]:
+        functie = _safe_cv_text(w.get("functie"), "cv_functie", 120)
+        bedrijf = _safe_cv_text(w.get("bedrijf"), "cv_bedrijf", 120)
+        if functie:
+            recent.append(f"{functie} bij {bedrijf}" if bedrijf else functie)
     if recent:
         parts.append(f"Recente werkervaring: {'; '.join(recent)}")
     return "\n".join(parts)
@@ -118,6 +133,8 @@ async def regenerate_search_summary(user_id: str, supabase, *, bypass_rate_limit
     if not result.data:
         return None
     p = result.data
+    if p.get("is_suspended"):
+        return None
 
     def f(key, max_len=150):
         return _safe_field(p, key, max_len)

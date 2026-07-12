@@ -19,6 +19,8 @@ from app.services.credits import (
 from app.services.cv_parser import parse_cv_async
 from app.services.email_notifications import send_admin_signup_notification
 from app.services.search_summary import regenerate_search_summary, check_rate_limit as _check_summary_rate_limit
+from app.services.abuse_guard import suspend_for_injection
+from app.services.prompt_guard import sanitize_and_check_profile_text, PromptInjectionError
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 logger = logging.getLogger(__name__)
@@ -31,6 +33,26 @@ _SUMMARY_RELEVANT_FIELDS = frozenset({
     "job_preferences", "job_background", "job_avoids", "job_company_size",
     "job_culture", "job_role_type",
 })
+
+# Free-text fields the user types directly. Injection patterns here are a
+# deliberate attack (unlike CV content, which may contain third-party text)
+# and trigger first-strike suspension via abuse_guard.
+_USER_TYPED_TEXT_FIELDS = frozenset({
+    "extra_info", "job_preferences", "job_background", "job_avoids",
+})
+
+
+def _reject_and_suspend_on_injection(data: dict, user_id: str, supabase) -> None:
+    """Scan user-typed free-text fields; on injection, suspend and raise 403."""
+    for field in _USER_TYPED_TEXT_FIELDS:
+        val = data.get(field)
+        if not val:
+            continue
+        try:
+            sanitize_and_check_profile_text(str(val), field, 500)
+        except PromptInjectionError:
+            detail = suspend_for_injection(user_id, field, supabase)
+            raise HTTPException(status_code=403, detail=detail)
 
 CV_BUCKET = "cvs"
 CV_SIGNED_URL_EXPIRY = 3600  # 1 hour
@@ -66,6 +88,8 @@ async def create_profile(
     if not result.data:
         raise HTTPException(status_code=500, detail="Profile creation failed")
     profile = result.data[0]
+    # After insert so the row exists for the suspension flag to land on
+    _reject_and_suspend_on_injection(data, user_id, supabase)
 
     # Award 5 signup credits
     try:
@@ -116,6 +140,7 @@ async def update_profile(
     supabase=Depends(get_supabase),
 ):
     data = body.model_dump(exclude_unset=True)
+    _reject_and_suspend_on_injection(data, user_id, supabase)
     now_iso = datetime.now(timezone.utc).isoformat()
     data["updated_at"] = now_iso
     data["last_active_at"] = now_iso
@@ -185,10 +210,11 @@ async def export_my_data(
     _export_cooldown[user_id] = now
 
     profile_raw = supabase.table("profiles").select(
-        "naam,email,woonplaats,functietitel,werklocatie,opleidingsniveau,uren_per_week,"
-        "beschikbaarheid,brief_taal,leeftijd,extra_info,job_preferences,"
-        "job_background,job_company_size,job_culture,job_role_type,job_avoids,job_search_summary,"
-        "job_titles,salary_min,salary_max,"
+        "naam,email,woonplaats,functietitel,functietitel_2,functietitel_3,werklocatie,"
+        "opleidingsniveau,uren_per_week,beschikbaarheid,brief_taal,leeftijd,extra_info,"
+        "job_preferences,job_background,job_company_size,job_culture,job_role_type,"
+        "job_avoids,job_search_summary,job_search_summary_approved_at,"
+        "salaris_min,salaris_max,cv_structured,"
         "referral_code,created_at,updated_at,cv_expires_at,avg_consent_given_at"
     ).eq("user_id", user_id).execute()
 
@@ -394,7 +420,14 @@ async def delete_cv(
         "cv_path": None,
         "cv_expires_at": None,
         "cv_structured": None,
+        # AVG rule 4: the search summary embeds CV-derived facts and must not
+        # outlive the CV. Clear it; the regen below rebuilds it CV-free.
+        "job_search_summary": None,
+        "job_search_summary_approved_at": None,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }).eq("user_id", user_id).execute()
+
+    import asyncio as _asyncio
+    _asyncio.create_task(regenerate_search_summary(user_id, supabase))
 
     return {"message": "CV deleted"}

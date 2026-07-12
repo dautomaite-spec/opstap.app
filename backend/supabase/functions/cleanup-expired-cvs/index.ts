@@ -49,10 +49,18 @@ Deno.serve(async (req: Request) => {
     const { data, error } = await admin.storage.from('cvs').remove(paths)
     if (!error) deleted = data?.length ?? 0
 
-    // Clear columns for any we successfully removed.
+    // Clear columns for any we successfully removed — including all CV-derived
+    // data (AVG rule 4: nothing derived from the CV may outlive it).
     await admin
       .from('profiles')
-      .update({ cv_path: null, cv_expires_at: null, cv_warning_sent: false })
+      .update({
+        cv_path: null,
+        cv_expires_at: null,
+        cv_warning_sent: false,
+        cv_structured: null,
+        job_search_summary: null,
+        job_search_summary_approved_at: null,
+      })
       .in('cv_path', paths)
   }
 

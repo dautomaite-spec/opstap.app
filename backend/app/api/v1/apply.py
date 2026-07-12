@@ -43,6 +43,7 @@ from app.services.prompt_guard import (
     validate_letter_output,
 )
 from app.services.credits import maybe_award_referrer_credit
+from app.services.abuse_guard import suspend_for_injection
 from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations, send_application_confirmation, send_interview_congratulations
 
 router = APIRouter(prefix="/apply", tags=["apply"])
@@ -109,17 +110,13 @@ async def generate_motivation_letter(
 
     if body.custom_notes:
         # Injection-check custom_notes before merging into the profile that
-        # flows into the Claude prompt.  URLs are not expected in personal notes.
+        # flows into the Claude prompt. User-typed field — injection here is a
+        # deliberate attack and triggers first-strike suspension.
         try:
             sanitize_and_check_profile_text(body.custom_notes, "custom_notes", 500)
         except PromptInjectionError:
-            raise HTTPException(
-                status_code=422,
-                detail=(
-                    "Ongeldige invoer in 'Persoonlijke notities'. "
-                    "Verwijder eventuele instructies, links of HTML en probeer opnieuw."
-                ),
-            )
+            detail = suspend_for_injection(user_id, "custom_notes", supabase)
+            raise HTTPException(status_code=403, detail=detail)
         profile = {**profile, "extra_info": f"{profile.get('extra_info', '')}\n{body.custom_notes}".strip()}
 
     try:
