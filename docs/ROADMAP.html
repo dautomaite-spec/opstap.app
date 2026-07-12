@@ -475,6 +475,14 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Job URL hallucination fix: reject URLs not found in Tavily results before returning them to the user</span></li>
         </ul>
 
+        <div class="section-label">fix/scrapers-and-reviews — 2026-07-11</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Security review fixes: CV-text sanitization in search-summary prompts (flagged fields dropped, not aborted); migration 016 revokes client PostgREST writes on profiles; report-dead rate limit (10/h/user); first-strike suspension for prompt-injection in user-typed fields (reversible via admin)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AVG review fixes: CV-derived search summary cleared on CV delete/expiry (migration 015 + edge function v2); consent copy covers search-profile purpose (Flutter + web, 6 locales); broken Art. 20 data export repaired (nonexistent columns caused production 500s)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Job search supplement path: Jobbird + Adzuna API per profile title — NVB removed (Akamai bot wall), Indeed removed (403s from datacenter IPs)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Agent roster overhaul: stylist rewritten against the real indigo/lavender design system; tester hard cost limits (max 3 browser link checks, single profile per run); new scraper-health agent; progress-reporter removed</span></li>
+        </ul>
+
         <div class="section-label">Nog te doen</div>
         <ul class="checklist">
           <li class="check-todo"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg><span>Domein opstap.nl registreren (handmatig, SIDN-registrar)</span></li>

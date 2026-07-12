@@ -217,6 +217,16 @@
       <a href="#richer-search-profile">Richer search profile</a>
       <a href="#search-summary-endpoint">AI search summary endpoint</a>
       <a href="#publicshell-nav-fix">PublicShell sidebar nav fix</a>
+      <span class="section-label">Search Quality</span>
+      <a href="#job-search-quality-fixes">Job search quality fixes</a>
+      <a href="#jobbird-scraper-fix">Jobbird scraper repair</a>
+      <a href="#search-summary-cv-enrichment">Search summary CV enrichment</a>
+      <a href="#job-url-hallucination-fix">Job URL hallucination fix</a>
+      <a href="#job-search-diagnostic-scripts">Diagnostic scripts</a>
+      <span class="section-label">Reviews &amp; Agents</span>
+      <a href="#security-avg-review-fixes">Security + AVG review fixes</a>
+      <a href="#scraper-supplement">Scraper supplement (Jobbird + Adzuna)</a>
+      <a href="#agent-roster">Agent roster overhaul</a>
     </div>
   </nav>
 
@@ -1201,6 +1211,37 @@
     <ul>
       <li>New directory <code>backend/scripts/</code>: <code>test_job_search_extraction.py</code>, <code>verify_job_links.py</code>, <code>debug_parse_failure.py</code></li>
       <li>Cheap standalone scripts for testing job search quality and link liveness without spinning up the full browser-driven QA (<code>tester</code>) agent</li>
+    </ul>
+
+    <h2 id="security-avg-review-fixes">Security + AVG review fixes (fix/scrapers-and-reviews)</h2>
+    <p><span class="tag tag-backend">backend</span><span class="tag tag-web">web</span><span class="tag tag-db">supabase</span></p>
+    <ul>
+      <li>All CV-extracted text (vaardigheden, werkervaring, samenvatting) is sanitized before entering the Claude search-summary prompt; injection-flagged fields are dropped instead of raising out of the regeneration (<code>backend/app/services/search_summary.py</code>)</li>
+      <li>Migration <code>016</code> (applied) revokes client PostgREST write access on <code>profiles</code> — server-managed columns (<code>job_search_summary</code>, <code>is_suspended</code>, <code>credits_balance</code>, ...) were writable by any authenticated user with the anon key</li>
+      <li>Report-dead endpoint rate-limited to 10/h per user — one user could previously mark the entire shared job pool dead</li>
+      <li>First-strike suspension on prompt-injection attempts in user-typed fields (profile free text, custom letter notes) via <code>backend/app/services/abuse_guard.py</code>; CV content and letter edits deliberately excluded (false-positive sources); reversible via existing admin endpoint; suspended accounts blocked from job search + summary generation</li>
+      <li>AVG: CV-derived search summary no longer outlives the CV — cleared on manual delete, on auto-expiry (pg function, migration <code>015</code>, applied) and by the storage edge function (v2 deployed), which now also clears <code>cv_structured</code></li>
+      <li>AVG: consent copy extended to cover the search-profile purpose — Flutter consent screen (<code>opstap/lib/screens/onboarding/avg_consent_screen.dart</code>) + web consent modal, all 6 locales; proper diacritics for pl/ro/tr strings</li>
+      <li>AVG Art. 20 data export was broken in production: <code>GET /profile/export</code> selected three nonexistent columns (<code>job_titles</code>, <code>salary_min</code>, <code>salary_max</code>) so every export 500'd — fixed, and <code>job_search_summary_approved_at</code> + <code>cv_structured</code> added to the export</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> The first-strike suspension only fires on user-typed fields. If new free-text inputs are added later, wire them through abuse_guard explicitly — and never wire CV-derived text into it (CV content is a known false-positive source).</div>
+
+    <h2 id="scraper-supplement">Scraper supplement — Jobbird + Adzuna per profile title</h2>
+    <p><span class="tag tag-backend">backend</span></p>
+    <ul>
+      <li>Key file: <code>backend/app/api/v1/jobs.py</code> — the supplement path (used when the LLM search returns too few results) now queries Jobbird + the Adzuna API per profile job title</li>
+      <li>Nationale Vacaturebank removed: Akamai bot wall blocks the scraper</li>
+      <li>Indeed removed: returns 403s for requests from datacenter IPs (Railway)</li>
+    </ul>
+    <div class="gotcha"><strong>Gotcha:</strong> Adzuna was previously "admin digest only" — it is now user-facing again via the supplement path. Watch the Adzuna API quota if search volume grows.</div>
+
+    <h2 id="agent-roster">Agent roster overhaul (.claude/agents/)</h2>
+    <p><span class="tag tag-web">tooling</span></p>
+    <ul>
+      <li><code>stylist.md</code> rewritten against the real indigo/lavender design system extracted from <code>web/src/app/globals.css</code> (was reviewing against a generic palette)</li>
+      <li><code>tester.md</code> (new): end-to-end QA agent with hard cost limits — max 3 browser link checks per run, timestamped findings reports, single profile per run</li>
+      <li><code>scraper-health.md</code> (new): cheap script-based pipeline checks using <code>backend/scripts/</code> diagnostics — no browser needed</li>
+      <li><code>progress-reporter.md</code> removed; agent auto-trigger table in <code>CLAUDE.md</code> updated</li>
     </ul>
 
   </main>

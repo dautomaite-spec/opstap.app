@@ -82,10 +82,12 @@ These agents live in `.claude/agents/`. Run them automatically at the points bel
 |---|---|
 | `/security` | After creating or modifying any backend endpoint (`backend/app/api/`) or auth flow |
 | `/avg-checker` | After any change touching user data, CV files, Supabase storage, or auth flows |
-| `/dutch-copy` | After finishing any Flutter screen — before marking it done |
-| `/stylist` | After generating or editing any Stitch screen |
+| `/dutch-copy` | After finishing any screen (web or Flutter) — before marking it done |
+| `/stylist` | After generating or editing any screen (web or Flutter/Stitch) |
 | `/developer` | When deciding what to do next, choosing between approaches, or hitting a blocker |
 | `/updater` | **Before every `git push`** — updates planning, wiki, roadmap, changelog, and cleans temp files |
+| `/scraper-health` | After any job-search or scraper change, or when search results degrade — cheap script-based check, no browser |
+| `/tester` | Browser E2E of the real UI flow (registration, forms, rendering) only — max 3 link checks per run; use `/scraper-health` for bulk data checks |
 
 - If an agent reports a violation or score below 7/10, fix the issues before continuing.
 - Do not skip agents to save time — they exist because these errors have real consequences (legal, security, UX).
