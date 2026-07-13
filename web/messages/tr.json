@@ -530,7 +530,11 @@
     "summaryMissingLink": "Profili tamamla",
     "reportDeadTooltip": "Is ilani kaldirildi",
     "pasteLinkTitle": "İlan linki yapıştır",
-    "pasteLinkSubtitle": "Bir yerde ilan mı buldun? Linki yapıştır, Opstap kapak mektubunu anında yazar."
+    "pasteLinkSubtitle": "Bir yerde ilan mı buldun? Linki yapıştır, Opstap kapak mektubunu anında yazar.",
+    "pasteTextFallbackHint": "İlan sayfası yüklenemedi (bazı siteler bunu engeller). İlan metnini aşağıya yapıştır.",
+    "pasteTextFallbackPlaceholder": "İlan metninin tamamını buraya yapıştır",
+    "pasteTextFallbackButton": "Metinden mektup oluştur",
+    "pasteTextTooShort": "İlan metninin tamamını yapıştır (en az 200 karakter)."
   },
   "SettingsPage": {
     "pageTitle": "Ayarlar | Opstap",

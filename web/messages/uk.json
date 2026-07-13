@@ -530,7 +530,11 @@
     "summaryMissingLink": "Доповнити профіль",
     "reportDeadTooltip": "Вакансія видалена",
     "pasteLinkTitle": "Вставте посилання на вакансію",
-    "pasteLinkSubtitle": "Знайшли десь вакансію? Вставте посилання, і Opstap одразу напише ваш супровідний лист."
+    "pasteLinkSubtitle": "Знайшли десь вакансію? Вставте посилання, і Opstap одразу напише ваш супровідний лист.",
+    "pasteTextFallbackHint": "Не вдалося завантажити сторінку вакансії (деякі сайти це блокують). Вставте текст вакансії нижче.",
+    "pasteTextFallbackPlaceholder": "Вставте сюди повний текст вакансії",
+    "pasteTextFallbackButton": "Створити лист із тексту",
+    "pasteTextTooShort": "Вставте повний текст вакансії (щонайменше 200 символів)."
   },
   "SettingsPage": {
     "pageTitle": "Налаштування | Opstap",

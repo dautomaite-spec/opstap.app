@@ -20,7 +20,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
-    throw new ApiError(res.status, err.detail ?? res.statusText)
+    const d = err.detail
+    if (d && typeof d === 'object') {
+      throw new ApiError(res.status, d.message ?? res.statusText, d.code)
+    }
+    throw new ApiError(res.status, d ?? res.statusText)
   }
   if (res.status === 204) return undefined as T
   return res.json()
@@ -109,7 +113,7 @@ export const api = {
   },
   apply: {
     generateLetter: (body: LetterRequest) => request<LetterResponse>('POST', '/api/v1/apply/letter', body),
-    fromUrl: (url: string, writing_style?: string) => request<{ job_title: string; company: string; description_snippet: string; letter: string }>('POST', '/api/v1/apply/from-url', { url, writing_style: writing_style ?? 'formeel' }),
+    fromUrl: (url: string, writing_style?: string, job_text?: string) => request<{ job_title: string; company: string; description_snippet: string; letter: string }>('POST', '/api/v1/apply/from-url', { url, writing_style: writing_style ?? 'formeel', ...(job_text !== undefined ? { job_text } : {}) }),
     /** Approval gate — requires a draft created by generateLetter */
     approve: (application_id: string, body: ApproveRequest) =>
       request<Application>('POST', `/api/v1/apply/${application_id}/approve`, body),
@@ -125,7 +129,7 @@ export const api = {
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(public status: number, message: string, public code?: string) {
     super(message)
   }
 }

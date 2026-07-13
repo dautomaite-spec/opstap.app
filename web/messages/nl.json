@@ -530,7 +530,11 @@
     "summaryMissingLink": "Profiel aanvullen",
     "reportDeadTooltip": "Vacature verwijderd",
     "pasteLinkTitle": "Plak een vacaturelink",
-    "pasteLinkSubtitle": "Zag je ergens een vacature? Plak de link en Opstap schrijft direct jouw motivatiebrief."
+    "pasteLinkSubtitle": "Zag je ergens een vacature? Plak de link en Opstap schrijft direct jouw motivatiebrief.",
+    "pasteTextFallbackHint": "Kon de vacaturepagina niet ophalen (sommige sites blokkeren dit). Plak de vacaturetekst hieronder.",
+    "pasteTextFallbackPlaceholder": "Plak hier de volledige vacaturetekst",
+    "pasteTextFallbackButton": "Maak brief van tekst",
+    "pasteTextTooShort": "Plak de volledige vacaturetekst (minimaal 200 tekens)."
   },
   "SettingsPage": {
     "pageTitle": "Instellingen | Opstap",

@@ -530,7 +530,11 @@
     "summaryMissingLink": "Complete profile",
     "reportDeadTooltip": "Job removed",
     "pasteLinkTitle": "Paste a job link",
-    "pasteLinkSubtitle": "Found a job somewhere? Paste the link and Opstap writes your cover letter on the spot."
+    "pasteLinkSubtitle": "Found a job somewhere? Paste the link and Opstap writes your cover letter on the spot.",
+    "pasteTextFallbackHint": "We could not load the job page (some sites block this). Paste the job text below.",
+    "pasteTextFallbackPlaceholder": "Paste the full job text here",
+    "pasteTextFallbackButton": "Create letter from text",
+    "pasteTextTooShort": "Paste the full job text (at least 200 characters)."
   },
   "SettingsPage": {
     "pageTitle": "Settings | Opstap",

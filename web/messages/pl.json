@@ -530,7 +530,11 @@
     "summaryMissingLink": "Uzupelnij profil",
     "reportDeadTooltip": "Oferta usunieta",
     "pasteLinkTitle": "Wklej link do oferty",
-    "pasteLinkSubtitle": "Znalazłeś gdzieś ofertę? Wklej link, a Opstap od razu napisze Twój list motywacyjny."
+    "pasteLinkSubtitle": "Znalazłeś gdzieś ofertę? Wklej link, a Opstap od razu napisze Twój list motywacyjny.",
+    "pasteTextFallbackHint": "Nie udało się pobrać strony z ofertą (niektóre strony to blokują). Wklej tekst oferty poniżej.",
+    "pasteTextFallbackPlaceholder": "Wklej tutaj pełny tekst oferty",
+    "pasteTextFallbackButton": "Utwórz list z tekstu",
+    "pasteTextTooShort": "Wklej pełny tekst oferty (minimum 200 znaków)."
   },
   "SettingsPage": {
     "pageTitle": "Ustawienia | Opstap",
