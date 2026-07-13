@@ -768,7 +768,13 @@
     "selectOptionAccepted": "Kabul edildi",
     "selectOptionRejected": "Reddedildi",
     "loadError": "Başvurularınız yüklenemedi. Bağlantınızı kontrol edin.",
-    "loadErrorRetry": "Tekrar dene"
+    "loadErrorRetry": "Tekrar dene",
+    "viewPrep": "Mülakat hazırlığı",
+    "hidePrep": "Hazırlığı gizle",
+    "prepCompanyHeading": "{company} hakkında",
+    "prepLikelyQuestionsHeading": "Bekleyebileceğin sorular",
+    "prepAskBackHeading": "Karşı sorabileceğin akıllı sorular",
+    "prepTipsHeading": "Hazırlık ipuçları"
   },
   "OpgeslagenPage": {
     "pageTitle": "Kaydedilen ilanlar",

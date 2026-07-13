@@ -768,7 +768,13 @@
     "selectOptionAccepted": "Accepted",
     "selectOptionRejected": "Rejected",
     "loadError": "Your applications could not be loaded. Check your connection.",
-    "loadErrorRetry": "Try again"
+    "loadErrorRetry": "Try again",
+    "viewPrep": "Interview prep",
+    "hidePrep": "Hide prep",
+    "prepCompanyHeading": "About {company}",
+    "prepLikelyQuestionsHeading": "Questions to expect",
+    "prepAskBackHeading": "Smart questions to ask back",
+    "prepTipsHeading": "Preparation tips"
   },
   "OpgeslagenPage": {
     "pageTitle": "Saved jobs",

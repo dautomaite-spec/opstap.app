@@ -296,4 +296,12 @@ export interface Application {
   job_salary?: string
   job_hours?: string
   letter_rating?: 1 | -1 | null
+  interview_prep?: InterviewPrep | null
+}
+
+export interface InterviewPrep {
+  company_summary?: string
+  likely_questions?: string[]
+  questions_to_ask?: string[]
+  tips?: string[]
 }

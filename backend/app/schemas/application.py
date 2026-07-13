@@ -57,6 +57,9 @@ class ApplicationOut(BaseModel):
     approved_at: Optional[datetime] = None
     created_at: datetime
     letter_rating: Optional[int] = None
+    # Server-generated post-apply prep pack (company summary, likely interview
+    # questions, questions to ask back, tips) — see services/interview_prep.py
+    interview_prep: Optional[dict] = None
 
     model_config = {"from_attributes": True}
 

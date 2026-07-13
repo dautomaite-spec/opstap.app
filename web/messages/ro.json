@@ -768,7 +768,13 @@
     "selectOptionAccepted": "Acceptat",
     "selectOptionRejected": "Respins",
     "loadError": "Aplicațiile tale nu au putut fi încărcate. Verifică conexiunea.",
-    "loadErrorRetry": "Încearcă din nou"
+    "loadErrorRetry": "Încearcă din nou",
+    "viewPrep": "Pregătire pentru interviu",
+    "hidePrep": "Ascunde pregătirea",
+    "prepCompanyHeading": "Despre {company}",
+    "prepLikelyQuestionsHeading": "Întrebări la care să te aștepți",
+    "prepAskBackHeading": "Întrebări inteligente de pus",
+    "prepTipsHeading": "Sfaturi de pregătire"
   },
   "OpgeslagenPage": {
     "pageTitle": "Locuri de muncă salvate",

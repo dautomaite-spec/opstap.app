@@ -768,7 +768,13 @@
     "selectOptionAccepted": "Прийнято",
     "selectOptionRejected": "Відхилено",
     "loadError": "Не вдалося завантажити ваші заявки. Перевірте з'єднання.",
-    "loadErrorRetry": "Спробувати ще раз"
+    "loadErrorRetry": "Спробувати ще раз",
+    "viewPrep": "Підготовка до співбесіди",
+    "hidePrep": "Сховати підготовку",
+    "prepCompanyHeading": "Про {company}",
+    "prepLikelyQuestionsHeading": "Питання, яких варто очікувати",
+    "prepAskBackHeading": "Розумні питання у відповідь",
+    "prepTipsHeading": "Поради з підготовки"
   },
   "OpgeslagenPage": {
     "pageTitle": "Збережені вакансії",
