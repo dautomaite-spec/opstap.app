@@ -768,7 +768,13 @@
     "selectOptionAccepted": "Aangenomen",
     "selectOptionRejected": "Afgewezen",
     "loadError": "Je sollicitaties konden niet worden geladen. Controleer je verbinding.",
-    "loadErrorRetry": "Opnieuw proberen"
+    "loadErrorRetry": "Opnieuw proberen",
+    "viewPrep": "Gespreksvoorbereiding",
+    "hidePrep": "Verberg voorbereiding",
+    "prepCompanyHeading": "Over {company}",
+    "prepLikelyQuestionsHeading": "Vragen die je kunt verwachten",
+    "prepAskBackHeading": "Slimme vragen om terug te stellen",
+    "prepTipsHeading": "Voorbereidingstips"
   },
   "OpgeslagenPage": {
     "pageTitle": "Opgeslagen vacatures",

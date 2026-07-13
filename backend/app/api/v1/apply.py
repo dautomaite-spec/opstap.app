@@ -44,6 +44,7 @@ from app.services.prompt_guard import (
 )
 from app.services.credits import maybe_award_referrer_credit
 from app.services.abuse_guard import suspend_for_injection
+from app.services.interview_prep import generate_interview_prep
 from app.core.tasks import fire_and_forget
 from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations, send_application_confirmation, send_interview_congratulations
 
@@ -323,6 +324,10 @@ async def approve_and_send(
         "approved_at": now.isoformat(),
         "sent_at": sent_at,
     }).eq("id", application_id).eq("user_id", user_id).execute()
+
+    # Application is on its way — prepare the candidate for the next step
+    if status in ("sent", "pending"):
+        fire_and_forget(generate_interview_prep(application_id, user_id, supabase))
 
     updated = (
         supabase.table("applications")

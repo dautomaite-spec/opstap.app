@@ -40,6 +40,7 @@ export default function SollicitatiesPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [retryingId, setRetryingId] = useState<string | null>(null)
   const [expandedLetter, setExpandedLetter] = useState<string | null>(null)
+  const [expandedPrep, setExpandedPrep] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -257,6 +258,16 @@ export default function SollicitatiesPage() {
                       {expandedLetter === app.id ? t('hideLetter') : t('viewLetter')}
                     </button>
                   )}
+                  {app.interview_prep && (
+                    <button
+                      onClick={() => setExpandedPrep(expandedPrep === app.id ? null : app.id)}
+                      aria-expanded={expandedPrep === app.id}
+                      className="text-xs px-2.5 py-1 rounded-lg font-semibold transition hover:opacity-90"
+                      style={{ background: 'var(--color-indigo-primary)', color: 'var(--color-white)' }}
+                    >
+                      {expandedPrep === app.id ? t('hidePrep') : t('viewPrep')}
+                    </button>
+                  )}
                 </div>
                 {app.status === 'sent' && (
                   <div className="flex items-center gap-1">
@@ -285,6 +296,40 @@ export default function SollicitatiesPage() {
                   <p className="text-xs whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
                     {app.letter_nl}
                   </p>
+                </div>
+              )}
+              {expandedPrep === app.id && app.interview_prep && (
+                <div className="mt-3 pt-3 flex flex-col gap-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                  {app.interview_prep.company_summary && (
+                    <div>
+                      <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('prepCompanyHeading', { company: app.company })}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>{app.interview_prep.company_summary}</p>
+                    </div>
+                  )}
+                  {(app.interview_prep.likely_questions?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('prepLikelyQuestionsHeading')}</p>
+                      <ul className="text-xs leading-relaxed pl-4 list-disc" style={{ color: 'var(--color-text-primary)' }}>
+                        {app.interview_prep.likely_questions!.map((q, qi) => <li key={qi} className="mb-1">{q}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {(app.interview_prep.questions_to_ask?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('prepAskBackHeading')}</p>
+                      <ul className="text-xs leading-relaxed pl-4 list-disc" style={{ color: 'var(--color-text-primary)' }}>
+                        {app.interview_prep.questions_to_ask!.map((q, qi) => <li key={qi} className="mb-1">{q}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {(app.interview_prep.tips?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-indigo-primary)' }}>{t('prepTipsHeading')}</p>
+                      <ul className="text-xs leading-relaxed pl-4 list-disc" style={{ color: 'var(--color-text-primary)' }}>
+                        {app.interview_prep.tips!.map((tip, ti) => <li key={ti} className="mb-1">{tip}</li>)}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

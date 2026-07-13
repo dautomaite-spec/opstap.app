@@ -768,7 +768,13 @@
     "selectOptionAccepted": "Zaakceptowano",
     "selectOptionRejected": "Odrzucono",
     "loadError": "Nie udało się załadować Twoich aplikacji. Sprawdź połączenie.",
-    "loadErrorRetry": "Spróbuj ponownie"
+    "loadErrorRetry": "Spróbuj ponownie",
+    "viewPrep": "Przygotowanie do rozmowy",
+    "hidePrep": "Ukryj przygotowanie",
+    "prepCompanyHeading": "O firmie {company}",
+    "prepLikelyQuestionsHeading": "Pytania, których możesz się spodziewać",
+    "prepAskBackHeading": "Mądre pytania do zadania",
+    "prepTipsHeading": "Wskazówki"
   },
   "OpgeslagenPage": {
     "pageTitle": "Zapisane oferty",
