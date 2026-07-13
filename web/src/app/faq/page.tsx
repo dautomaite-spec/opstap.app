@@ -28,6 +28,7 @@ export default async function FaqPage() {
         { q: t('section2Q2'), a: t('section2A2') },
         { q: t('section2Q3'), a: t('section2A3') },
         { q: t('section2Q4'), a: t('section2A4') },
+        { q: t('section2Q5'), a: t('section2A5') },
       ],
     },
     {
