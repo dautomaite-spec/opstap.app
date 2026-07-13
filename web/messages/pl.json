@@ -766,7 +766,9 @@
     "selectOptionReplied": "Odpowiedziano",
     "selectOptionInterview": "Zaproszenie na rozmowę",
     "selectOptionAccepted": "Zaakceptowano",
-    "selectOptionRejected": "Odrzucono"
+    "selectOptionRejected": "Odrzucono",
+    "loadError": "Nie udało się załadować Twoich aplikacji. Sprawdź połączenie.",
+    "loadErrorRetry": "Spróbuj ponownie"
   },
   "OpgeslagenPage": {
     "pageTitle": "Zapisane oferty",

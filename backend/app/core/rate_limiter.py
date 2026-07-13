@@ -65,6 +65,16 @@ def check_purchase_rate(user_id: str) -> bool:
         return False
 
 
+def _evict_stale_letter_usage(today: date) -> None:
+    """Drop entries from previous days — the dict otherwise retains one entry
+    per user for the process lifetime. Caller must hold _lock."""
+    if len(_letter_usage) < 5_000:
+        return
+    stale = [uid for uid, u in _letter_usage.items() if u["date"] != today]
+    for uid in stale:
+        del _letter_usage[uid]
+
+
 def check_and_increment_letter(user_id: str, job_id: str) -> tuple[bool, str]:
     """
     Returns (allowed, reason_nl).
@@ -72,6 +82,7 @@ def check_and_increment_letter(user_id: str, job_id: str) -> tuple[bool, str]:
     """
     today = _today()
     with _lock:
+        _evict_stale_letter_usage(today)
         usage = _letter_usage[user_id]
 
         # Reset counters on a new day

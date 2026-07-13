@@ -1,5 +1,17 @@
 # Changelog — Opstap
 
+## 2026-07-11 (fix/scrapers-and-reviews)
+- fix(security): sanitize all CV-extracted text (vaardigheden/werkervaring/samenvatting) before it enters search-summary prompts; injection-flagged fields dropped instead of aborting regeneration (5032000)
+- fix(security): migration 016 revokes client PostgREST write access on profiles — server-managed columns (job_search_summary, is_suspended, credits_balance) were writable by any authenticated user with the anon key
+- fix(security): report-dead rate limit (10/h per user) — one user could mark the entire shared job pool dead
+- feat(security): first-strike suspension on prompt-injection attempts in user-typed fields (profile free text, custom letter notes); CV content and letter edits excluded as false-positive sources; reversible via admin; suspended accounts blocked from job search + summary generation
+- fix(avg): CV-derived search summary no longer outlives the CV — cleared on manual delete and auto-expiry (migration 015 + storage edge function v2, which also clears cv_structured)
+- fix(avg): consent copy extended to cover the search-profile purpose — Flutter consent screen + web consent modal, all 6 locales
+- fix(avg): AVG Art. 20 data export repaired — endpoint selected three nonexistent columns (job_titles, salary_min, salary_max) so every export 500'd in production; export now includes job_search_summary_approved_at + cv_structured
+- fix: proper diacritics for pl/ro/tr summary strings (dutch-copy review)
+- feat: job search supplement path now uses Jobbird + Adzuna API per profile title — Nationale Vacaturebank removed (Akamai bot wall), Indeed removed (403s from datacenter IPs)
+- chore: agent roster overhaul (.claude/agents/) — stylist rewritten against the real indigo/lavender design system from web globals.css; tester agent given hard cost limits (max 3 browser link checks, timestamped reports, single profile per run); new scraper-health agent for cheap script-based pipeline checks; progress-reporter agent removed; CLAUDE.md agent table updated
+
 ## 2026-07-11 (fix/job-search-quality-and-summary)
 - fix: job URL hallucination — reject job URLs not found in Tavily results before returning them to the user (edc8b64)
 - fix: LLM job search company/location extraction — was showing "Onbekend"/wrong city

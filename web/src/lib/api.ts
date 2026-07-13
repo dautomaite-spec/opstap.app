@@ -93,7 +93,12 @@ export const api = {
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(params),
       })
-      if (!res.ok) throw new ApiError(res.status, res.statusText)
+      if (!res.ok) {
+        // Surface the server's detail (rate limit, suspension, ...) like request() does —
+        // statusText alone showed users a bare "Bad Request"
+        const err = await res.json().catch(() => ({ detail: res.statusText }))
+        throw new ApiError(res.status, err.detail ?? res.statusText)
+      }
       const jobs = (await res.json()) as Job[]
       return { jobs, stale: res.headers.get('X-Jobs-Source') === 'cache' }
     },

@@ -766,7 +766,9 @@
     "selectOptionReplied": "Beantwoord",
     "selectOptionInterview": "Uitgenodigd voor gesprek",
     "selectOptionAccepted": "Aangenomen",
-    "selectOptionRejected": "Afgewezen"
+    "selectOptionRejected": "Afgewezen",
+    "loadError": "Je sollicitaties konden niet worden geladen. Controleer je verbinding.",
+    "loadErrorRetry": "Opnieuw proberen"
   },
   "OpgeslagenPage": {
     "pageTitle": "Opgeslagen vacatures",
