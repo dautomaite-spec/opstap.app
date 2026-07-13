@@ -74,24 +74,39 @@ Beta — see docs/PROGRESSMAP.html for full details and progress checklist.
 6. Auto-delete after 90 days inactivity
 7. Every automated decision is visible and editable by the user
 
+## The agentic build loop (planner → builder → tester)
+
+All non-trivial feature and fix work runs through this loop. Agents cannot message
+each other directly — the main session routes their file-based artifacts, all under
+`.claude/plans/<slug>/`:
+
+1. `/planner` writes `plan.md` (scope, steps, risks, acceptance criteria)
+2. `/builder` implements it on a feature branch, writes `build-report.md`
+3. `/tester` (Mode 1) checks the acceptance criteria, writes `test-report.md` with PASS/FAIL
+4. On FAIL: send `/builder` back in with the test report (fix round). Repeat 2–4 until PASS.
+5. On PASS: run the release gates below that the plan's risk section flags, then `/updater`, then commit/push/PR.
+
+Trivial changes (typo, copy tweak, one-line fix) may skip the loop but never the release gates that apply.
+
 ## Agent auto-trigger rules
 
 These agents live in `.claude/agents/`. Run them automatically at the points below — do not wait to be asked.
 
 | Agent | Trigger |
 |---|---|
-| `/security` | After creating or modifying any backend endpoint (`backend/app/api/`) or auth flow |
-| `/avg-checker` | After any change touching user data, CV files, Supabase storage, or auth flows |
-| `/dutch-copy` | After finishing any screen (web or Flutter) — before marking it done |
-| `/stylist` | After generating or editing any screen (web or Flutter/Stitch) |
-| `/developer` | When deciding what to do next, choosing between approaches, or hitting a blocker |
+| `/planner` | Start of any non-trivial feature/fix (writes the plan) — also for "what next / which approach / unblock me" decisions |
+| `/builder` | When a plan exists and needs implementing, or a test report needs a fix round |
+| `/tester` | Mode 1: after every build, against the plan's acceptance criteria. Mode 2: browser E2E of real UI flows — max 3 link checks per run |
+| `/security` | Release gate: after creating or modifying any backend endpoint (`backend/app/api/`) or auth flow |
+| `/avg-checker` | Release gate: after any change touching user data, CV files, Supabase storage, or auth flows |
+| `/dutch-copy` | Release gate: after finishing any screen (web or Flutter) — before marking it done |
+| `/stylist` | Release gate: after generating or editing any screen (web or Flutter/Stitch) |
 | `/updater` | **Before every `git push`** — updates planning, wiki, roadmap, changelog, and cleans temp files |
 | `/scraper-health` | After any job-search or scraper change, or when search results degrade — cheap script-based check, no browser |
-| `/tester` | Browser E2E of the real UI flow (registration, forms, rendering) only — max 3 link checks per run; use `/scraper-health` for bulk data checks |
 
 - If an agent reports a violation or score below 7/10, fix the issues before continuing.
 - Do not skip agents to save time — they exist because these errors have real consequences (legal, security, UX).
-- `/developer` answers navigation questions and unblocks work. If developer says skip, skip and continue to next step. Only surface to the user when both Claude and developer are fully stuck.
+- `/planner` answers navigation questions and unblocks work (this role moved from the retired `/developer` agent). If planner says skip, skip and continue. Only surface to the user when both Claude and planner are fully stuck.
 
 ## What NOT to do
 - Do not use the name Kabir or reference the old Kabir project
