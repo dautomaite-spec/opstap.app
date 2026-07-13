@@ -113,7 +113,7 @@ function formatDate(iso?: string): string | null {
   return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
 }
 
-export default function DashboardClient({ userId, userEmail }: { userId: string; userEmail: string }) {
+export default function DashboardClient() {
   const router = useRouter()
   const t = useTranslations('DashboardClient')
   const locale = useLocale()
@@ -123,16 +123,24 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   const [profileError, setProfileError] = useState('')
   const autoSearched = useRef(false)
 
-  const [jobs, setJobs] = useState<Job[]>([])
+  const [jobs, setJobs] = useState<Job[]>(
+    () => (typeof window === 'undefined' ? [] : loadCachedJobs().jobs)
+  )
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('match')
 
-  const [savedJobs, setSavedJobs] = useState<Record<string, Job>>({})
+  // Seed synchronously from localStorage (lazy initializer, SSR-safe) so the
+  // first paint already has data — a setState-in-effect caused an empty flash.
+  const [savedJobs, setSavedJobs] = useState<Record<string, Job>>(
+    () => (typeof window === 'undefined' ? {} : loadSavedJobsLocal())
+  )
+  const [jobsStale, setJobsStale] = useState(
+    () => (typeof window === 'undefined' ? false : loadCachedJobs().stale)
+  )
 
   useEffect(() => {
-    // Seed from localStorage immediately for instant UI, then sync from Supabase
-    setSavedJobs(loadSavedJobsLocal())
+    // Supabase is the source of truth — reconcile the localStorage seed
     api.jobs.listSaved()
       .then(rows => {
         const map: Record<string, Job> = {}
@@ -140,16 +148,7 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
         setSavedJobs(map)
         writeSavedJobsLocal(map)
       })
-      .catch(() => { /* offline or not authed -local cache is fine */ })
-  }, [])
-
-  useEffect(() => {
-    const { jobs: cached, stale } = loadCachedJobs()
-    if (cached.length > 0) {
-      setJobs(cached)
-      setJobsStale(stale)
-      setMinAnimDone(true)
-    }
+      .catch(() => { /* offline or not authed - local cache is fine */ })
   }, [])
 
   const toggleSave = useCallback((job: Job) => {
@@ -168,20 +167,22 @@ export default function DashboardClient({ userId, userEmail }: { userId: string;
   }, [])
 
   const reportDead = useCallback((job: Job) => {
-    setJobs(prev => prev.filter(j => j.id !== job.id))
-    writeCachedJobs([], false)
+    setJobs(prev => {
+      const next = prev.filter(j => j.id !== job.id)
+      // Persist the filtered list — writing an empty cache here wiped every
+      // other result on the next remount.
+      writeCachedJobs(next, false)
+      return next
+    })
     api.jobs.reportDead(job.id).catch(() => {})
   }, [])
 
-  const [jobsStale, setJobsStale] = useState(false)
-
   // Search flow: button-triggered, minimum 5s spinner
-  const [minAnimDone, setMinAnimDone] = useState(false)
+  const [minAnimDone, setMinAnimDone] = useState(
+    () => (typeof window === 'undefined' ? false : loadCachedJobs().jobs.length > 0)
+  )
   const minAnimTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const LAST_SEARCH_KEY = 'opstap_last_search'
-  const SEARCH_PERIOD_MS = 48 * 60 * 60 * 1000
-  const lastSearched = typeof window !== 'undefined' ? Number(localStorage.getItem(LAST_SEARCH_KEY) ?? '0') : 0
-  const searchPeriodExpired = Date.now() - lastSearched > SEARCH_PERIOD_MS
 
   // Sidebar filters
   const [filterContracts, setFilterContracts] = useState<string[]>([])

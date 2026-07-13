@@ -766,7 +766,9 @@
     "selectOptionReplied": "Yanıtlandı",
     "selectOptionInterview": "Görüşmeye davet edildi",
     "selectOptionAccepted": "Kabul edildi",
-    "selectOptionRejected": "Reddedildi"
+    "selectOptionRejected": "Reddedildi",
+    "loadError": "Başvurularınız yüklenemedi. Bağlantınızı kontrol edin.",
+    "loadErrorRetry": "Tekrar dene"
   },
   "OpgeslagenPage": {
     "pageTitle": "Kaydedilen ilanlar",

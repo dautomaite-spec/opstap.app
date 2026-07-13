@@ -28,13 +28,15 @@ export default function CreditsWidget({ collapsed }: { collapsed: boolean }) {
         }}
       >
         {collapsed ? (
-          <span
+          <button
+            type="button"
             className="text-xs font-bold text-white cursor-pointer"
             onClick={() => setShowModal(true)}
             title={t('creditsTooltip', { balance })}
+            aria-label={t('creditsTooltip', { balance })}
           >
             {balance}
-          </span>
+          </button>
         ) : (
           <>
             <div className="flex items-center gap-1.5 min-w-0">

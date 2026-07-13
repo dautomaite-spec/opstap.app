@@ -44,6 +44,7 @@ from app.services.prompt_guard import (
 )
 from app.services.credits import maybe_award_referrer_credit
 from app.services.abuse_guard import suspend_for_injection
+from app.core.tasks import fire_and_forget
 from app.services.email_notifications import send_credit_low_warning, send_reply_congratulations, send_application_confirmation, send_interview_congratulations
 
 router = APIRouter(prefix="/apply", tags=["apply"])
@@ -309,7 +310,7 @@ async def approve_and_send(
         status = "sent" if success else "failed"
         sent_at = now.isoformat() if success else None
         if success and profile.get("email"):
-            asyncio.create_task(send_application_confirmation(
+            fire_and_forget(send_application_confirmation(
                 profile["email"], profile.get("naam", ""), draft["job_title"], draft["company"]
             ))
 
@@ -494,12 +495,24 @@ def _is_safe_url(url: str) -> tuple[bool, str]:
     hostname = parsed.hostname
     if not hostname:
         return False, "Ongeldige URL"
+    # Validate EVERY address the hostname resolves to, not just the first —
+    # gethostbyname returns one A record, so a host with both a public and a
+    # private record could pass the check and then be connected to on the
+    # private one.
     try:
-        ip = ipaddress.ip_address(socket.gethostbyname(hostname))
+        infos = socket.getaddrinfo(hostname, None)
     except Exception:
         return False, "Hostnaam kon niet worden omgezet"
-    if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
-        return False, "Ongeldige URL"
+    if not infos:
+        return False, "Hostnaam kon niet worden omgezet"
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return False, "Ongeldige URL"
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            return False, "Ongeldige URL"
     return True, ""
 
 
@@ -578,7 +591,9 @@ async def letter_from_url(
                 company = text
                 break
     if not company:
-        company = (parsed.hostname or "").lstrip("www.").split(".")[0].capitalize()
+        # removeprefix, not lstrip — lstrip("www.") strips any leading w/. chars,
+        # mangling hosts like wework.com -> "Ework"
+        company = (parsed.hostname or "").removeprefix("www.").split(".")[0].capitalize()
 
     for tag in soup(["script", "style", "nav", "header", "footer"]):
         tag.decompose()

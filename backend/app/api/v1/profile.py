@@ -20,6 +20,7 @@ from app.services.cv_parser import parse_cv_async
 from app.services.email_notifications import send_admin_signup_notification
 from app.services.search_summary import regenerate_search_summary, check_rate_limit as _check_summary_rate_limit
 from app.services.abuse_guard import suspend_for_injection
+from app.core.tasks import fire_and_forget
 from app.services.prompt_guard import sanitize_and_check_profile_text, PromptInjectionError
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -107,17 +108,16 @@ async def create_profile(
         pass
 
     # Notify admin of new signup — fire-and-forget
-    import asyncio as _asyncio
     user_email = ""
     try:
         auth_user = supabase.auth.admin.get_user_by_id(user_id)
         user_email = auth_user.user.email or ""
     except Exception:
         pass
-    _asyncio.create_task(send_admin_signup_notification(data.get("naam", ""), user_email))
+    fire_and_forget(send_admin_signup_notification(data.get("naam", ""), user_email))
 
     # Auto-generate the search summary right after profile creation — fire-and-forget
-    _asyncio.create_task(regenerate_search_summary(user_id, supabase))
+    fire_and_forget(regenerate_search_summary(user_id, supabase))
 
     return _attach_cv_url(profile, supabase)
 
@@ -159,8 +159,7 @@ async def update_profile(
     # Regenerate the search summary only if a field it's actually built from changed —
     # avoids a Claude call on trivial toggles like email_digest_enabled
     if _SUMMARY_RELEVANT_FIELDS.intersection(data.keys()):
-        import asyncio as _asyncio
-        _asyncio.create_task(regenerate_search_summary(user_id, supabase))
+        fire_and_forget(regenerate_search_summary(user_id, supabase))
 
     return _attach_cv_url(profile, supabase)
 
@@ -334,8 +333,7 @@ async def upload_cv(
     }).eq("user_id", user_id).execute()
 
     # Fire-and-forget CV parsing — updates profiles.cv_structured asynchronously
-    import asyncio as _asyncio
-    _asyncio.create_task(parse_cv_async(content, file.content_type, user_id, supabase))
+    fire_and_forget(parse_cv_async(content, file.content_type, user_id, supabase))
 
     return {"message": "CV uploaded", "expires_at": expires_at}
 
@@ -427,7 +425,6 @@ async def delete_cv(
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }).eq("user_id", user_id).execute()
 
-    import asyncio as _asyncio
-    _asyncio.create_task(regenerate_search_summary(user_id, supabase))
+    fire_and_forget(regenerate_search_summary(user_id, supabase))
 
     return {"message": "CV deleted"}

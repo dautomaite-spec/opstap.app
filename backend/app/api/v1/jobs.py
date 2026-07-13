@@ -384,6 +384,11 @@ async def report_dead_job(
             _report_dead_state[user_id] = (entry[0] + 1, entry[1])
         else:
             _report_dead_state[user_id] = (1, now)
+        # Evict expired windows so the dict doesn't grow for the process lifetime
+        expired = [uid for uid, (_, ws) in _report_dead_state.items()
+                   if (now - ws).total_seconds() >= 3600 and uid != user_id]
+        for uid in expired:
+            del _report_dead_state[uid]
 
     supabase.table("jobs").update({"dead_at": now.isoformat()}).eq("id", job_id).is_("dead_at", "null").execute()
     return None

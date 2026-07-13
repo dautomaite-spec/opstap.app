@@ -766,7 +766,9 @@
     "selectOptionReplied": "Răspuns",
     "selectOptionInterview": "Invitat la interviu",
     "selectOptionAccepted": "Acceptat",
-    "selectOptionRejected": "Respins"
+    "selectOptionRejected": "Respins",
+    "loadError": "Aplicațiile tale nu au putut fi încărcate. Verifică conexiunea.",
+    "loadErrorRetry": "Încearcă din nou"
   },
   "OpgeslagenPage": {
     "pageTitle": "Locuri de muncă salvate",
