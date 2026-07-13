@@ -132,7 +132,7 @@
   <main class="content">
     <div class="page-header">
       <h1>🗺 Roadmap</h1>
-      <p>Opstap — fasen &amp; voortgang · Bijgewerkt 2026-07-03</p>
+      <p>Opstap — fasen &amp; voortgang · Bijgewerkt 2026-07-11</p>
     </div>
 
     <!-- Phase 1 -->
@@ -464,6 +464,15 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Job search preferences field: new profile field to scope search results without excluding job titles</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Richer search profile + AI search summary (migration 012): 6 new profile columns; POST /profile/search-summary via Claude Haiku; profile page "Zoekprofiel" section + dashboard summary card</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>PublicShell sidebar: "Jouw sollicitaties" nav link added + navJouwSollicitaties i18n key in all 6 languages</span></li>
+        </ul>
+
+        <div class="section-label">fix/job-search-quality-and-summary — 2026-07-11</div>
+        <ul class="checklist">
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>LLM job search: company/location extraction fixed, match_score (0-100) wired end-to-end, 8/10 quality gate added, JSON-parse fix (was ~40% zero-result searches), LinkedIn expired-listing redirect detection, werkenvoornederland.nl unblocked as a source</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Jobbird scraper: CSS selectors and card-scoping logic fixed (site markup change caused 100% "Onbekend" company/location)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>search_summary.py: AI search-profile summary now includes CV-structured data; auto-regenerates (fire-and-forget) after profile changes and CV parsing; new approve endpoint; job_search_summary made server-only (migration 014)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dashboard: Enter-key premature submit fix, stale profile-completeness banner fix; profile page: AI summary moved to bottom, read-only with acknowledgment, polling for async generation</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Job URL hallucination fix: reject URLs not found in Tavily results before returning them to the user</span></li>
         </ul>
 
         <div class="section-label">Nog te doen</div>

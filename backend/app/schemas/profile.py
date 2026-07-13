@@ -22,7 +22,6 @@ class ProfileCreate(BaseModel):
     job_culture: Optional[str] = Field(None, max_length=50)
     job_role_type: Optional[str] = Field(None, max_length=50)
     job_avoids: Optional[str] = Field(None, max_length=300)
-    job_search_summary: Optional[str] = Field(None, max_length=600)
     opleidingsniveau: Optional[str] = Field(None, max_length=50)
     leeftijd: Optional[int] = Field(None, ge=14, le=99)
     brief_taal: str = Field('nl', pattern='^(nl|en)$')
@@ -48,5 +47,8 @@ class ProfileOut(ProfileCreate):
     credits_balance: int = 0
     referral_code: Optional[str] = None
     profile_bonus_given: bool = False
+    # Server-generated only — never client-writable, see search_summary.py
+    job_search_summary: Optional[str] = Field(None, max_length=600)
+    job_search_summary_approved_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}

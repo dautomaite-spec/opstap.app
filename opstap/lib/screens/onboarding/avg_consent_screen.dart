@@ -68,7 +68,7 @@ class _AvgConsentScreenState extends State<AvgConsentScreen> {
                           setState(() => _consentAiProcessing = v ?? false),
                       title: 'Verwerking door AI',
                       subtitle:
-                          'Ik begrijp dat mijn CV verwerkt wordt door de Claude API (Anthropic) voor profielextractie. Mijn gegevens worden niet gebruikt voor AI-training.',
+                          'Ik begrijp dat mijn CV verwerkt wordt door de Claude API (Anthropic) voor profielextractie en het opstellen van mijn zoekprofiel, zodat Opstap passende vacatures kan vinden. Mijn gegevens worden niet gebruikt voor AI-training.',
                     ),
                     const SizedBox(height: 10),
                     _ConsentTile(

@@ -301,7 +301,7 @@
   <aside class="toc">
     <div class="toc-header">
       <h1>Opstap</h1>
-      <p>Voortgangskaart — 2026-06-25</p>
+      <p>Voortgangskaart — 2026-07-11</p>
     </div>
     <nav>
       <div class="toc-section">Documenten</div>
@@ -336,7 +336,7 @@
     <!-- Header -->
     <div class="page-header">
       <h1>Opstap — Voortgangskaart</h1>
-      <p>Bijgewerkt op 2026-07-03 (i18n NL/EN/TR/UK/PL/RO, job search preferences, richer search profile + AI summary, PublicShell nav fix)</p>
+      <p>Bijgewerkt op 2026-07-11 (job search quality fixes: match_score, Jobbird scraper repair, LinkedIn expired-link detection, AI search summary CV-enrichment, job URL hallucination fix)</p>
       <div class="status-bar">
         <div class="status-pill"><span class="dot dot-green"></span>Website live</div>
         <div class="status-pill"><span class="dot dot-green"></span>Backend Railway</div>
@@ -771,6 +771,13 @@
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Zoekvoorkeurenveld (job_search_preferences): nieuw profielveld waarmee gebruikers zoekresultaten kunnen verfijnen zonder functies uit te sluiten</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Rijker zoekprofiel + AI-zoeksamenvatting (migratie 012): 6 nieuwe profielkolommen (job_background, job_company_size, job_culture, job_role_type, job_avoids, job_search_summary); POST /profile/search-summary via Claude Haiku met rate limiting, prompt-injectiebeveiliging en outputvalidatie; profielpagina "Zoekprofiel"-sectie + dashboard-samenvattingskaart</span></li>
           <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>"Jouw sollicitaties" navigatielink toegevoegd aan PublicShell sidebar nav met i18n-sleutels voor alle 6 talen</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacaturezoekkwaliteit gefixt (fix/job-search-quality-and-summary): bedrijf/locatie-extractie uit Claude+Tavily zoekresultaten hersteld (toonde "Onbekend"/verkeerde stad); match_score (0-100) end-to-end doorgevoerd; 8/10 kwaliteitspoort toegevoegd; JSON-parse-fout opgelost die ~40% nulresultaten veroorzaakte; detectie voor LinkedIn's stille verlopen-vacature-redirect (trk=expired_jd_redirect); werkenvoornederland.nl vrijgegeven als zoekbron</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Jobbird-scraper hersteld: CSS-selectors voor bedrijf/locatie aangepast aan gewijzigde site-markup (toonde 100% "Onbekend"); te nauw scopende kaartselectielogica gefixt</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>AI-zoekprofielsamenvatting verrijkt met CV-gestructureerde data (samenvatting/vaardigheden/werkervaring), niet alleen handmatige profielvelden (search_summary.py, nieuw)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Zoeksamenvatting-regeneratie triggert automatisch (fire-and-forget) na profiel create/update en na CV-parsing; nieuw POST /profile/search-summary/approve endpoint; job_search_summary verwijderd uit client-writable ProfileCreate/ProfileUpdate schema (was data-integriteitsgat); migratie 014 voegt job_search_summary_approved_at toe (live toegepast via Supabase MCP)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Profielpagina: AI-zoeksamenvatting verplaatst naar onderaan (beide tabs), nu read-only met "Ik ga akkoord"-bevestiging in plaats van een gate; polling toegevoegd omdat generatie nu asynchroon server-side gebeurt</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Dashboard: Enter-toets voortijdige formulierverzending op functietitel-invoervelden gefixt; verouderde "vul je profiel aan"-banner gefixt (was gekoppeld aan job_search_summary-aanwezigheid i.p.v. daadwerkelijke veldvolledigheid)</span></li>
+          <li class="check-done"><svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Vacature-URL-hallucinatie gefixt: URLs die niet voorkomen in de Tavily-zoekresultaten worden geweigerd, voorkomt door de LLM verzonnen vacaturelinks</span></li>
         </ul>
       </div>
 

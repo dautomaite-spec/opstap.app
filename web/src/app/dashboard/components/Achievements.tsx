@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl'
 import type { Profile, Application } from '@/lib/api'
 
-function profileCompletenessKeys(p: Profile): { pct: number; missingKeys: string[] } {
+export function profileCompletenessKeys(p: Profile): { pct: number; missingKeys: string[] } {
   const fields: [keyof Profile, string][] = [
     ['functietitel', 'missingFieldFunctietitel'],
     ['woonplaats', 'missingFieldWoonplaats'],

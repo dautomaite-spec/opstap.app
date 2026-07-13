@@ -51,6 +51,7 @@ export const api = {
     create: (body: ProfileCreate) => request<Profile>('POST', '/api/v1/profile/', body),
     update: (body: Partial<ProfileCreate>) => request<Profile>('PATCH', '/api/v1/profile/me', body),
     generateSearchSummary: () => request<{ summary: string }>('POST', '/api/v1/profile/search-summary'),
+    approveSearchSummary: () => request<{ approved_at: string }>('POST', '/api/v1/profile/search-summary/approve'),
     uploadCV: async (file: File, retentionDays = 30, avgConsent = true) => {
       const token = await getToken()
       const fd = new FormData()
@@ -145,6 +146,7 @@ export interface Profile {
   job_role_type?: string
   job_avoids?: string
   job_search_summary?: string
+  job_search_summary_approved_at?: string
   leeftijd?: number
   brief_taal?: string
   cv_url?: string
@@ -190,7 +192,6 @@ export interface ProfileCreate {
   job_culture?: string
   job_role_type?: string
   job_avoids?: string
-  job_search_summary?: string
   opleidingsniveau?: string
   leeftijd?: number
   brief_taal?: string

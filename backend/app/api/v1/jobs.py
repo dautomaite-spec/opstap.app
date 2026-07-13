@@ -119,7 +119,7 @@ async def search_jobs(
     profile: dict = {}
     try:
         p_result = supabase.table("profiles").select(
-            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info,cv_structured"
+            "naam,functietitel,functietitel_2,functietitel_3,woonplaats,werklocatie,opleidingsniveau,extra_info,cv_structured,is_suspended"
         ).eq("user_id", user_id).maybe_single().execute()
         if p_result.data:
             profile = p_result.data
@@ -148,6 +148,13 @@ async def search_jobs(
                     break
     except Exception as exc:
         logger.warning("Profile fetch failed for user %s: %s", user_id, exc)
+
+    # Suspended accounts don't get to burn LLM/scraper quota
+    if profile.pop("is_suspended", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Je account is geschorst wegens vermoeden van misbruik. Neem contact op via misbruik@opstap.nl.",
+        )
 
     # Resolve keywords and location from params, falling back to profile
     keywords = (params.keywords or "").strip() or (profile.get("functietitel") or "")
@@ -283,6 +290,7 @@ async def search_jobs(
             "salary_min_raw": j.get("salary_min_raw"),
             "salary_max_raw": j.get("salary_max_raw"),
             "contract_type": j.get("contract_type"),
+            "match_score": j.get("match_score"),
             "posted_at": j.get("posted_at"),
             "scraped_at": j["scraped_at"],
         }
@@ -355,6 +363,13 @@ async def unsave_job(
 
 # ── Dead link report (BEFORE /{job_id} to prevent route shadowing) ──────────
 
+# report-dead affects the SHARED job pool — without a limit one user could mark
+# every cached job dead, wiping results for everyone (and forcing LLM re-searches).
+_report_dead_state: dict[str, tuple[int, datetime]] = {}
+_report_dead_lock = threading.Lock()
+_REPORT_DEAD_HOURLY_LIMIT = 10
+
+
 @router.post("/{job_id}/report-dead", status_code=204)
 async def report_dead_job(
     job_id: str,
@@ -362,7 +377,17 @@ async def report_dead_job(
     supabase=Depends(get_supabase),
 ):
     """Mark a job as dead so it is filtered from all future cache results."""
-    supabase.table("jobs").update({"dead_at": datetime.now(timezone.utc).isoformat()}).eq("id", job_id).is_("dead_at", "null").execute()
+    now = datetime.now(timezone.utc)
+    with _report_dead_lock:
+        entry = _report_dead_state.get(user_id)
+        if entry and (now - entry[1]).total_seconds() < 3600:
+            if entry[0] >= _REPORT_DEAD_HOURLY_LIMIT:
+                raise HTTPException(status_code=429, detail="Te veel meldingen — probeer het later opnieuw")
+            _report_dead_state[user_id] = (entry[0] + 1, entry[1])
+        else:
+            _report_dead_state[user_id] = (1, now)
+
+    supabase.table("jobs").update({"dead_at": now.isoformat()}).eq("id", job_id).is_("dead_at", "null").execute()
     return None
 
 
