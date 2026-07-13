@@ -1,5 +1,9 @@
 # Changelog — Opstap
 
+## 2026-07-13 (feat/paste-text-fallback)
+- feat: paste-text fallback for the hero flow — verified that Indeed/werkzoeken/NVB/LinkedIn block server-side fetches, so when from-url can't fetch a page (or gets a bot-wall shell, now detected) the UI pivots to "plak de vacaturetekst"; structured fetch_blocked errors, credit refunds on all blocked exits, 6 pytest tests
+- fix(security): from-url rate-limited before debit (refund loop allowed free server-originated fetches) and job_text payload capped at 20k chars (both from the security release gate, 7/10)
+
 ## 2026-07-13 (feat/site-repositioning-sweep)
 - feat: site-wide copy sweep to the paste-a-link positioning — homepage sections, nav ("Vind vacatures" → "Solliciteren"), FAQ (incl. new interview-prep Q&A), over-ons, onboarding/achievements/empty-state CTAs, privacy/voorwaarden accuracy, SEO metadata + OG image tagline; all 6 locales; AI search kept as secondary and accurately labeled
 - note: first feature shipped end-to-end through the planner → builder → tester loop (plan artifacts in .claude/plans/site-repositioning-sweep/)

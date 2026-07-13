@@ -213,6 +213,8 @@ export default function DashboardClient() {
   const [urlLetterLoading, setUrlLetterLoading] = useState(false)
   const [urlLetterError, setUrlLetterError] = useState('')
   const [urlLetterResult, setUrlLetterResult] = useState<{ job_title: string; company: string; letter: string } | null>(null)
+  const [showTextFallback, setShowTextFallback] = useState(false)
+  const [jobTextInput, setJobTextInput] = useState('')
 
   useEffect(() => {
     api.profile.get()
@@ -320,6 +322,30 @@ export default function DashboardClient() {
     try {
       const res = await api.apply.fromUrl(urlLetterInput.trim(), writingStyle)
       setUrlLetterResult(res)
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'fetch_blocked') {
+        setShowTextFallback(true)
+        setUrlLetterError('')
+      } else {
+        setUrlLetterError(err instanceof ApiError ? err.message : t('generalError'))
+      }
+    } finally {
+      setUrlLetterLoading(false)
+    }
+  }
+
+  async function handleTextFallback(e: React.FormEvent) {
+    e.preventDefault()
+    if (jobTextInput.trim().length < 200) {
+      setUrlLetterError(t('pasteTextTooShort'))
+      return
+    }
+    setUrlLetterLoading(true)
+    setUrlLetterError('')
+    try {
+      const res = await api.apply.fromUrl(urlLetterInput.trim(), writingStyle, jobTextInput.trim())
+      setUrlLetterResult(res)
+      setShowTextFallback(false)
     } catch (err) {
       setUrlLetterError(err instanceof ApiError ? err.message : t('generalError'))
     } finally {
@@ -576,7 +602,11 @@ export default function DashboardClient() {
             type="url"
             inputMode="url"
             value={urlLetterInput}
-            onChange={e => setUrlLetterInput(e.target.value)}
+            onChange={e => {
+              setUrlLetterInput(e.target.value)
+              setShowTextFallback(false)
+              setJobTextInput('')
+            }}
             placeholder={t('urlLetterInputPlaceholder')}
             className="flex-1 px-3 py-2.5 rounded-xl border text-sm outline-none"
             style={{ borderColor: 'var(--color-indigo-light)', background: 'var(--color-white)', color: 'var(--color-text-primary)' }}
@@ -592,6 +622,27 @@ export default function DashboardClient() {
         </form>
         {urlLetterError && (
           <p className="text-sm mt-2" style={{ color: 'var(--color-error)' }}>{urlLetterError}</p>
+        )}
+        {showTextFallback && !urlLetterResult && (
+          <form onSubmit={handleTextFallback} className="mt-4 flex flex-col gap-2">
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('pasteTextFallbackHint')}</p>
+            <textarea
+              rows={8}
+              value={jobTextInput}
+              onChange={e => setJobTextInput(e.target.value)}
+              placeholder={t('pasteTextFallbackPlaceholder')}
+              className="px-3 py-2 rounded-lg border text-sm resize-none outline-none"
+              style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+            />
+            <button
+              type="submit"
+              disabled={urlLetterLoading || !jobTextInput.trim()}
+              className="self-start px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--color-indigo-primary)' }}
+            >
+              {urlLetterLoading ? t('urlLetterGeneratingButton') : t('pasteTextFallbackButton')}
+            </button>
+          </form>
         )}
         {urlLetterResult && (
           <div className="mt-4 flex flex-col gap-3">

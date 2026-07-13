@@ -4,7 +4,7 @@ import re
 import socket
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse
@@ -39,6 +39,7 @@ from app.services.letter_generator import generate_letter
 from app.services.email_sender import send_application_email, ApplicationEmail
 from app.services.prompt_guard import (
     PromptInjectionError,
+    sanitize_and_check_job_text,
     sanitize_and_check_profile_text,
     validate_letter_output,
 )
@@ -466,6 +467,9 @@ from app.schemas.application import _WritingStyle  # reuse validated Literal typ
 class UrlLetterRequest(BaseModel):
     url: str
     writing_style: _WritingStyle = "formeel"
+    # User-pasted vacancy text fallback. Hard cap well above the 6000-char
+    # sanitize truncation so regex/splitlines never run over multi-MB payloads.
+    job_text: str | None = Field(default=None, max_length=20_000)
 
 
 class UrlLetterResponse(BaseModel):
@@ -482,6 +486,30 @@ _URL_HEADERS = {
 }
 
 _ALLOWED_SCHEMES = {"http", "https"}
+
+_FETCH_BLOCKED_DETAIL = {
+    "code": "fetch_blocked",
+    "message": "Vacaturepagina kon niet worden geladen. Plak de vacaturetekst om verder te gaan.",
+}
+
+# Bot-wall / consent-shell markers on HTTP 200 responses (cf. _DEAD_CONTENT_SIGNALS
+# in llm_job_search.py, which targets expired listings instead)
+_BLOCKED_PAGE_SIGNALS = [
+    "just a moment",                      # Cloudflare interstitial
+    "checking your browser",              # Cloudflare
+    "cf-challenge", "cf_chl_",            # Cloudflare challenge markup
+    "enable javascript and cookies",      # generic JS wall
+    "voordat je verder gaat",             # DPG/Google consent gate
+    "privacy gate", "privacywall",        # DPG Media
+    "accepteer de cookies om verder",     # NL cookie walls
+    "verify you are human",               # hCaptcha/Turnstile
+    "access denied", "request blocked",
+]
+
+
+def _looks_blocked(description: str) -> bool:
+    low = description.lower()
+    return len(description) < 300 or any(sig in low for sig in _BLOCKED_PAGE_SIGNALS)
 
 
 def _is_safe_url(url: str) -> tuple[bool, str]:
@@ -551,6 +579,13 @@ async def letter_from_url(
     if not _BS4:
         raise HTTPException(status_code=503, detail="Scraper not available")
 
+    # Rate-limit BEFORE any debit or server-side fetch: the refund paths below
+    # would otherwise let a 1-credit account trigger unlimited server-originated
+    # URL fetches (debit -> blocked fetch -> refund, repeat).
+    allowed, limit_reason = check_and_increment_letter(user_id, f"url:{body.url[:80]}")
+    if not allowed:
+        raise HTTPException(status_code=429, detail=limit_reason)
+
     safe, reason = _is_safe_url(body.url)
     if not safe:
         raise HTTPException(status_code=422, detail=reason or "Ongeldige URL")
@@ -561,6 +596,57 @@ async def letter_from_url(
     if not profile_result.data:
         raise HTTPException(status_code=400, detail="Profiel ontbreekt")
     profile = profile_result.data
+
+    # ── Paste-text fallback: user supplies the vacancy text when the page can't be fetched ──
+    if body.job_text is not None:
+        raw_text = body.job_text
+        if len(raw_text.strip()) < 200:
+            # Before the debit — no credit is touched
+            raise HTTPException(status_code=422, detail="Plak de volledige vacaturetekst (minimaal 200 tekens).")
+
+        debit_result = supabase.rpc("debit_one_credit", {
+            "p_user_id": user_id,
+            "p_reference": f"text:{body.url[:100]}",
+        }).execute()
+        if debit_result.data is False:
+            raise HTTPException(status_code=402, detail="Onvoldoende credits. Koop credits om verder te gaan.")
+
+        # job_text variant (not profile) — third-party vacancy copy legitimately
+        # contains URLs/boilerplate. Injection: no refund, no suspension — same
+        # semantics as scraped from-url content.
+        try:
+            clean = sanitize_and_check_job_text(raw_text, "job_text", 6000)
+        except PromptInjectionError:
+            raise HTTPException(status_code=422, detail="De geplakte tekst bevat ongeldige inhoud")
+
+        title = ""
+        for line in raw_text.splitlines():
+            if line.strip():
+                title = line.strip()[:200]
+                break
+        company = (parsed.hostname or "").removeprefix("www.").split(".")[0].capitalize()
+        description = clean[:2000]
+
+        try:
+            letter = await generate_letter(
+                job_title=title,
+                company=company,
+                job_description=description,
+                profile=profile,
+                writing_style=body.writing_style,
+            )
+        except PromptInjectionError:
+            raise HTTPException(status_code=422, detail="De geplakte tekst bevat ongeldige inhoud")
+        except Exception as exc:
+            supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "letter_from_text_refund", "p_reference": None}).execute()
+            raise HTTPException(status_code=500, detail="Briefgeneratie mislukt") from exc
+
+        return {
+            "job_title": title,
+            "company": company,
+            "description_snippet": description[:300],
+            "letter": letter,
+        }
 
     # Atomic credit debit — 402 if insufficient (same pattern as /letter)
     debit_result = supabase.rpc("debit_one_credit", {
@@ -576,7 +662,7 @@ async def letter_from_url(
     except Exception:
         # Refund — fetch failure is not the user's fault
         supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_fetch_refund", "p_reference": None}).execute()
-        raise HTTPException(status_code=422, detail="Vacaturepagina kon niet worden geladen")
+        raise HTTPException(status_code=422, detail=_FETCH_BLOCKED_DETAIL)
 
     soup = BeautifulSoup(html, "html.parser")
 
@@ -604,9 +690,15 @@ async def letter_from_url(
         tag.decompose()
     description = soup.get_text(separator=" ", strip=True)[:2000]
 
+    if _looks_blocked(description):
+        # Bot wall / consent shell served with HTTP 200 — refund and pivot to paste-text
+        supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_blocked_refund", "p_reference": None}).execute()
+        raise HTTPException(status_code=422, detail=_FETCH_BLOCKED_DETAIL)
+
     if not title:
+        # A page without any <h1>/<title> is in practice a bot shell — same pivot
         supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "url_no_title_refund", "p_reference": None}).execute()
-        raise HTTPException(status_code=422, detail="Geen functietitel gevonden op de pagina")
+        raise HTTPException(status_code=422, detail=_FETCH_BLOCKED_DETAIL)
 
     # Generate letter — PromptInjectionError: no refund (malicious input), other errors: refund
     try:

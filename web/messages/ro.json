@@ -530,7 +530,11 @@
     "summaryMissingLink": "Completeaza profilul",
     "reportDeadTooltip": "Oferta eliminata",
     "pasteLinkTitle": "Lipește un link de job",
-    "pasteLinkSubtitle": "Ai găsit un job undeva? Lipește linkul și Opstap îți scrie scrisoarea de intenție pe loc."
+    "pasteLinkSubtitle": "Ai găsit un job undeva? Lipește linkul și Opstap îți scrie scrisoarea de intenție pe loc.",
+    "pasteTextFallbackHint": "Nu am putut încărca pagina jobului (unele site-uri blochează acest lucru). Lipește textul jobului mai jos.",
+    "pasteTextFallbackPlaceholder": "Lipește aici textul complet al jobului",
+    "pasteTextFallbackButton": "Creează scrisoare din text",
+    "pasteTextTooShort": "Lipește textul complet al jobului (minimum 200 de caractere)."
   },
   "SettingsPage": {
     "pageTitle": "Setări | Opstap",
