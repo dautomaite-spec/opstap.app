@@ -54,7 +54,7 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          Automatisch solliciteren op Nederlandse vacatures met AI-motivatiebrieven.
+          Plak een vacaturelink, wij doen de rest.
         </div>
         <div
           style={{

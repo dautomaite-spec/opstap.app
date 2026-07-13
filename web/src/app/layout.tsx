@@ -12,11 +12,11 @@ const siteUrl = 'https://opstapapp.nl'
 
 export const metadata: Metadata = {
   title: 'Opstap: Meer kansen. Minder moeite.',
-  description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+  description: 'Plak een vacaturelink en Opstap schrijft je motivatiebrief, verstuurt je sollicitatie en bereidt je voor op het gesprek. Voor de Nederlandse arbeidsmarkt.',
   metadataBase: new URL(siteUrl),
   openGraph: {
     title: 'Opstap: Meer kansen. Minder moeite.',
-    description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+    description: 'Plak een vacaturelink en Opstap schrijft je motivatiebrief, verstuurt je sollicitatie en bereidt je voor op het gesprek. Voor de Nederlandse arbeidsmarkt.',
     url: siteUrl,
     siteName: 'Opstap',
     locale: 'nl_NL',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Opstap: Meer kansen. Minder moeite.',
-    description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+    description: 'Plak een vacaturelink en Opstap schrijft je motivatiebrief, verstuurt je sollicitatie en bereidt je voor op het gesprek. Voor de Nederlandse arbeidsmarkt.',
   },
   robots: {
     index: true,

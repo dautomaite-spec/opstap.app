@@ -15,7 +15,7 @@ const jsonLd = {
   '@type': 'WebApplication',
   name: 'Opstap',
   url: 'https://opstapapp.nl',
-  description: 'Automatisch solliciteren op Nederlandse vacatures. Upload je CV, zoek vacatures en solliciteer met een AI-geschreven motivatiebrief.',
+  description: 'Plak een vacaturelink en Opstap schrijft je motivatiebrief, verstuurt je sollicitatie en bereidt je voor op het gesprek. Voor de Nederlandse arbeidsmarkt.',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   offers: { '@type': 'Offer', price: '2.99', priceCurrency: 'EUR' },
