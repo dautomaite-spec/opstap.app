@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test('home page renders with hero and CTAs', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: /meer kansen/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Begin gratis' }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Maak een account' }).first()).toBeVisible()
   await expect(page.getByRole('link', { name: 'Inloggen' }).first()).toBeVisible()
 })
 
