@@ -209,7 +209,6 @@ export default function DashboardClient() {
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set())
 
   // URL → letter state
-  const [urlLetterOpen, setUrlLetterOpen] = useState(false)
   const [urlLetterInput, setUrlLetterInput] = useState('')
   const [urlLetterLoading, setUrlLetterLoading] = useState(false)
   const [urlLetterError, setUrlLetterError] = useState('')
@@ -567,9 +566,74 @@ export default function DashboardClient() {
         </div>
       ) : null}
 
-      {/* Search trigger */}
+      {/* Hero: paste a vacancy link — the primary flow. The user brings the
+          job from wherever they already look; Opstap does the rest. */}
+      <div className="mb-6 p-5 rounded-2xl" style={{ background: 'var(--color-lavender-card)' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>{t('pasteLinkTitle')}</h2>
+        <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>{t('pasteLinkSubtitle')}</p>
+        <form onSubmit={handleUrlLetter} className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="url"
+            inputMode="url"
+            value={urlLetterInput}
+            onChange={e => setUrlLetterInput(e.target.value)}
+            placeholder={t('urlLetterInputPlaceholder')}
+            className="flex-1 px-3 py-2.5 rounded-xl border text-sm outline-none"
+            style={{ borderColor: 'var(--color-indigo-light)', background: 'var(--color-white)', color: 'var(--color-text-primary)' }}
+          />
+          <button
+            type="submit"
+            disabled={urlLetterLoading || !urlLetterInput.trim()}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50 shrink-0"
+            style={{ background: 'var(--color-indigo-primary)' }}
+          >
+            {urlLetterLoading ? t('urlLetterGeneratingButton') : t('urlLetterGenerateButton')}
+          </button>
+        </form>
+        {urlLetterError && (
+          <p className="text-sm mt-2" style={{ color: 'var(--color-error)' }}>{urlLetterError}</p>
+        )}
+        {urlLetterResult && (
+          <div className="mt-4 flex flex-col gap-3">
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              {t('urlLetterJobAtCompany', { job_title: urlLetterResult.job_title, company: urlLetterResult.company })}
+            </p>
+            <textarea
+              rows={12}
+              value={urlLetterResult.letter}
+              onChange={e => setUrlLetterResult(r => r ? { ...r, letter: e.target.value } : r)}
+              className="px-3 py-2 rounded-lg border text-sm resize-none outline-none"
+              style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
+            />
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})
+                  window.open(urlLetterInput, '_blank', 'noopener,noreferrer')
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90"
+                style={{ background: 'var(--color-indigo-primary)' }}
+              >
+                {t('urlLetterCopyAndOpenButton')}
+              </button>
+              <button
+                onClick={() => navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})}
+                className="px-3 py-2 rounded-lg text-sm border transition hover:opacity-80"
+                style={{ borderColor: 'var(--color-indigo-light)', color: 'var(--color-indigo-primary)' }}
+              >
+                {t('urlLetterCopyOnlyButton')}
+              </button>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              {t('urlLetterEditHint')}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Secondary: let Opstap search (Adzuna/Jobbird-backed) */}
       {jobs.length === 0 && !searching && (
-        <div className="flex flex-col items-center gap-3 py-10">
+        <div className="flex flex-col items-center gap-3 py-6 border-t" style={{ borderColor: 'var(--color-lavender-card)' }}>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             {profile?.functietitel
               ? t('searchQueryDisplay', {
@@ -581,8 +645,8 @@ export default function DashboardClient() {
           <button
             onClick={handleNewSearch}
             disabled={!profile?.functietitel}
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
-            style={{ background: 'var(--color-indigo-primary)' }}
+            className="px-6 py-3 rounded-xl text-sm font-semibold transition hover:opacity-90 disabled:opacity-40"
+            style={{ background: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
           >
             {t('searchButton')}
           </button>
@@ -605,77 +669,6 @@ export default function DashboardClient() {
           </button>
         </div>
       )}
-
-      {/* URL → letter shortcut */}
-      <div className="mb-5">
-        <button
-          onClick={() => { setUrlLetterOpen(o => !o); setUrlLetterResult(null); setUrlLetterError('') }}
-          className="text-xs underline"
-          style={{ color: 'var(--color-indigo-primary)' }}
-        >
-          {urlLetterOpen ? t('urlLetterCloseButton') : t('urlLetterOpenButton')}
-        </button>
-        {urlLetterOpen && (
-          <div className="mt-3 p-4 rounded-xl" style={{ background: 'var(--color-lavender-card)' }}>
-            <form onSubmit={handleUrlLetter} className="flex flex-col gap-3">
-              <input
-                value={urlLetterInput}
-                onChange={e => setUrlLetterInput(e.target.value)}
-                placeholder={t('urlLetterInputPlaceholder')}
-                className="px-3 py-2 rounded-lg border text-sm outline-none"
-                style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-              />
-              <button
-                type="submit"
-                disabled={urlLetterLoading || !urlLetterInput.trim()}
-                className="self-start px-5 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'var(--color-indigo-primary)' }}
-              >
-                {urlLetterLoading ? t('urlLetterGeneratingButton') : t('urlLetterGenerateButton')}
-              </button>
-              {urlLetterError && (
-                <p className="text-sm" style={{ color: 'var(--color-error)' }}>{urlLetterError}</p>
-              )}
-            </form>
-            {urlLetterResult && (
-              <div className="mt-4 flex flex-col gap-3">
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {t('urlLetterJobAtCompany', { job_title: urlLetterResult.job_title, company: urlLetterResult.company })}
-                </p>
-                <textarea
-                  rows={12}
-                  value={urlLetterResult.letter}
-                  onChange={e => setUrlLetterResult(r => r ? { ...r, letter: e.target.value } : r)}
-                  className="px-3 py-2 rounded-lg border text-sm resize-none outline-none"
-                  style={{ borderColor: 'var(--color-lavender-card)', background: 'var(--color-lavender-bg)', color: 'var(--color-text-primary)' }}
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})
-                      window.open(urlLetterInput, '_blank', 'noopener,noreferrer')
-                    }}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90"
-                    style={{ background: 'var(--color-indigo-primary)' }}
-                  >
-                    {t('urlLetterCopyAndOpenButton')}
-                  </button>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(urlLetterResult!.letter).catch(() => {})}
-                    className="px-3 py-2 rounded-lg text-sm border transition hover:opacity-80"
-                    style={{ borderColor: 'var(--color-lavender-card)', color: 'var(--color-indigo-primary)' }}
-                  >
-                    {t('urlLetterCopyOnlyButton')}
-                  </button>
-                </div>
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  {t('urlLetterEditHint')}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* Fixed-position overlays */}
       {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}

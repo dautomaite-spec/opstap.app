@@ -1,5 +1,11 @@
 # Changelog — Opstap
 
+## 2026-07-13 (feat/paste-link-hero)
+- feat: repositioning per strategy memo — "paste a vacancy link" is now the primary dashboard flow (prominent hero card, always visible); AI job search demoted to a secondary action below it
+- feat: homepage hero subtitle and step 2 rewritten around the paste-a-link promise (all 6 locales)
+- chore: removed untracked web/src/middleware.ts duplicate of proxy.ts that broke local Next 16 builds
+- docs: strategy memo (marketing / pricing / direction) published as artifact; PRs #144, #145, #147 merged
+
 ## 2026-07-11 (fix/scrapers-and-reviews)
 - fix(security): sanitize all CV-extracted text (vaardigheden/werkervaring/samenvatting) before it enters search-summary prompts; injection-flagged fields dropped instead of aborting regeneration (5032000)
 - fix(security): migration 016 revokes client PostgREST write access on profiles — server-managed columns (job_search_summary, is_suspended, credits_balance) were writable by any authenticated user with the anon key
