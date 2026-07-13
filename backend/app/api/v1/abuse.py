@@ -70,17 +70,18 @@ async def report_abuse(body: AbuseReport, request: Request, supabase=Depends(get
     }
     supabase.table("abuse_reports").insert(report_row).execute()
 
-    # Find and flag the reported user
-    profile_result = (
+    # Find and flag the reported user. Plain execute() + first row — .single()
+    # raises APIError (-> 500) when the email matches no profile, which is the
+    # common case for reports about unknown addresses.
+    profile_rows = (
         supabase.table("profiles")
         .select("user_id,abuse_report_count")
         .eq("email", safe_sender)
-        .single()
         .execute()
     )
 
-    if profile_result.data:
-        profile = profile_result.data
+    if profile_rows.data:
+        profile = profile_rows.data[0]
         new_count = (profile.get("abuse_report_count") or 0) + 1
         # Increment count only — suspension requires admin review via /admin/resolve
         # Auto-suspend from unverified public reports would allow account takeover by any caller
@@ -135,33 +136,31 @@ async def resolve_report(report_id: str, body: ResolveAction, supabase=Depends(g
 
     # Apply action to user
     if body.action in ("suspend", "ban"):
-        profile_result = (
+        profile_rows = (
             supabase.table("profiles")
             .select("user_id")
             .eq("email", report["sender_email"])
-            .single()
             .execute()
         )
-        if profile_result.data:
+        if profile_rows.data:
             supabase.table("profiles").update({"is_suspended": True}).eq(
-                "user_id", profile_result.data["user_id"]
+                "user_id", profile_rows.data[0]["user_id"]
             ).execute()
             logger.warning("User suspended via admin action on report %s", report_id)
 
     elif body.action == "dismiss":
         # False report — decrement abuse count to avoid unfair accumulation
-        profile_result = (
+        profile_rows = (
             supabase.table("profiles")
             .select("user_id,abuse_report_count")
             .eq("email", report["sender_email"])
-            .single()
             .execute()
         )
-        if profile_result.data:
-            current = profile_result.data.get("abuse_report_count") or 0
+        if profile_rows.data:
+            current = profile_rows.data[0].get("abuse_report_count") or 0
             supabase.table("profiles").update({
                 "abuse_report_count": max(0, current - 1)
-            }).eq("user_id", profile_result.data["user_id"]).execute()
+            }).eq("user_id", profile_rows.data[0]["user_id"]).execute()
 
     return {"status": "resolved", "action": body.action}
 

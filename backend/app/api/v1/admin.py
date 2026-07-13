@@ -40,6 +40,23 @@ def _check_admin_key(x_admin_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
+def _list_all_auth_users(supabase) -> list:
+    """Fetch ALL auth users, following pagination. A bare list_users() returns
+    only the first page (~50), silently truncating email maps and blasts."""
+    all_users: list = []
+    page = 1
+    while True:
+        batch = supabase.auth.admin.list_users(page=page, per_page=200)
+        users = batch if isinstance(batch, list) else getattr(batch, "users", [])
+        if not users:
+            break
+        all_users.extend(users)
+        if len(users) < 200:
+            break
+        page += 1
+    return all_users
+
+
 # ── User management ────────────────────────────────────────────────────────────
 
 class CreditAdjust(BaseModel):
@@ -64,9 +81,8 @@ async def list_users(
 
     # Build user_id → email map from auth
     try:
-        auth_users = supabase.auth.admin.list_users()
+        users_list = _list_all_auth_users(supabase)
         email_map: dict[str, str] = {}
-        users_list = auth_users if isinstance(auth_users, list) else getattr(auth_users, 'users', [])
         for u in users_list:
             uid = getattr(u, 'id', None) or (u.get('id') if isinstance(u, dict) else None)
             email = getattr(u, 'email', None) or (u.get('email') if isinstance(u, dict) else None)
@@ -591,11 +607,12 @@ async def blast_reactivation(
     Send a one-time reactivation email to all confirmed, non-suspended users.
     Fire-and-forget via BackgroundTasks. Returns immediately with a count estimate.
     """
-    users_rows = supabase.table("profiles").select("user_id, naam").execute().data or []
-    credits_rows = supabase.table("credits").select("user_id, referral_code").execute().data or []
-    ref_map = {r["user_id"]: r.get("referral_code") for r in credits_rows}
+    # referral_code lives on profiles — a "credits" table has never existed,
+    # so the old separate lookup made this endpoint 500 on every call.
+    users_rows = supabase.table("profiles").select("user_id, naam, referral_code").execute().data or []
+    ref_map = {r["user_id"]: r.get("referral_code") for r in users_rows}
 
-    auth_rows = supabase.auth.admin.list_users()
+    auth_rows = _list_all_auth_users(supabase)
     confirmed_ids: set[str] = set()
     email_map: dict[str, str] = {}
     suspended_ids: set[str] = set()

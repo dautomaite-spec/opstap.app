@@ -175,10 +175,12 @@ export default function MultiApplyModal({
 
             {(phase === 'review' || phase === 'sending' || phase === 'done') && entries.map((entry, i) => (
               <div key={entry.job.id} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--color-lavender-card)' }}>
-                <div
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer select-none"
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between px-4 py-3 cursor-pointer select-none text-left"
                   style={{ background: 'var(--color-lavender-card)' }}
                   onClick={() => setReviewIdx(reviewIdx === i ? -1 : i)}
+                  aria-expanded={reviewIdx === i}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <StatusIcon status={entry.status} />
@@ -201,7 +203,7 @@ export default function MultiApplyModal({
                       </svg>
                     )}
                   </div>
-                </div>
+                </button>
                 {reviewIdx === i && entry.status === 'ready' && phase === 'review' && (
                   <div className="p-3">
                     <textarea

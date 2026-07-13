@@ -36,6 +36,7 @@ export default function SollicitatiesPage() {
   const [history, setHistory] = useState<Application[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [retryingId, setRetryingId] = useState<string | null>(null)
   const [expandedLetter, setExpandedLetter] = useState<string | null>(null)
@@ -47,6 +48,10 @@ export default function SollicitatiesPage() {
     ]).then(([rows, s]) => {
       setHistory(rows.filter(a => a.status !== 'draft'))
       setStats(s)
+      setLoadError(false)
+    }).catch(() => {
+      // Without this the failure rendered as the "no applications yet" empty state
+      setLoadError(true)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -98,6 +103,22 @@ export default function SollicitatiesPage() {
 
   if (loading) {
     return <p className="text-sm text-center py-16" style={{ color: 'var(--color-text-muted)' }}>{t('loading')}</p>
+  }
+
+  if (loadError) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-sm mb-4" style={{ color: 'var(--color-error)' }}>{t('loadError')}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="py-2 px-4 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
+          style={{ background: 'var(--color-indigo-primary)' }}
+        >
+          {t('loadErrorRetry')}
+        </button>
+      </div>
+    )
   }
 
   if (history.length === 0) {

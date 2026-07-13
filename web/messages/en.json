@@ -766,7 +766,9 @@
     "selectOptionReplied": "Replied",
     "selectOptionInterview": "Interview invitation",
     "selectOptionAccepted": "Accepted",
-    "selectOptionRejected": "Rejected"
+    "selectOptionRejected": "Rejected",
+    "loadError": "Your applications could not be loaded. Check your connection.",
+    "loadErrorRetry": "Try again"
   },
   "OpgeslagenPage": {
     "pageTitle": "Saved jobs",

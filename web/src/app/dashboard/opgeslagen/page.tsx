@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { api } from '@/lib/api'
 import type { Job } from '@/lib/api'
 
 const PENDING_APPLY_KEY = 'opstap_pending_apply'
@@ -30,27 +31,31 @@ function removeSavedJob(id: string) {
 export default function OpgeslagenPage() {
   const t = useTranslations('OpgeslagenPage')
   const router = useRouter()
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [ready, setReady] = useState(false)
-
+  const [jobs, setJobs] = useState<Job[]>(
+    () => (typeof window === 'undefined' ? [] : Object.values(loadSavedJobs()))
+  )
   useEffect(() => {
-    const map = loadSavedJobs()
-    setJobs(Object.values(map))
-    setReady(true)
+    // localStorage is only a cache — hydrate from Supabase so jobs saved on
+    // another device (or after a cache clear) still show up.
+    api.jobs.listSaved()
+      .then(rows => {
+        const map: Record<string, Job> = {}
+        for (const r of rows) map[r.job_id] = r.job_data
+        localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(map))
+        setJobs(Object.values(map))
+      })
+      .catch(() => { /* offline — the localStorage seed stands */ })
   }, [])
 
   function handleUnsave(id: string) {
     removeSavedJob(id)
     setJobs(prev => prev.filter(j => j.id !== id))
+    api.jobs.unsave(id).catch(() => {})
   }
 
   function handleApply(job: Job) {
     localStorage.setItem(PENDING_APPLY_KEY, JSON.stringify(job))
     router.push('/dashboard')
-  }
-
-  if (!ready) {
-    return <div className="flex items-center justify-center py-24 text-sm" style={{ color: 'var(--color-text-muted)' }}>{t('loading')}</div>
   }
 
   if (jobs.length === 0) {

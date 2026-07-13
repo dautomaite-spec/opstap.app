@@ -766,7 +766,9 @@
     "selectOptionReplied": "Відповіли",
     "selectOptionInterview": "Запрошення на співбесіду",
     "selectOptionAccepted": "Прийнято",
-    "selectOptionRejected": "Відхилено"
+    "selectOptionRejected": "Відхилено",
+    "loadError": "Не вдалося завантажити ваші заявки. Перевірте з'єднання.",
+    "loadErrorRetry": "Спробувати ще раз"
   },
   "OpgeslagenPage": {
     "pageTitle": "Збережені вакансії",

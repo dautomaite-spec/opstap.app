@@ -8,7 +8,7 @@ import { api, ApiError } from '@/lib/api'
 import type { Profile, TransactionOut } from '@/lib/api'
 import ReferralSection from './ReferralSection'
 
-export default function SettingsClient({ userId, userEmail }: { userId: string; userEmail: string }) {
+export default function SettingsClient() {
   const router = useRouter()
   const t = useTranslations('SettingsPage')
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -70,12 +70,22 @@ export default function SettingsClient({ userId, userEmail }: { userId: string; 
 
   async function handleSaveEmailPrefs(digest: boolean, reminders: boolean, cvExpiry: boolean) {
     setSavingPrefs(true)
+    // Snapshot the values as they were BEFORE this save — `profile` holds the
+    // values from page load, so rolling back to it would undo earlier successful
+    // toggles too.
+    const prev = {
+      email_digest_enabled: emailDigest,
+      email_reminders_enabled: emailReminders,
+      cv_expiry_reminder_enabled: cvExpiryReminder,
+    }
     try {
       await api.profile.update({ email_digest_enabled: digest, email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry })
+      // Keep `profile` in sync so it stays a valid rollback target
+      setProfile(p => p ? { ...p, email_digest_enabled: digest, email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry } : p)
     } catch {
-      setEmailDigest(profile?.email_digest_enabled ?? true)
-      setEmailReminders(profile?.email_reminders_enabled ?? true)
-      setCvExpiryReminder(profile?.cv_expiry_reminder_enabled ?? true)
+      setEmailDigest(prev.email_digest_enabled)
+      setEmailReminders(prev.email_reminders_enabled)
+      setCvExpiryReminder(prev.cv_expiry_reminder_enabled)
     } finally {
       setSavingPrefs(false)
     }
