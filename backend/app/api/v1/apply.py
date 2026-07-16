@@ -52,6 +52,70 @@ from app.services.email_notifications import send_credit_low_warning, send_reply
 router = APIRouter(prefix="/apply", tags=["apply"])
 
 
+def _upsert_draft_application(supabase, user_id: str, job_id: str, job_title: str, company: str, letter: str) -> str:
+    """
+    Create or refresh a server-side draft application — the approval gate anchor.
+    The frontend must reference the returned application_id when calling /approve.
+    Without the draft in the DB, /approve will 404 — it cannot be bypassed.
+    """
+    # Use execute() not maybe_single() — PostgREST returns 406 on zero rows
+    # with the object Accept header, which supabase-py raises as APIError.
+    existing_rows = (
+        supabase.table("applications")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("job_id", job_id)
+        .eq("status", "draft")
+        .execute()
+    )
+    existing_row = existing_rows.data[0] if existing_rows.data else None
+    if existing_row:
+        supabase.table("applications").update({"letter_nl": letter}).eq("id", existing_row["id"]).execute()
+        return existing_row["id"]
+    insert = supabase.table("applications").insert({
+        "id": str(uuid4()),
+        "job_id": job_id,
+        "user_id": user_id,
+        "company": company,
+        "job_title": job_title,
+        "letter_nl": letter,
+        "status": "draft",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }).execute()
+    if not insert.data:
+        raise ValueError("insert returned no data")
+    return insert.data[0]["id"]
+
+
+def _upsert_paste_job(supabase, url: str, title: str, company: str, description: str) -> str:
+    """
+    Reuse or create a jobs row for a pasted vacancy. Select-then-insert (not a
+    PostgREST upsert) so an existing row keeps its id — applications reference it.
+    """
+    existing = supabase.table("jobs").select("id").eq("url", url).execute()
+    if existing.data:
+        return existing.data[0]["id"]
+    job_id = str(uuid4())
+    try:
+        supabase.table("jobs").insert({
+            "id": job_id,
+            "title": title,
+            "company": company,
+            "location": None,
+            "source": "paste",
+            "url": url,
+            "description_snippet": description[:500],
+            "scraped_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        # Concurrent insert on the same url — the unique constraint won; reuse it
+        retry = supabase.table("jobs").select("id").eq("url", url).execute()
+        if retry.data:
+            return retry.data[0]["id"]
+        raise
+    return job_id
+
+
 @router.post("/letter", response_model=MotivationLetterOut)
 async def generate_motivation_letter(
     body: MotivationLetterRequest,
@@ -145,39 +209,8 @@ async def generate_motivation_letter(
     except Exception:
         pass
 
-    # Create or update a server-side draft — this is the approval gate anchor.
-    # The frontend must reference this application_id when calling /approve.
-    # Without the draft in the DB, /approve will 404 — it cannot be bypassed.
-    now_str = datetime.now(timezone.utc).isoformat()
     try:
-        # Use execute() not maybe_single() — PostgREST returns 406 on zero rows
-        # with the object Accept header, which supabase-py raises as APIError.
-        existing_rows = (
-            supabase.table("applications")
-            .select("id")
-            .eq("user_id", user_id)
-            .eq("job_id", str(body.job_id))
-            .eq("status", "draft")
-            .execute()
-        )
-        existing_row = existing_rows.data[0] if existing_rows.data else None
-        if existing_row:
-            supabase.table("applications").update({"letter_nl": letter}).eq("id", existing_row["id"]).execute()
-            draft_id = existing_row["id"]
-        else:
-            insert = supabase.table("applications").insert({
-                "id": str(uuid4()),
-                "job_id": str(body.job_id),
-                "user_id": user_id,
-                "company": job["company"],
-                "job_title": job["title"],
-                "letter_nl": letter,
-                "status": "draft",
-                "created_at": now_str,
-            }).execute()
-            if not insert.data:
-                raise ValueError("insert returned no data")
-            draft_id = insert.data[0]["id"]
+        draft_id = _upsert_draft_application(supabase, user_id, str(body.job_id), job["title"], job["company"], letter)
     except Exception:
         raise HTTPException(status_code=500, detail="Kon concept niet aanmaken. Probeer opnieuw.")
 
@@ -477,6 +510,8 @@ class UrlLetterResponse(BaseModel):
     company: str
     description_snippet: str
     letter: str
+    application_id: str
+    job_id: str
 
 
 _URL_HEADERS = {
@@ -492,8 +527,7 @@ _FETCH_BLOCKED_DETAIL = {
     "message": "Vacaturepagina kon niet worden geladen. Plak de vacaturetekst om verder te gaan.",
 }
 
-# Bot-wall / consent-shell markers on HTTP 200 responses (cf. _DEAD_CONTENT_SIGNALS
-# in llm_job_search.py, which targets expired listings instead)
+# Bot-wall / consent-shell markers on HTTP 200 responses
 _BLOCKED_PAGE_SIGNALS = [
     "just a moment",                      # Cloudflare interstitial
     "checking your browser",              # Cloudflare
@@ -641,11 +675,19 @@ async def letter_from_url(
             supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "letter_from_text_refund", "p_reference": None}).execute()
             raise HTTPException(status_code=500, detail="Briefgeneratie mislukt") from exc
 
+        try:
+            job_id = _upsert_paste_job(supabase, body.url, title, company, description)
+            application_id = _upsert_draft_application(supabase, user_id, job_id, title, company, letter)
+        except Exception:
+            raise HTTPException(status_code=500, detail="Kon concept niet aanmaken. Probeer opnieuw.")
+
         return {
             "job_title": title,
             "company": company,
             "description_snippet": description[:300],
             "letter": letter,
+            "application_id": application_id,
+            "job_id": job_id,
         }
 
     # Atomic credit debit — 402 if insufficient (same pattern as /letter)
@@ -715,9 +757,17 @@ async def letter_from_url(
         supabase.rpc("grant_credits", {"p_user_id": user_id, "p_delta": 1, "p_reason": "letter_from_url_refund", "p_reference": None}).execute()
         raise HTTPException(status_code=500, detail="Briefgeneratie mislukt") from exc
 
+    try:
+        job_id = _upsert_paste_job(supabase, body.url, title, company, description)
+        application_id = _upsert_draft_application(supabase, user_id, job_id, title, company, letter)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Kon concept niet aanmaken. Probeer opnieuw.")
+
     return {
         "job_title": title,
         "company": company,
         "description_snippet": description[:300],
         "letter": letter,
+        "application_id": application_id,
+        "job_id": job_id,
     }

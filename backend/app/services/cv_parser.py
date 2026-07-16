@@ -69,9 +69,6 @@ async def parse_cv_async(content: bytes, content_type: str, user_id: str, supaba
                 "cv_structured": structured,
             }).eq("user_id", user_id).execute()
             logger.info("CV parsed and stored for user %s", user_id)
-            # CV content feeds the search summary — regenerate now that it's available
-            from app.services.search_summary import regenerate_search_summary
-            await regenerate_search_summary(user_id, supabase)
     except Exception:
         logger.warning("CV parsing failed for user %s", user_id, exc_info=True)
 

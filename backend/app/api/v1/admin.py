@@ -3,10 +3,6 @@ Admin endpoints — protected by X-Admin-Key header.
 
 Cron endpoints (called by external scheduler):
   POST /api/v1/admin/cron/follow-up   — Sundays
-  POST /api/v1/admin/cron/job-digest  — Mondays
-
-n8n ingest endpoint (called by n8n vacancy-polling workflow):
-  POST /api/v1/admin/ingest/jobs
 
 User management endpoints (called by admin frontend):
   GET    /api/v1/admin/users
@@ -24,8 +20,7 @@ from typing import Optional, List
 
 from app.core.config import settings
 from app.core.supabase import get_supabase
-from app.services.job_scraper import scrape_adzuna, scrape_indeed_nl
-from app.services.email_notifications import send_follow_up_reminder, send_job_digest, send_credits_adjusted, send_account_suspended, send_reactivation
+from app.services.email_notifications import send_follow_up_reminder, send_credits_adjusted, send_account_suspended, send_reactivation
 
 logger = logging.getLogger(__name__)
 
@@ -437,142 +432,6 @@ async def cron_follow_up_reminder(
 
     logger.info("Follow-up cron: sent=%d skipped=%d", sent, skipped)
     return {"sent": sent, "skipped": skipped}
-
-
-@router.post("/cron/job-digest")
-async def cron_job_digest(
-    _: None = Depends(_check_admin_key),
-    supabase=Depends(get_supabase),
-):
-    """
-    For each user with an active profile (updated in last 60 days),
-    search Adzuna for their functietitel + woonplaats and send a weekly digest.
-    Deduped by ISO week number.
-    """
-    from datetime import date
-    week_key = date.today().strftime("%Y-W%V")
-    since = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
-
-    profiles_result = (
-        supabase.table("profiles")
-        .select("user_id,naam,functietitel,functietitel_2,functietitel_3,woonplaats")
-        .gte("updated_at", since)
-        .eq("email_digest_enabled", True)
-        .execute()
-    )
-    profiles = profiles_result.data or []
-    if not profiles:
-        return {"sent": 0, "skipped": 0}
-
-    sent = 0
-    skipped = 0
-
-    for profile in profiles:
-        uid = profile["user_id"]
-        titles = [t for t in [profile.get("functietitel"), profile.get("functietitel_2"), profile.get("functietitel_3")] if t]
-        keywords = " ".join(titles)
-        location = profile.get("woonplaats") or ""
-        naam = profile.get("naam") or ""
-
-        if not keywords:
-            skipped += 1
-            continue
-
-        try:
-            insert_result = supabase.table("notifications").insert({
-                "user_id": uid,
-                "type": "job_digest",
-                "reference_id": week_key,
-            }).execute()
-            if not insert_result.data:
-                skipped += 1
-                continue
-        except Exception:
-            skipped += 1
-            continue
-
-        try:
-            jobs = await scrape_adzuna(keywords, location, limit=5)
-            if not jobs:
-                skipped += 1
-                continue
-
-            auth_user = supabase.auth.admin.get_user_by_id(uid)
-            user_email = auth_user.user.email if auth_user.user else None
-            if not user_email:
-                skipped += 1
-                continue
-
-            ok = await send_job_digest(user_email, naam, jobs[:5])
-            sent += 1 if ok else 0
-            skipped += 0 if ok else 1
-        except Exception:
-            logger.warning("Job digest failed for user %s", uid, exc_info=True)
-            skipped += 1
-
-        await asyncio.sleep(0.5)
-
-    logger.info("Job digest cron: sent=%d skipped=%d week=%s", sent, skipped, week_key)
-    return {"sent": sent, "skipped": skipped, "week": week_key}
-
-
-# ── Job pool prefetch ──────────────────────────────────────────────────────────
-
-_POPULAR_NL_SEARCHES = [
-    "software developer", "administratief medewerker", "verkoopmedewerker",
-    "marketing manager", "accountant", "chauffeur", "verpleegkundige",
-    "klantenservice medewerker", "projectmanager", "data analist",
-    "hr medewerker", "logistiek medewerker", "kok", "grafisch ontwerper",
-    "recruiter", "financieel controller", "salesmanager",
-    "productiemedewerker", "it beheerder", "boekhouder",
-]
-
-
-async def _run_prefetch(supabase) -> None:
-    from uuid import uuid4 as _uuid4
-
-    total_upserted = 0
-    for keyword in _POPULAR_NL_SEARCHES:
-        try:
-            results = await scrape_adzuna(keyword, "", limit=20)
-            if results:
-                rows = [
-                    {
-                        "id": str(_uuid4()),
-                        "title": j["title"],
-                        "company": j["company"],
-                        "location": j["location"],
-                        "source": j["source"],
-                        "url": j["url"],
-                        "description_snippet": j.get("description_snippet"),
-                        "salary_range": j.get("salary_range"),
-                        "salary_hourly": j.get("salary_hourly"),
-                        "salary_min_raw": j.get("salary_min_raw"),
-                        "salary_max_raw": j.get("salary_max_raw"),
-                        "contract_type": j.get("contract_type"),
-                        "posted_at": j.get("posted_at"),
-                        "scraped_at": j["scraped_at"],
-                    }
-                    for j in results
-                ]
-                supabase.table("jobs").upsert(rows, on_conflict="url").execute()
-                total_upserted += len(rows)
-        except Exception:
-            logger.warning("Prefetch failed for keyword: %s", keyword, exc_info=True)
-
-        await asyncio.sleep(1)
-
-    logger.info("Job prefetch cron: upserted=%d keywords=%d", total_upserted, len(_POPULAR_NL_SEARCHES))
-
-
-@router.post("/cron/prefetch-jobs", status_code=202)
-async def cron_prefetch_jobs(
-    background_tasks: BackgroundTasks,
-    _: None = Depends(_check_admin_key),
-    supabase=Depends(get_supabase),
-):
-    background_tasks.add_task(_run_prefetch, supabase)
-    return {"status": "accepted", "keywords": len(_POPULAR_NL_SEARCHES)}
 
 
 # ── n8n ingest endpoint ────────────────────────────────────────────────────────

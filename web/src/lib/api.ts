@@ -54,8 +54,6 @@ export const api = {
     get: () => request<Profile>('GET', '/api/v1/profile/me'),
     create: (body: ProfileCreate) => request<Profile>('POST', '/api/v1/profile/', body),
     update: (body: Partial<ProfileCreate>) => request<Profile>('PATCH', '/api/v1/profile/me', body),
-    generateSearchSummary: () => request<{ summary: string }>('POST', '/api/v1/profile/search-summary'),
-    approveSearchSummary: () => request<{ approved_at: string }>('POST', '/api/v1/profile/search-summary/approve'),
     uploadCV: async (file: File, retentionDays = 30, avgConsent = true) => {
       const token = await getToken()
       const fd = new FormData()
@@ -88,33 +86,9 @@ export const api = {
       return res.blob()
     },
   },
-  jobs: {
-    search: (params: JobSearchParams) => request<Job[]>('POST', '/api/v1/jobs/search', params),
-    searchWithStale: async (params: JobSearchParams): Promise<{ jobs: Job[]; stale: boolean }> => {
-      const token = await getToken()
-      const res = await fetch(`${BASE}/api/v1/jobs/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(params),
-      })
-      if (!res.ok) {
-        // Surface the server's detail (rate limit, suspension, ...) like request() does —
-        // statusText alone showed users a bare "Bad Request"
-        const err = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new ApiError(res.status, err.detail ?? res.statusText)
-      }
-      const jobs = (await res.json()) as Job[]
-      return { jobs, stale: res.headers.get('X-Jobs-Source') === 'cache' }
-    },
-    listSaved: () => request<{ job_id: string; job_data: Job; saved_at: string }[]>('GET', '/api/v1/jobs/saved/list'),
-    save: (job_id: string, job_data: Job) => request<{ saved: boolean }>('POST', '/api/v1/jobs/saved', { job_id, job_data }),
-    unsave: (job_id: string) => request<void>('DELETE', `/api/v1/jobs/saved/${job_id}`),
-    reportDead: (job_id: string) => request<void>('POST', `/api/v1/jobs/${job_id}/report-dead`),
-  },
   apply: {
-    generateLetter: (body: LetterRequest) => request<LetterResponse>('POST', '/api/v1/apply/letter', body),
-    fromUrl: (url: string, writing_style?: string, job_text?: string) => request<{ job_title: string; company: string; description_snippet: string; letter: string }>('POST', '/api/v1/apply/from-url', { url, writing_style: writing_style ?? 'formeel', ...(job_text !== undefined ? { job_text } : {}) }),
-    /** Approval gate — requires a draft created by generateLetter */
+    fromUrl: (url: string, writing_style?: string, job_text?: string) => request<{ job_title: string; company: string; description_snippet: string; letter: string; application_id: string; job_id: string }>('POST', '/api/v1/apply/from-url', { url, writing_style: writing_style ?? 'formeel', ...(job_text !== undefined ? { job_text } : {}) }),
+    /** Approval gate — requires the draft created by fromUrl */
     approve: (application_id: string, body: ApproveRequest) =>
       request<Application>('POST', `/api/v1/apply/${application_id}/approve`, body),
     history: () => request<Application[]>('GET', '/api/v1/apply/history'),
@@ -165,7 +139,6 @@ export interface Profile {
   credits_balance?: number
   referral_code?: string
   profile_bonus_given?: boolean
-  email_digest_enabled?: boolean
   email_reminders_enabled?: boolean
   cv_expiry_reminder_enabled?: boolean
 }
@@ -204,50 +177,8 @@ export interface ProfileCreate {
   opleidingsniveau?: string
   leeftijd?: number
   brief_taal?: string
-  email_digest_enabled?: boolean
   email_reminders_enabled?: boolean
   cv_expiry_reminder_enabled?: boolean
-}
-
-export interface Job {
-  id: string
-  title: string
-  company: string
-  location: string
-  source: string
-  url: string
-  description_snippet?: string
-  salary_range?: string
-  salary_hourly?: string
-  salary_min_raw?: number
-  salary_max_raw?: number
-  contract_type?: string
-  posted_at?: string
-  scraped_at: string
-  match_reason?: string
-  is_curveball?: boolean
-}
-
-export interface JobSearchParams {
-  keywords?: string
-  location?: string
-  limit?: number
-  ui_language?: string
-}
-
-export interface LetterRequest {
-  job_id: string
-  profile_id: string
-  writing_style?: string
-  custom_notes?: string
-}
-
-export interface LetterResponse {
-  job_id: string
-  application_id: string  // server-side draft ID — required for /approve
-  letter_nl: string
-  generated_at: string
-  regenerations_remaining: number
 }
 
 export interface ApproveRequest {

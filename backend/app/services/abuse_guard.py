@@ -9,8 +9,7 @@ POST /admin/users/{user_id}/suspend (see admin.py), which covers the rare
 false positive.
 
 Deliberately NOT applied to:
-- CV-extracted text (a CV can contain third-party content the user never
-  wrote; those fields are silently dropped in search_summary.py instead)
+- CV-extracted text (a CV can contain third-party content the user never wrote)
 - Scraped job text (the user didn't write it)
 - Letter-output validation (benign edits like adding a salary figure trip it)
 """
