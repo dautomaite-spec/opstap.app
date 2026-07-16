@@ -18,22 +18,12 @@ from app.services.credits import (
 )
 from app.services.cv_parser import parse_cv_async
 from app.services.email_notifications import send_admin_signup_notification
-from app.services.search_summary import regenerate_search_summary, check_rate_limit as _check_summary_rate_limit
 from app.services.abuse_guard import suspend_for_injection
 from app.core.tasks import fire_and_forget
 from app.services.prompt_guard import sanitize_and_check_profile_text, PromptInjectionError
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 logger = logging.getLogger(__name__)
-
-# Fields the search summary is actually built from — used to skip regeneration
-# on unrelated profile updates (e.g. notification toggles).
-_SUMMARY_RELEVANT_FIELDS = frozenset({
-    "functietitel", "functietitel_2", "functietitel_3", "woonplaats", "werklocatie",
-    "opleidingsniveau", "uren_per_week", "salaris_min", "salaris_max", "extra_info",
-    "job_preferences", "job_background", "job_avoids", "job_company_size",
-    "job_culture", "job_role_type",
-})
 
 # Free-text fields the user types directly. Injection patterns here are a
 # deliberate attack (unlike CV content, which may contain third-party text)
@@ -116,9 +106,6 @@ async def create_profile(
         pass
     fire_and_forget(send_admin_signup_notification(data.get("naam", ""), user_email))
 
-    # Auto-generate the search summary right after profile creation — fire-and-forget
-    fire_and_forget(regenerate_search_summary(user_id, supabase))
-
     return _attach_cv_url(profile, supabase)
 
 
@@ -155,11 +142,6 @@ async def update_profile(
         await check_and_award_profile_bonus(user_id, profile, supabase)
     except Exception:
         pass
-
-    # Regenerate the search summary only if a field it's actually built from changed —
-    # avoids a Claude call on trivial toggles like email_digest_enabled
-    if _SUMMARY_RELEVANT_FIELDS.intersection(data.keys()):
-        fire_and_forget(regenerate_search_summary(user_id, supabase))
 
     return _attach_cv_url(profile, supabase)
 
@@ -254,38 +236,6 @@ async def export_my_data(
         media_type="application/json",
         headers={"Content-Disposition": 'attachment; filename="opstap-mijn-gegevens.json"'},
     )
-
-
-@router.post("/search-summary", status_code=200)
-async def generate_search_summary(
-    user_id: str = Depends(get_current_user_id),
-    supabase=Depends(get_supabase),
-):
-    """Manually (re)generate the search profile summary using Claude Haiku."""
-    now = datetime.now(timezone.utc)
-    if not _check_summary_rate_limit(user_id, now):
-        raise HTTPException(status_code=429, detail="Even wachten — je kunt maximaal 15 keer per uur een zoekprofiel genereren")
-
-    summary = await regenerate_search_summary(user_id, supabase, bypass_rate_limit=True)
-    if summary is None:
-        raise HTTPException(status_code=502, detail="Samenvatting kon niet worden gegenereerd")
-    return {"summary": summary}
-
-
-@router.post("/search-summary/approve", status_code=200)
-async def approve_search_summary(
-    user_id: str = Depends(get_current_user_id),
-    supabase=Depends(get_supabase),
-):
-    """Acknowledge the current AI-generated search summary. Not a gate — search
-    works before approval too, this just records that the user has read it."""
-    now_iso = datetime.now(timezone.utc).isoformat()
-    result = supabase.table("profiles").update({
-        "job_search_summary_approved_at": now_iso,
-    }).eq("user_id", user_id).execute()
-    if not result.data:
-        raise HTTPException(status_code=404, detail="Profiel niet gevonden")
-    return {"approved_at": now_iso}
 
 
 @router.post("/cv", status_code=200)
@@ -419,12 +369,10 @@ async def delete_cv(
         "cv_expires_at": None,
         "cv_structured": None,
         # AVG rule 4: the search summary embeds CV-derived facts and must not
-        # outlive the CV. Clear it; the regen below rebuilds it CV-free.
+        # outlive the CV.
         "job_search_summary": None,
         "job_search_summary_approved_at": None,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }).eq("user_id", user_id).execute()
-
-    fire_and_forget(regenerate_search_summary(user_id, supabase))
 
     return {"message": "CV deleted"}

@@ -29,7 +29,6 @@ export default function SettingsClient() {
   const [txLoaded, setTxLoaded] = useState(false)
 
   // Email preferences state
-  const [emailDigest, setEmailDigest] = useState(true)
   const [emailReminders, setEmailReminders] = useState(true)
   const [cvExpiryReminder, setCvExpiryReminder] = useState(true)
   const [savingPrefs, setSavingPrefs] = useState(false)
@@ -46,7 +45,6 @@ export default function SettingsClient() {
     api.profile.get()
       .then(p => {
         setProfile(p)
-        setEmailDigest(p.email_digest_enabled ?? true)
         setEmailReminders(p.email_reminders_enabled ?? true)
         setCvExpiryReminder(p.cv_expiry_reminder_enabled ?? true)
       })
@@ -68,22 +66,20 @@ export default function SettingsClient() {
     }
   }
 
-  async function handleSaveEmailPrefs(digest: boolean, reminders: boolean, cvExpiry: boolean) {
+  async function handleSaveEmailPrefs(reminders: boolean, cvExpiry: boolean) {
     setSavingPrefs(true)
     // Snapshot the values as they were BEFORE this save — `profile` holds the
     // values from page load, so rolling back to it would undo earlier successful
     // toggles too.
     const prev = {
-      email_digest_enabled: emailDigest,
       email_reminders_enabled: emailReminders,
       cv_expiry_reminder_enabled: cvExpiryReminder,
     }
     try {
-      await api.profile.update({ email_digest_enabled: digest, email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry })
+      await api.profile.update({ email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry })
       // Keep `profile` in sync so it stays a valid rollback target
-      setProfile(p => p ? { ...p, email_digest_enabled: digest, email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry } : p)
+      setProfile(p => p ? { ...p, email_reminders_enabled: reminders, cv_expiry_reminder_enabled: cvExpiry } : p)
     } catch {
-      setEmailDigest(prev.email_digest_enabled)
       setEmailReminders(prev.email_reminders_enabled)
       setCvExpiryReminder(prev.cv_expiry_reminder_enabled)
     } finally {
@@ -345,23 +341,13 @@ export default function SettingsClient() {
         </p>
         <div className="flex flex-col gap-4">
           <Toggle
-            label={t('emailDigestToggleLabel')}
-            description={t('emailDigestToggleDescription')}
-            checked={emailDigest}
-            disabled={savingPrefs}
-            onChange={v => {
-              setEmailDigest(v)
-              handleSaveEmailPrefs(v, emailReminders, cvExpiryReminder)
-            }}
-          />
-          <Toggle
             label={t('emailRemindersToggleLabel')}
             description={t('emailRemindersToggleDescription')}
             checked={emailReminders}
             disabled={savingPrefs}
             onChange={v => {
               setEmailReminders(v)
-              handleSaveEmailPrefs(emailDigest, v, cvExpiryReminder)
+              handleSaveEmailPrefs(v, cvExpiryReminder)
             }}
           />
           <Toggle
@@ -371,7 +357,7 @@ export default function SettingsClient() {
             disabled={savingPrefs}
             onChange={v => {
               setCvExpiryReminder(v)
-              handleSaveEmailPrefs(emailDigest, emailReminders, v)
+              handleSaveEmailPrefs(emailReminders, v)
             }}
           />
         </div>

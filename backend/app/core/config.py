@@ -23,11 +23,7 @@ class Settings(BaseSettings):
     sendgrid_from_email: str = "sollicitaties@opstap.nl"
     sendgrid_from_name: str = "Opstap"
 
-    # Adzuna job search API
-    adzuna_app_id: str = ""
-    adzuna_app_key: str = ""
-
-    # Tavily web search (LLM job search)
+    # Tavily web search (interview prep company lookup)
     tavily_api_key: str = ""
 
     # CV storage

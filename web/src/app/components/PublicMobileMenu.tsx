@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl'
 const navLinks = [
   { href: '/dashboard', label: 'Vind vacatures' },
   { href: '/dashboard/profiel', label: 'Mijn profiel' },
-  { href: '/dashboard/opgeslagen', label: 'Opgeslagen vacatures' },
   { href: '/over-ons', label: 'Over Opstap' },
   { href: '/faq', label: 'Help & FAQ' },
   { href: '/contact', label: 'Contact' },

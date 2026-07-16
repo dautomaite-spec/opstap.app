@@ -2,7 +2,7 @@
 
 ## What is this project?
 Opstap is a Dutch job application automation app for iOS and Android.
-It helps users upload a CV or enter their profile manually, search Dutch job boards, and auto-apply with AI-generated motivation letters.
+It helps users upload a CV or enter their profile manually, paste a vacancy link, and auto-apply with AI-generated motivation letters.
 
 ## Working directory
 `C:\Users\donn9\Opstap.App`
@@ -23,7 +23,6 @@ Beta — see docs/PROGRESSMAP.html for full details and progress checklist.
 | AI | Claude API (claude-sonnet-4-6) |
 | Database + Auth | Supabase (EU region) |
 | File storage | Supabase Storage (EU, encrypted) |
-| Job scraping | Playwright |
 | Version control | GitHub — dautomaite-spec/opstap.app (private) |
 | UI design | Google Stitch (primary) — Figma backup only |
 
@@ -45,7 +44,7 @@ Beta — see docs/PROGRESSMAP.html for full details and progress checklist.
 - First screen asks: upload CV or enter manually
 - AVG/GDPR consent shown before any CV upload
 - Extracted CV data is always editable before use
-- Dutch job boards: Indeed NL, LinkedIn NL, Jobbird, Nationale Vacaturebank
+- Works with any Dutch vacancy: user pastes a link (or the text) from any job board or company site
 - Motivation letters generated in Dutch by Claude API
 - EU servers only — no data leaves the EU
 - User can delete all their data at any time
@@ -53,7 +52,7 @@ Beta — see docs/PROGRESSMAP.html for full details and progress checklist.
 ## MVP (v1) scope
 1. Resume upload
 2. Manual profile setup screen
-3. Job search (NL boards)
+3. Paste a vacancy (link or text)
 4. Auto-apply (email + web form)
 5. AI motivation letter per job (Dutch)
 6. AVG consent flow
@@ -102,7 +101,6 @@ These agents live in `.claude/agents/`. Run them automatically at the points bel
 | `/dutch-copy` | Release gate: after finishing any screen (web or Flutter) — before marking it done |
 | `/stylist` | Release gate: after generating or editing any screen (web or Flutter/Stitch) |
 | `/updater` | **Before every `git push`** — updates planning, wiki, roadmap, changelog, and cleans temp files |
-| `/scraper-health` | After any job-search or scraper change, or when search results degrade — cheap script-based check, no browser |
 
 - If an agent reports a violation or score below 7/10, fix the issues before continuing.
 - Do not skip agents to save time — they exist because these errors have real consequences (legal, security, UX).

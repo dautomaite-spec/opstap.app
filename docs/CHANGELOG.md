@@ -1,5 +1,11 @@
 # Changelog — Opstap
 
+## 2026-07-16 (feat/remove-search)
+- feat!: AI job search removed entirely — Opstap is now an AI application assistant: paste a vacancy (link or text), Opstap writes the letter, sends the application and prepares you for the interview. Deleted: search engine (Claude+Tavily), all board scrapers, /jobs router (search, saved jobs, report-dead), zoekprofiel generator, digest/prefetch crons, saved-jobs page, search UI/i18n across 6 locales, scraper-health agent, 3 diagnostic scripts, playwright backend dep (net -4,484 lines)
+- feat: the paste flow now creates a jobs row + draft application and goes through the real approve/send gate — sollicitaties tracking and interview prep now work for pasted vacancies (previously only search results were tracked)
+- fix(critical): migration 018 (applied live) — the nightly cleanup-stale-jobs cron cascade-deleted applications older than 7 days via the jobs FK; cron now excludes referenced jobs and the FK is ON DELETE RESTRICT
+- note: user must disable any external n8n/cron schedules still hitting the removed /cron/job-digest and /cron/prefetch-jobs endpoints
+
 ## 2026-07-13 (feat/paste-text-fallback)
 - feat: paste-text fallback for the hero flow — verified that Indeed/werkzoeken/NVB/LinkedIn block server-side fetches, so when from-url can't fetch a page (or gets a bot-wall shell, now detected) the UI pivots to "plak de vacaturetekst"; structured fetch_blocked errors, credit refunds on all blocked exits, 6 pytest tests
 - fix(security): from-url rate-limited before debit (refund loop allowed free server-originated fetches) and job_text payload capped at 20k chars (both from the security release gate, 7/10)

@@ -47,7 +47,7 @@ class ProfileOut(ProfileCreate):
     credits_balance: int = 0
     referral_code: Optional[str] = None
     profile_bonus_given: bool = False
-    # Server-generated only — never client-writable, see search_summary.py
+    # Legacy server-generated fields — kept read-only for AVG export/delete; never client-writable
     job_search_summary: Optional[str] = Field(None, max_length=600)
     job_search_summary_approved_at: Optional[datetime] = None
 

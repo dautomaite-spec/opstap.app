@@ -72,14 +72,50 @@ class _FakeQuery:
         return _FakeResult(self._data)
 
 
+class _FakeTable:
+    """Minimal in-memory table: select().eq().execute(), insert().execute(), update().eq().execute()."""
+
+    def __init__(self, rows):
+        self._rows = rows
+        self._filters = {}
+        self._insert_row = None
+        self._update_patch = None
+
+    def select(self, *a, **k):
+        return self
+
+    def insert(self, row):
+        self._insert_row = row
+        return self
+
+    def update(self, patch):
+        self._update_patch = patch
+        return self
+
+    def eq(self, col, val):
+        self._filters[col] = val
+        return self
+
+    def execute(self):
+        if self._insert_row is not None:
+            self._rows.append(dict(self._insert_row))
+            return _FakeResult([dict(self._insert_row)])
+        matches = [r for r in self._rows if all(r.get(c) == v for c, v in self._filters.items())]
+        if self._update_patch is not None:
+            for r in matches:
+                r.update(self._update_patch)
+        return _FakeResult(matches)
+
+
 class FakeSupabase:
     def __init__(self):
         self.rpc_calls: list[tuple[str, dict]] = []
+        self.rows: dict[str, list[dict]] = {"jobs": [], "applications": []}
 
     def table(self, name):
         if name == "profiles":
             return _FakeQuery(dict(PROFILE))
-        return _FakeQuery(None)
+        return _FakeTable(self.rows.setdefault(name, []))
 
     def rpc(self, name, params):
         self.rpc_calls.append((name, params))
@@ -129,6 +165,16 @@ def test_job_text_happy_path(client, fake_supabase):
     assert data["company"] == "Werkgever"
     assert len(fake_supabase.debits()) == 1
     assert len(fake_supabase.refunds()) == 0
+    # Paste flow must create a tracked draft application anchored to a jobs row
+    assert data["application_id"]
+    assert data["job_id"]
+    jobs = fake_supabase.rows["jobs"]
+    apps = fake_supabase.rows["applications"]
+    assert len(jobs) == 1 and jobs[0]["source"] == "paste" and jobs[0]["url"] == URL
+    assert len(apps) == 1 and apps[0]["status"] == "draft"
+    assert apps[0]["job_id"] == jobs[0]["id"] == data["job_id"]
+    assert apps[0]["id"] == data["application_id"]
+    assert apps[0]["letter_nl"] == CANNED_LETTER
 
 
 def test_job_text_too_short_no_debit(client, fake_supabase):
@@ -185,3 +231,17 @@ def test_url_path_backward_compat(client, fake_supabase, monkeypatch):
     assert data["letter"] == CANNED_LETTER
     assert len(fake_supabase.debits()) == 1
     assert len(fake_supabase.refunds()) == 0
+    assert data["application_id"]
+    assert data["job_id"]
+    assert fake_supabase.rows["applications"][0]["status"] == "draft"
+    assert fake_supabase.rows["jobs"][0]["source"] == "paste"
+
+
+def test_repeat_paste_reuses_job_and_draft(client, fake_supabase):
+    first = client.post("/api/v1/apply/from-url", json={"url": URL, "job_text": VACANCY_TEXT})
+    assert first.status_code == 200, first.text
+    second = client.post("/api/v1/apply/from-url", json={"url": URL, "job_text": VACANCY_TEXT})
+    assert second.status_code == 200, second.text
+    assert len(fake_supabase.rows["jobs"]) == 1
+    assert len(fake_supabase.rows["applications"]) == 1
+    assert first.json()["application_id"] == second.json()["application_id"]
